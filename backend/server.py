@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,9 +6,11 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 import uuid
 from datetime import datetime
+import requests
+from bson import ObjectId
 
 
 ROOT_DIR = Path(__file__).parent
@@ -19,6 +21,11 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# YouTube API configuration
+YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
+YOUTUBE_CHANNEL_ID = os.environ.get('YOUTUBE_CHANNEL_ID')
+YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3'
+
 # Create the main app without a prefix
 app = FastAPI()
 
@@ -27,30 +34,209 @@ api_router = APIRouter(prefix="/api")
 
 
 # Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+class VideoModel(BaseModel):
+    id: Optional[str] = None
+    videoId: str
+    title: str
+    description: str
+    thumbnail: str
+    duration: str
+    publishedAt: str
+    cachedAt: datetime = Field(default_factory=datetime.utcnow)
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class PrayerModel(BaseModel):
+    id: Optional[str] = None
+    title: str
+    videoId: str
+    prayerText: str
+    category: Optional[str] = "General"
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
 
-# Add your routes to the router instead of directly to app
+class PrayerCreate(BaseModel):
+    title: str
+    videoId: str
+    prayerText: str
+    category: Optional[str] = "General"
+
+
+# Helper function to convert ObjectId to string
+def prayer_helper(prayer) -> dict:
+    return {
+        "id": str(prayer["_id"]),
+        "title": prayer["title"],
+        "videoId": prayer["videoId"],
+        "prayerText": prayer["prayerText"],
+        "category": prayer.get("category", "General"),
+        "createdAt": prayer.get("createdAt", datetime.utcnow())
+    }
+
+def video_helper(video) -> dict:
+    return {
+        "id": str(video["_id"]),
+        "videoId": video["videoId"],
+        "title": video["title"],
+        "description": video["description"],
+        "thumbnail": video["thumbnail"],
+        "duration": video["duration"],
+        "publishedAt": video["publishedAt"],
+        "cachedAt": video.get("cachedAt", datetime.utcnow())
+    }
+
+
+# YouTube API functions
+def fetch_youtube_videos():
+    """Fetch videos from YouTube channel, filter for long-form content"""
+    try:
+        url = f"{YOUTUBE_API_BASE}/search"
+        params = {
+            'key': YOUTUBE_API_KEY,
+            'channelId': YOUTUBE_CHANNEL_ID,
+            'part': 'snippet',
+            'type': 'video',
+            'order': 'date',
+            'maxResults': 50,
+            'videoDuration': 'long'  # Only long videos (>20 min)
+        }
+        
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        videos = []
+        for item in data.get('items', []):
+            video_id = item['id']['videoId']
+            snippet = item['snippet']
+            
+            # Get video details for duration
+            video_details = get_video_details(video_id)
+            
+            videos.append({
+                'videoId': video_id,
+                'title': snippet['title'],
+                'description': snippet['description'],
+                'thumbnail': snippet['thumbnails']['high']['url'],
+                'duration': video_details.get('duration', 'Unknown'),
+                'publishedAt': snippet['publishedAt'],
+                'cachedAt': datetime.utcnow()
+            })
+        
+        return videos
+    except Exception as e:
+        logging.error(f"Error fetching YouTube videos: {str(e)}")
+        return []
+
+def get_video_details(video_id: str):
+    """Get detailed information about a specific video"""
+    try:
+        url = f"{YOUTUBE_API_BASE}/videos"
+        params = {
+            'key': YOUTUBE_API_KEY,
+            'id': video_id,
+            'part': 'contentDetails,snippet'
+        }
+        
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data.get('items'):
+            item = data['items'][0]
+            return {
+                'duration': item['contentDetails']['duration'],
+                'title': item['snippet']['title'],
+                'description': item['snippet']['description']
+            }
+        return {}
+    except Exception as e:
+        logging.error(f"Error fetching video details: {str(e)}")
+        return {}
+
+
+# API Routes
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Catholic Voices and Prayers API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
+@api_router.get("/videos/refresh")
+async def refresh_videos():
+    """Manually refresh videos from YouTube"""
+    videos = fetch_youtube_videos()
+    
+    if videos:
+        # Clear existing cache
+        await db.videos.delete_many({})
+        
+        # Insert new videos
+        if videos:
+            await db.videos.insert_many(videos)
+        
+        return {
+            "message": f"Successfully cached {len(videos)} videos",
+            "count": len(videos)
+        }
+    else:
+        raise HTTPException(status_code=500, detail="Failed to fetch videos from YouTube")
+
+
+@api_router.get("/videos")
+async def get_videos():
+    """Get all cached videos"""
+    videos = await db.videos.find().sort("publishedAt", -1).to_list(100)
+    return [video_helper(video) for video in videos]
+
+
+@api_router.get("/videos/{video_id}")
+async def get_video(video_id: str):
+    """Get a specific video by videoId"""
+    video = await db.videos.find_one({"videoId": video_id})
+    if video:
+        return video_helper(video)
+    raise HTTPException(status_code=404, detail="Video not found")
+
+
+@api_router.post("/prayers")
+async def create_prayer(prayer: PrayerCreate):
+    """Create a new prayer entry"""
+    prayer_dict = prayer.dict()
+    prayer_dict['createdAt'] = datetime.utcnow()
+    
+    result = await db.prayers.insert_one(prayer_dict)
+    new_prayer = await db.prayers.find_one({"_id": result.inserted_id})
+    
+    return prayer_helper(new_prayer)
+
+
+@api_router.get("/prayers")
+async def get_prayers():
+    """Get all prayers"""
+    prayers = await db.prayers.find().sort("createdAt", -1).to_list(100)
+    return [prayer_helper(prayer) for prayer in prayers]
+
+
+@api_router.get("/prayers/{prayer_id}")
+async def get_prayer(prayer_id: str):
+    """Get a specific prayer by ID"""
+    try:
+        prayer = await db.prayers.find_one({"_id": ObjectId(prayer_id)})
+        if prayer:
+            return prayer_helper(prayer)
+        raise HTTPException(status_code=404, detail="Prayer not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid prayer ID")
+
+
+@api_router.delete("/prayers/{prayer_id}")
+async def delete_prayer(prayer_id: str):
+    """Delete a prayer"""
+    try:
+        result = await db.prayers.delete_one({"_id": ObjectId(prayer_id)})
+        if result.deleted_count == 1:
+            return {"message": "Prayer deleted successfully"}
+        raise HTTPException(status_code=404, detail="Prayer not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid prayer ID")
+
 
 # Include the router in the main app
 app.include_router(api_router)
