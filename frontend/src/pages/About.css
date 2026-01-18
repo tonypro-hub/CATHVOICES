@@ -1,0 +1,153 @@
+.about-page {
+  min-height: calc(100vh - var(--header-height));
+  padding: var(--spacing-xl) 0;
+}
+
+.about-hero {
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.1) 0%, rgba(139, 0, 0, 0.05) 100%);
+  border-radius: 12px;
+  margin-bottom: var(--spacing-xl);
+}
+
+.about-logo {
+  max-width: 300px;
+  margin: 0 auto var(--spacing-md);
+}
+
+.about-title {
+  font-size: 2.5rem;
+  color: var(--color-gold);
+}
+
+.about-section {
+  max-width: 800px;
+  margin: 0 auto var(--spacing-xl);
+}
+
+.section-heading {
+  font-size: 2rem;
+  color: var(--color-gold);
+  margin-bottom: var(--spacing-md);
+}
+
+.section-text {
+  font-size: 1.15rem;
+  color: var(--color-cream);
+  line-height: 1.8;
+  opacity: 0.95;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background-color: rgba(139, 0, 0, 0.05);
+  border-radius: 8px;
+  font-size: 1.1rem;
+  color: var(--color-cream);
+}
+
+.feature-check {
+  flex-shrink: 0;
+  color: var(--color-gold);
+}
+
+.social-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.social-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-lg);
+  background-color: rgba(139, 0, 0, 0.1);
+  border: 1px solid rgba(139, 0, 0, 0.3);
+  border-radius: 12px;
+  color: var(--color-gold);
+  transition: all 0.3s ease;
+}
+
+.social-card:hover {
+  background-color: rgba(139, 0, 0, 0.15);
+  border-color: var(--color-burgundy);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(139, 0, 0, 0.3);
+}
+
+.social-card span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-cream);
+}
+
+.about-blessing {
+  text-align: center;
+  padding: var(--spacing-2xl) 0;
+  margin-top: var(--spacing-xl);
+  border-top: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.blessing-cross {
+  font-size: 3rem;
+  color: var(--color-gold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.blessing-text {
+  font-size: 1.25rem;
+  color: var(--color-gold);
+  font-style: italic;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .about-title {
+    font-size: 2rem;
+  }
+  
+  .section-heading {
+    font-size: 1.75rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .about-page {
+    padding: var(--spacing-md) 0;
+  }
+  
+  .about-logo {
+    max-width: 200px;
+  }
+  
+  .about-title {
+    font-size: 1.75rem;
+  }
+  
+  .section-heading {
+    font-size: 1.5rem;
+  }
+  
+  .section-text {
+    font-size: 1rem;
+  }
+  
+  .social-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
