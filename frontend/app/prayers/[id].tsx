@@ -80,15 +80,57 @@ export default function PrayerDetailScreen() {
     );
   }
 
+  // Generate YouTube embed HTML
+  const getYouTubeEmbedHTML = (videoId: string) => {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+          <style>
+            * { margin: 0; padding: 0; }
+            body { background: #000; }
+            .video-container {
+              position: relative;
+              padding-bottom: 56.25%;
+              height: 0;
+              overflow: hidden;
+            }
+            .video-container iframe {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="video-container">
+            <iframe
+              src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </body>
+      </html>
+    `;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {/* Video Section */}
         <View style={styles.videoContainer}>
-          <YoutubePlayer
-            height={220}
-            videoId={prayer.videoId}
-            onError={(error) => console.error('YouTube player error:', error)}
+          <WebView
+            style={styles.video}
+            source={{ html: getYouTubeEmbedHTML(prayer.videoId) }}
+            allowsFullscreenVideo={true}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            mediaPlaybackRequiresUserAction={false}
           />
         </View>
 
