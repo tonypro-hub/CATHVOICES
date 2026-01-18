@@ -210,7 +210,12 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     width: '100%',
+    height: 220,
     backgroundColor: '#000',
+  },
+  video: {
+    width: '100%',
+    height: 220,
   },
   prayerHeader: {
     paddingHorizontal: 24,
