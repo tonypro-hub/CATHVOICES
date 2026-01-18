@@ -1,0 +1,112 @@
+{
+  "total": 10,
+  "passed": 10,
+  "failed": 0,
+  "success_rate": 100.0,
+  "results": [
+    {
+      "test": "Root Endpoint",
+      "success": true,
+      "message": "API root endpoint responding correctly",
+      "response_data": {
+        "message": "Catholic Voices and Prayers API"
+      },
+      "timestamp": "2026-01-18T21:48:34.122293"
+    },
+    {
+      "test": "GET Prayers",
+      "success": true,
+      "message": "Retrieved 5 prayers",
+      "response_data": {
+        "count": 5
+      },
+      "timestamp": "2026-01-18T21:48:34.157924"
+    },
+    {
+      "test": "Prayer Structure Validation",
+      "success": true,
+      "message": "Prayer objects have all required fields",
+      "response_data": null,
+      "timestamp": "2026-01-18T21:48:34.157933"
+    },
+    {
+      "test": "POST Prayer",
+      "success": true,
+      "message": "Prayer created with ID: 696d553269deb8989ccd1b49",
+      "response_data": {
+        "id": "696d553269deb8989ccd1b49",
+        "title": "Test Prayer for API Testing",
+        "videoId": "test_video_123",
+        "prayerText": "This is a test prayer created during API testing. Please ignore.",
+        "category": "Testing",
+        "createdAt": "2026-01-18T21:48:34.188000"
+      },
+      "timestamp": "2026-01-18T21:48:34.191701"
+    },
+    {
+      "test": "GET Prayer by ID",
+      "success": true,
+      "message": "Retrieved prayer: Test Prayer for API Testing",
+      "response_data": {
+        "id": "696d553269deb8989ccd1b49",
+        "title": "Test Prayer for API Testing",
+        "videoId": "test_video_123",
+        "prayerText": "This is a test prayer created during API testing. Please ignore.",
+        "category": "Testing",
+        "createdAt": "2026-01-18T21:48:34.188000"
+      },
+      "timestamp": "2026-01-18T21:48:34.229537"
+    },
+    {
+      "test": "GET Videos",
+      "success": true,
+      "message": "Retrieved 18 cached videos",
+      "response_data": {
+        "count": 18
+      },
+      "timestamp": "2026-01-18T21:48:34.264230"
+    },
+    {
+      "test": "Video Structure Validation",
+      "success": true,
+      "message": "Video objects have all required fields",
+      "response_data": null,
+      "timestamp": "2026-01-18T21:48:34.264240"
+    },
+    {
+      "test": "Refresh Videos",
+      "success": true,
+      "message": "YouTube integration working - cached 18 videos",
+      "response_data": {
+        "message": "Successfully cached 18 videos",
+        "count": 18
+      },
+      "timestamp": "2026-01-18T21:48:35.732851"
+    },
+    {
+      "test": "GET Video by ID",
+      "success": true,
+      "message": "Retrieved video: Bishop Fulton J. Sheen Recites the Holy Rosary in Latin | Joyful, Sorrowful &amp; Glorious Mysteries",
+      "response_data": {
+        "id": "696d553369deb8989ccd1b4a",
+        "videoId": "Bqm8qqKeFA4",
+        "title": "Bishop Fulton J. Sheen Recites the Holy Rosary in Latin | Joyful, Sorrowful &amp; Glorious Mysteries",
+        "description": "Pray along with Archbishop Fulton J. Sheen as he leads the complete cycle of the Rosary in Latin: the Joyful Mysteries, the ...",
+        "thumbnail": "https://i.ytimg.com/vi/Bqm8qqKeFA4/hqdefault.jpg",
+        "duration": "PT1H48M26S",
+        "publishedAt": "2025-09-01T20:12:36Z",
+        "cachedAt": "2026-01-18T21:48:34.600000"
+      },
+      "timestamp": "2026-01-18T21:48:35.766210"
+    },
+    {
+      "test": "DELETE Prayer",
+      "success": true,
+      "message": "Prayer 696d553269deb8989ccd1b49 deleted successfully",
+      "response_data": {
+        "message": "Prayer deleted successfully"
+      },
+      "timestamp": "2026-01-18T21:48:35.801189"
+    }
+  ]
+}
