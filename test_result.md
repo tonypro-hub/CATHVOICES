@@ -101,3 +101,121 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the Catholic Voices & Prayers API backend with YouTube Data API integration and MongoDB for storing prayers and cached videos"
+
+backend:
+  - task: "YouTube Integration - Refresh Videos API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/videos/refresh successfully fetches and caches 18 videos from YouTube Channel UCRRPmmYLLHxRJlsKjJER1Ig. YouTube API integration working correctly."
+
+  - task: "YouTube Integration - Get Cached Videos API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/videos returns 18 cached videos with proper structure (id, videoId, title, description, thumbnail, duration, publishedAt, cachedAt). All required fields present."
+
+  - task: "YouTube Integration - Get Video by ID API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/videos/{videoId} successfully retrieves specific video details. Tested with video 'Bishop Fulton J. Sheen Recites the Holy Rosary in Latin' - returns correct video object."
+
+  - task: "Prayers CRUD - Get All Prayers API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/prayers returns all 5 sample prayers correctly: The Holy Rosary, Holy Cloak of St. Joseph Novena, The Our Father, The Hail Mary, Glory Be (Doxology). All prayer objects contain required fields (id, title, videoId, prayerText, category, createdAt)."
+
+  - task: "Prayers CRUD - Get Prayer by ID API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/prayers/{id} successfully retrieves specific prayer by MongoDB ObjectId. Proper ObjectId handling implemented and working correctly."
+
+  - task: "Prayers CRUD - Create Prayer API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ POST /api/prayers successfully creates new prayer entries. Returns proper prayer object with generated MongoDB ObjectId. All validation working correctly."
+
+  - task: "Prayers CRUD - Delete Prayer API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ DELETE /api/prayers/{id} successfully deletes prayers by ObjectId. Proper error handling for invalid IDs and non-existent prayers."
+
+  - task: "API Root Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/ returns correct API identification message: 'Catholic Voices and Prayers API'. Root endpoint responding properly."
+
+frontend:
+  # No frontend testing performed as per instructions
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus: []
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "testing"
+    message: "Comprehensive backend testing completed successfully. All 8 backend tasks tested and working correctly. YouTube API integration is functional, fetching real videos from channel UCRRPmmYLLHxRJlsKjJER1Ig. All CRUD operations for prayers working with proper ObjectId handling. Sample data confirmed: 5 prayers (The Holy Rosary, Holy Cloak of St. Joseph Novena, The Our Father, The Hail Mary, Glory Be) and 18 cached YouTube videos. 100% test success rate (10/10 tests passed). Backend API is production-ready."
