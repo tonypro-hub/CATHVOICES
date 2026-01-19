@@ -313,23 +313,131 @@ def feast_day_helper(feast) -> dict:
         "isManualOverride": feast.get("isManualOverride", False),
         "createdAt": feast.get("createdAt", datetime.utcnow())
     }
-    """Extract category from video title or description"""
+
+def extract_category_from_metadata(title: str, description: str):
+    """
+    Extract category from video title or description using prioritized keyword matching
+    Title is prioritized over description for classification
+    """
+    # Combine title (weighted higher) with description
     title_lower = title.lower()
     desc_lower = description.lower()
     
-    # Define category keywords
-    if 'rosary' in title_lower or 'rosary' in desc_lower:
+    # PRIORITY 1: Check title first (most reliable signal)
+    
+    # The Rosary category
+    rosary_keywords = ['rosary', 'mysteries', 'joyful mysteries', 'sorrowful mysteries', 
+                       'glorious mysteries', 'luminous mysteries', 'decade']
+    if any(keyword in title_lower for keyword in rosary_keywords):
         return 'The Rosary'
-    elif 'novena' in title_lower or 'novena' in desc_lower:
+    
+    # Novenas category
+    novena_keywords = ['novena', '9 day', 'nine day', '9-day', 'nine-day']
+    if any(keyword in title_lower for keyword in novena_keywords):
         return 'Novenas'
-    elif any(word in title_lower for word in ['our father', 'hail mary', 'glory be', 'apostles creed']):
-        return 'Traditional Prayers'
-    elif 'saint' in title_lower or 'st.' in title_lower or 'saint' in desc_lower:
+    
+    # Saints & Feast Days category
+    saint_keywords = ['saint', 'st.', 'st ', 'feast of', 'feast day', 
+                      'saint of the day', 'patron saint']
+    if any(keyword in title_lower for keyword in saint_keywords):
         return 'Saints & Feast Days'
-    elif 'chaplet' in title_lower or 'litany' in title_lower:
+    
+    # Devotions category
+    devotion_keywords = ['chaplet', 'litany', 'divine mercy', 'sacred heart',
+                         'immaculate heart', 'consecration', 'devotion']
+    if any(keyword in title_lower for keyword in devotion_keywords):
         return 'Devotions'
-    else:
-        return 'Prayers'
+    
+    # Traditional Prayers category
+    traditional_keywords = ['our father', 'hail mary', 'glory be', 'apostles creed',
+                           'nicene creed', 'act of contrition', 'angelus', 'magnificat',
+                           'memorare', 'salve regina', 'ave maria', 'pater noster']
+    if any(keyword in title_lower for keyword in traditional_keywords):
+        return 'Traditional Prayers'
+    
+    # PRIORITY 2: Check description if title doesn't match
+    
+    if any(keyword in desc_lower for keyword in rosary_keywords):
+        return 'The Rosary'
+    
+    if any(keyword in desc_lower for keyword in novena_keywords):
+        return 'Novenas'
+    
+    if any(keyword in desc_lower for keyword in saint_keywords):
+        return 'Saints & Feast Days'
+    
+    if any(keyword in desc_lower for keyword in devotion_keywords):
+        return 'Devotions'
+    
+    if any(keyword in desc_lower for keyword in traditional_keywords):
+        return 'Traditional Prayers'
+    
+    # Default category
+    return 'Prayers'
+
+
+def extract_prayer_text_from_description(description: str):
+    """
+    Extract full prayer text from video description when present
+    Looks for common patterns like:
+    - "Full Prayer:" or "Prayer Text:"
+    - Text between specific markers
+    - Structured prayer content
+    """
+    if not description:
+        return None
+    
+    # Common markers for prayer text in descriptions
+    prayer_markers = [
+        'full prayer:',
+        'prayer text:',
+        'prayer:',
+        'the prayer:',
+        '---',  # Sometimes used to separate prayer text
+    ]
+    
+    desc_lower = description.lower()
+    
+    # Find the start of prayer text
+    start_idx = -1
+    for marker in prayer_markers:
+        idx = desc_lower.find(marker)
+        if idx != -1:
+            start_idx = idx + len(marker)
+            break
+    
+    if start_idx == -1:
+        # Check if description looks like prayer text (starts with traditional prayer phrases)
+        prayer_starts = ['in the name of', 'our father', 'hail mary', 'glory be',
+                        'o god', 'o lord', 'heavenly father', 'blessed virgin']
+        if any(desc_lower.strip().startswith(phrase) for phrase in prayer_starts):
+            # Entire description might be prayer text
+            return description.strip()
+        return None
+    
+    # Extract text from marker onwards
+    prayer_text = description[start_idx:].strip()
+    
+    # Clean up common endings (links, channel info, etc.)
+    end_markers = [
+        '\n\nsubscribe',
+        '\n\nfollow us',
+        '\n\nvisit our',
+        '\n\nwatch more',
+        '\n\nhttps://',
+        '\n\nhttp://',
+    ]
+    
+    for end_marker in end_markers:
+        idx = prayer_text.lower().find(end_marker)
+        if idx != -1:
+            prayer_text = prayer_text[:idx]
+    
+    # Return if we have meaningful prayer text (more than 50 characters)
+    if len(prayer_text) > 50:
+        return prayer_text.strip()
+    
+    return None
 
 def get_video_details(video_id: str):
     """Get detailed information about a specific video"""
