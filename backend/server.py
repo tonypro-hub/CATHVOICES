@@ -365,6 +365,188 @@ async def root():
     return {"message": "Catholic Voices and Prayers API"}
 
 
+# ===================================
+# FEAST DAY MAPPING ENDPOINTS
+# ===================================
+
+@api_router.post("/feast-days")
+async def create_feast_day_mapping(feast: FeastDayMapping):
+    """
+    Manually map a video to a feast day or saint
+    Priority: 100 = manual override, 50 = automatic
+    """
+    feast_dict = feast.dict(exclude={'id'})
+    feast_dict['createdAt'] = datetime.utcnow()
+    feast_dict['isManualOverride'] = True
+    feast_dict['priority'] = 100  # Manual overrides always have priority 100
+    
+    result = await db.feast_days.insert_one(feast_dict)
+    new_feast = await db.feast_days.find_one({"_id": result.inserted_id})
+    
+    return feast_day_helper(new_feast)
+
+
+@api_router.get("/feast-days")
+async def get_all_feast_day_mappings():
+    """Get all feast day mappings (manual and automatic)"""
+    feast_days = await db.feast_days.find().sort([("feastDate", 1), ("priority", -1)]).to_list(None)
+    return [feast_day_helper(feast) for feast in feast_days]
+
+
+@api_router.get("/feast-days/{feast_date}")
+async def get_feast_day(feast_date: str):
+    """
+    Get all videos for a specific feast date (MM-DD format)
+    Returns videos ordered by priority (manual overrides first)
+    """
+    # Find all mappings for this feast date
+    feast_mappings = await db.feast_days.find(
+        {"feastDate": feast_date}
+    ).sort("priority", -1).to_list(None)
+    
+    if not feast_mappings:
+        raise HTTPException(status_code=404, detail=f"No feast day content found for {feast_date}")
+    
+    # Get videos for each mapping
+    videos_with_feast_info = []
+    for feast in feast_mappings:
+        video = await db.videos.find_one({"videoId": feast["videoId"]})
+        if video:
+            prayer = await db.prayers.find_one({"videoId": feast["videoId"]})
+            
+            videos_with_feast_info.append({
+                "video": video_helper(video),
+                "feastInfo": feast_day_helper(feast),
+                "hasPrayerText": prayer is not None,
+                "prayerText": prayer["prayerText"] if prayer else None
+            })
+    
+    return videos_with_feast_info
+
+
+@api_router.get("/feast-days/today/content")
+async def get_todays_feast_day():
+    """
+    Get today's feast day content
+    Automatically determines today's date and returns appropriate content
+    """
+    from datetime import datetime as dt
+    today = dt.now().strftime("%m-%d")  # Format: MM-DD
+    
+    try:
+        return await get_feast_day(today)
+    except HTTPException:
+        # No specific feast day mapped, return None
+        return []
+
+
+@api_router.put("/feast-days/{feast_id}")
+async def update_feast_day_mapping(feast_id: str, feast_data: dict):
+    """Update an existing feast day mapping"""
+    try:
+        result = await db.feast_days.update_one(
+            {"_id": ObjectId(feast_id)},
+            {"$set": feast_data}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Feast day mapping not found")
+        
+        updated_feast = await db.feast_days.find_one({"_id": ObjectId(feast_id)})
+        return feast_day_helper(updated_feast)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@api_router.delete("/feast-days/{feast_id}")
+async def delete_feast_day_mapping(feast_id: str):
+    """Delete a feast day mapping"""
+    try:
+        result = await db.feast_days.delete_one({"_id": ObjectId(feast_id)})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Feast day mapping not found")
+        
+        return {"message": "Feast day mapping deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@api_router.post("/feast-days/auto-detect")
+async def auto_detect_feast_days():
+    """
+    Automatically detect and create feast day mappings from video metadata
+    Only creates mappings with priority=50 (automatic), won't override manual mappings
+    """
+    # Get all videos
+    videos = await db.videos.find({"isShort": True}).to_list(None)  # Focus on Shorts for daily content
+    
+    created_count = 0
+    skipped_count = 0
+    
+    for video in videos:
+        title = video.get("title", "")
+        description = video.get("description", "")
+        video_id = video["videoId"]
+        
+        # Try to extract feast date
+        feast_date = extract_feast_date_from_title(title, description)
+        if not feast_date:
+            continue
+        
+        # Check if manual mapping already exists
+        existing_manual = await db.feast_days.find_one({
+            "videoId": video_id,
+            "feastDate": feast_date,
+            "priority": 100
+        })
+        
+        if existing_manual:
+            skipped_count += 1
+            continue
+        
+        # Check if automatic mapping already exists
+        existing_auto = await db.feast_days.find_one({
+            "videoId": video_id,
+            "feastDate": feast_date,
+            "priority": 50
+        })
+        
+        if existing_auto:
+            skipped_count += 1
+            continue
+        
+        # Extract saint name if available
+        saint_name = extract_saint_name_from_title(title)
+        
+        # Create automatic mapping
+        feast_mapping = {
+            "videoId": video_id,
+            "feastDate": feast_date,
+            "saintName": saint_name,
+            "feastName": title,
+            "liturgicalCalendar": "roman",
+            "priority": 50,  # Automatic detection
+            "notes": "Auto-detected from video metadata",
+            "isManualOverride": False,
+            "createdAt": datetime.utcnow()
+        }
+        
+        await db.feast_days.insert_one(feast_mapping)
+        created_count += 1
+        logging.info(f"Auto-detected feast day: {feast_date} for video: {title[:50]}")
+    
+    return {
+        "message": f"Auto-detection complete",
+        "created": created_count,
+        "skipped": skipped_count
+    }
+
+
+# ===================================
+# EXISTING VIDEO ENDPOINTS
+# ===================================
+
 @api_router.get("/videos/refresh")
 async def refresh_videos():
     """Fetch ALL videos from YouTube channel and cache them"""
