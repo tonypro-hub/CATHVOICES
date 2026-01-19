@@ -167,7 +167,8 @@ def get_video_details(video_id: str):
             return {
                 'duration': item['contentDetails']['duration'],
                 'title': item['snippet']['title'],
-                'description': item['snippet']['description']
+                'description': item['snippet']['description'],
+                'tags': item['snippet'].get('tags', [])
             }
         return {}
     except Exception as e:
