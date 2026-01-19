@@ -771,6 +771,25 @@
   font-style: italic;
 }
 
+.disclaimer-link {
+  margin-top: var(--space-4);
+}
+
+.sspx-info-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-accent-primary);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  padding: var(--space-2) 0;
+  transition: color var(--transition-fast);
+}
+
+.sspx-info-link:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
 /* ===================
    RESPONSIVE
    =================== */
