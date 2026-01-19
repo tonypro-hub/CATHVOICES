@@ -283,19 +283,108 @@ def extract_feast_date_from_title(title: str, description: str):
     return None
 
 def extract_saint_name_from_title(title: str):
-    """Extract saint name from video title"""
+    """
+    Extract saint name from video title using flexible patterns
+    Supports formats like:
+    - "St. [Name]"
+    - "Saint [Name]"
+    - "Saint of the Day - [Name]"
+    - "[Name] | St. [Short Name]"
+    """
     import re
     
-    # Patterns for saint names
+    # Pattern 1: "Saint of the Day - [Name]" or "Saint of the Day: [Name]"
+    match = re.search(r'saint of the day[\s\-:]+([^|(]+)', title, re.IGNORECASE)
+    if match:
+        saint_name = match.group(1).strip()
+        if not saint_name.lower().startswith('st'):
+            return f"St. {saint_name}"
+        return saint_name
+    
+    # Pattern 2: Standard "St. [Name]" or "Saint [Name]"
     patterns = [
-        r'St\.\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)',  # St. Name
-        r'Saint\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)',  # Saint Name
+        r'St\.\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)',
+        r'Saint\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)',
     ]
     
     for pattern in patterns:
         match = re.search(pattern, title)
         if match:
-            return f"St. {match.group(1)}"
+            saint_name = match.group(1).strip()
+            # Remove trailing punctuation
+            saint_name = saint_name.rstrip('.,!?;:')
+            return f"St. {saint_name}"
+    
+    # Pattern 3: "[Description] | St. [Name]" (name at end after pipe)
+    match = re.search(r'\|\s*St\.\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)', title)
+    if match:
+        saint_name = match.group(1).strip()
+        saint_name = saint_name.rstrip('.,!?;:)')
+        return f"St. {saint_name}"
+    
+    return None
+
+
+def extract_feast_name_from_title(title: str):
+    """
+    Extract feast name from video title using flexible patterns
+    Supports formats like:
+    - "Feast of [Name/Event]"
+    - "[Event] Feast"
+    - "The [Event]"
+    """
+    import re
+    
+    # Pattern 1: "Feast of [Name/Event]"
+    match = re.search(r'feast of ([^|(]+)', title, re.IGNORECASE)
+    if match:
+        feast_name = match.group(1).strip()
+        feast_name = feast_name.rstrip('.,!?;:')
+        return f"Feast of {feast_name}"
+    
+    # Pattern 2: "[Name] Feast Day" or "[Name] Feast"
+    match = re.search(r'([A-Z][a-z\s]+)\s+feast\s*day', title, re.IGNORECASE)
+    if match:
+        feast_name = match.group(1).strip()
+        return f"Feast of {feast_name}"
+    
+    return None
+
+
+def extract_prayer_name_from_title(title: str):
+    """
+    Extract prayer name from video title using flexible patterns
+    Supports formats like:
+    - "[Prayer Name] - Full Prayer"
+    - "[Prayer Name] Prayer"
+    - "The [Prayer Name]"
+    """
+    import re
+    
+    # Common prayer name patterns
+    title_clean = title
+    
+    # Remove common suffixes to get prayer name
+    suffixes_to_remove = [
+        r'\s*-\s*full prayer.*$',
+        r'\s*-\s*prayer text.*$',
+        r'\s*\(full prayer\).*$',
+        r'\s*with.*$',  # "The Rosary with Bishop Sheen"
+    ]
+    
+    for suffix_pattern in suffixes_to_remove:
+        title_clean = re.sub(suffix_pattern, '', title_clean, flags=re.IGNORECASE)
+    
+    # Extract "The [Prayer Name]" pattern
+    match = re.search(r'^the\s+([^|(]+)', title_clean, re.IGNORECASE)
+    if match:
+        prayer_name = match.group(1).strip()
+        prayer_name = prayer_name.rstrip('.,!?;:')
+        return prayer_name
+    
+    # Return cleaned title if it looks like a prayer name
+    if len(title_clean) < 100:  # Prayer names are usually concise
+        return title_clean.strip()
     
     return None
 
