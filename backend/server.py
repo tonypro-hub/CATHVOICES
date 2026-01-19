@@ -125,8 +125,10 @@ def is_youtube_short(video_details: dict):
     duration_str = video_details.get('duration', 'PT0S')
     duration_seconds = parse_duration_to_seconds(duration_str)
     
-    # A video is a Short if it's 60 seconds or less
-    if duration_seconds <= 60:
+    # YouTube Shorts can be up to 3 minutes (180 seconds) as of 2024
+    # But most traditional long-form content is significantly longer
+    # We'll use 3 minutes as the cutoff for Shorts
+    if duration_seconds <= 180:
         return True
     
     # Check if YouTube marks it as a short (sometimes in description or tags)
