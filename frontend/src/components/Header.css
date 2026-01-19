@@ -34,6 +34,12 @@
   gap: var(--space-3);
 }
 
+.logo-image {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
 .logo-text {
   font-family: var(--font-display);
   font-size: var(--text-lg);
