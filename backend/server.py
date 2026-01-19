@@ -1813,6 +1813,591 @@ async def seed_mass_locations():
     }
 
 
+# ===================================
+# DATA INGESTION MODE - BULK IMPORT
+# ===================================
+
+class BulkLocationImport(BaseModel):
+    """Model for bulk importing locations"""
+    locations: List[dict]
+    source_name: str
+    source_url: Optional[str] = None
+    dry_run: bool = False  # If true, validates without inserting
+
+class CSVImportConfig(BaseModel):
+    """Configuration for CSV import"""
+    source_name: str
+    source_url: Optional[str] = None
+    affiliation: str
+    rite: str = "Latin"
+    use_or_liturgy: str = "1962 Roman Missal"
+    dry_run: bool = False
+
+class IngestionReport(BaseModel):
+    """Report generated after data ingestion"""
+    total_processed: int
+    inserted: int
+    skipped_duplicate: int
+    skipped_excluded: int
+    errors: int
+    error_details: List[dict]
+
+
+def calculate_geo_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate distance between two coordinates in miles using Haversine formula"""
+    import math
+    R = 3959  # Earth's radius in miles
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    return R * c
+
+
+async def find_duplicate(location: dict, threshold_miles: float = 0.5) -> Optional[dict]:
+    """
+    Find potential duplicate based on:
+    1. Exact name + city + state match
+    2. Similar name + geographic proximity (within threshold)
+    """
+    # Check exact match first
+    exact_match = await db.mass_locations.find_one({
+        "name": {"$regex": f"^{location.get('name', '')}$", "$options": "i"},
+        "city": {"$regex": f"^{location.get('city', '')}$", "$options": "i"},
+        "state": {"$regex": f"^{location.get('state', '')}$", "$options": "i"}
+    })
+    
+    if exact_match:
+        return exact_match
+    
+    # Check geographic proximity for similar names
+    if location.get("latitude") and location.get("longitude"):
+        # Find locations within the threshold distance
+        all_locations = await db.mass_locations.find({
+            "state": {"$regex": f"^{location.get('state', '')}$", "$options": "i"}
+        }).to_list(1000)
+        
+        for existing in all_locations:
+            if existing.get("latitude") and existing.get("longitude"):
+                distance = calculate_geo_distance(
+                    location["latitude"], location["longitude"],
+                    existing["latitude"], existing["longitude"]
+                )
+                
+                if distance <= threshold_miles:
+                    # Check if names are similar (case-insensitive partial match)
+                    existing_name = existing.get("name", "").lower()
+                    new_name = location.get("name", "").lower()
+                    
+                    # Check for common words (excluding common prefixes)
+                    common_prefixes = ["st.", "st", "saint", "our", "lady", "church", "parish", "the"]
+                    
+                    existing_words = set(w for w in existing_name.split() if w not in common_prefixes)
+                    new_words = set(w for w in new_name.split() if w not in common_prefixes)
+                    
+                    # If significant overlap in words, likely duplicate
+                    if len(existing_words & new_words) >= 2:
+                        return existing
+    
+    return None
+
+
+async def normalize_location(location: dict, source_name: str, source_url: str = None) -> dict:
+    """Normalize location data to standard format"""
+    normalized = {
+        "location_id": str(uuid.uuid4()),
+        "name": location.get("name", "").strip(),
+        "entity_type": location.get("entity_type", "Parish"),
+        "jurisdiction": location.get("jurisdiction", "Diocese"),
+        "affiliation": location.get("affiliation", ""),
+        "rite": location.get("rite", "Latin"),
+        "use_or_liturgy": location.get("use_or_liturgy", "1962 Roman Missal"),
+        "street": location.get("street", location.get("address", "")).strip(),
+        "city": location.get("city", "").strip(),
+        "state": location.get("state", "").strip().upper()[:2] if len(location.get("state", "")) <= 2 else location.get("state", "").strip(),
+        "zip_code": str(location.get("zip_code", location.get("zip", ""))).strip(),
+        "country": location.get("country", "USA"),
+        "latitude": float(location.get("latitude", location.get("lat", 0))) if location.get("latitude") or location.get("lat") else None,
+        "longitude": float(location.get("longitude", location.get("lng", location.get("lon", 0)))) if location.get("longitude") or location.get("lng") or location.get("lon") else None,
+        "mass_schedule_url": location.get("mass_schedule_url", location.get("schedule_url")),
+        "confession_url": location.get("confession_url"),
+        "adoration_url": location.get("adoration_url"),
+        "livestream_url": location.get("livestream_url"),
+        "website_url": location.get("website_url", location.get("website")),
+        "phone": location.get("phone"),
+        "notes": location.get("notes", location.get("description")),
+        "source_name": source_name,
+        "source_url": source_url,
+        "created_at": datetime.utcnow(),
+        "last_verified_date": datetime.utcnow(),
+        "verification_method": "bulk_import"
+    }
+    
+    # Check exclusion
+    exclude_flag, exclude_reason = check_exclusion(
+        normalized["name"],
+        normalized["affiliation"],
+        normalized.get("notes", "")
+    )
+    normalized["exclude_flag"] = exclude_flag
+    normalized["exclude_reason"] = exclude_reason
+    
+    return normalized
+
+
+@api_router.post("/mass-locations/ingest/bulk")
+async def ingest_bulk_locations(import_data: BulkLocationImport):
+    """
+    Bulk import locations from structured JSON data.
+    
+    Expects:
+    {
+        "locations": [
+            {
+                "name": "Parish Name",
+                "street": "123 Main St",
+                "city": "City",
+                "state": "ST",
+                "zip_code": "12345",
+                "latitude": 40.1234,
+                "longitude": -75.1234,
+                "affiliation": "FSSP",
+                "rite": "Latin",
+                "use_or_liturgy": "1962 Roman Missal",
+                ...
+            }
+        ],
+        "source_name": "FSSP Official Directory",
+        "source_url": "https://fssp.org/parishes",
+        "dry_run": false
+    }
+    """
+    report = {
+        "total_processed": 0,
+        "inserted": 0,
+        "skipped_duplicate": 0,
+        "skipped_excluded": 0,
+        "errors": 0,
+        "error_details": [],
+        "dry_run": import_data.dry_run
+    }
+    
+    for idx, loc in enumerate(import_data.locations):
+        report["total_processed"] += 1
+        
+        try:
+            # Normalize the location data
+            normalized = await normalize_location(
+                loc, 
+                import_data.source_name, 
+                import_data.source_url
+            )
+            
+            # Validate required fields
+            if not normalized.get("name") or not normalized.get("city") or not normalized.get("state"):
+                report["errors"] += 1
+                report["error_details"].append({
+                    "index": idx,
+                    "name": loc.get("name", "Unknown"),
+                    "error": "Missing required fields (name, city, or state)"
+                })
+                continue
+            
+            # Check exclusion
+            if normalized.get("exclude_flag"):
+                report["skipped_excluded"] += 1
+                report["error_details"].append({
+                    "index": idx,
+                    "name": normalized["name"],
+                    "error": f"Excluded: {normalized.get('exclude_reason')}"
+                })
+                continue
+            
+            # Check for duplicates
+            duplicate = await find_duplicate(normalized)
+            if duplicate:
+                report["skipped_duplicate"] += 1
+                report["error_details"].append({
+                    "index": idx,
+                    "name": normalized["name"],
+                    "error": f"Duplicate of existing: {duplicate.get('name')} in {duplicate.get('city')}, {duplicate.get('state')}"
+                })
+                continue
+            
+            # Insert if not dry run
+            if not import_data.dry_run:
+                await db.mass_locations.insert_one(normalized)
+            
+            report["inserted"] += 1
+            
+        except Exception as e:
+            report["errors"] += 1
+            report["error_details"].append({
+                "index": idx,
+                "name": loc.get("name", "Unknown"),
+                "error": str(e)
+            })
+    
+    return report
+
+
+@api_router.post("/mass-locations/ingest/csv")
+async def ingest_csv_locations(
+    csv_content: str,
+    config: CSVImportConfig
+):
+    """
+    Import locations from CSV content.
+    
+    Expected CSV columns (flexible mapping):
+    - name (required)
+    - street OR address
+    - city (required)
+    - state (required)
+    - zip_code OR zip
+    - latitude OR lat
+    - longitude OR lng OR lon
+    - website OR website_url
+    - phone
+    - notes OR description
+    
+    Additional columns are ignored.
+    """
+    import csv
+    import io
+    
+    report = {
+        "total_processed": 0,
+        "inserted": 0,
+        "skipped_duplicate": 0,
+        "skipped_excluded": 0,
+        "errors": 0,
+        "error_details": [],
+        "dry_run": config.dry_run
+    }
+    
+    try:
+        # Parse CSV
+        reader = csv.DictReader(io.StringIO(csv_content))
+        locations = list(reader)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid CSV format: {str(e)}")
+    
+    for idx, loc in enumerate(locations):
+        report["total_processed"] += 1
+        
+        try:
+            # Add config values
+            loc["affiliation"] = config.affiliation
+            loc["rite"] = config.rite
+            loc["use_or_liturgy"] = config.use_or_liturgy
+            
+            # Normalize
+            normalized = await normalize_location(
+                loc,
+                config.source_name,
+                config.source_url
+            )
+            
+            # Validate
+            if not normalized.get("name") or not normalized.get("city") or not normalized.get("state"):
+                report["errors"] += 1
+                report["error_details"].append({
+                    "index": idx,
+                    "name": loc.get("name", "Unknown"),
+                    "error": "Missing required fields"
+                })
+                continue
+            
+            # Check exclusion
+            if normalized.get("exclude_flag"):
+                report["skipped_excluded"] += 1
+                continue
+            
+            # Check duplicates
+            duplicate = await find_duplicate(normalized)
+            if duplicate:
+                report["skipped_duplicate"] += 1
+                continue
+            
+            # Insert if not dry run
+            if not config.dry_run:
+                await db.mass_locations.insert_one(normalized)
+            
+            report["inserted"] += 1
+            
+        except Exception as e:
+            report["errors"] += 1
+            report["error_details"].append({
+                "index": idx,
+                "name": loc.get("name", "Unknown"),
+                "error": str(e)
+            })
+    
+    return report
+
+
+@api_router.get("/mass-locations/ingest/template")
+async def get_csv_template():
+    """
+    Get CSV template for bulk import.
+    """
+    template = """name,street,city,state,zip_code,latitude,longitude,website,phone,notes
+"Example Parish","123 Main St","City Name","ST","12345","40.1234","-75.1234","https://example.com","555-123-4567","Optional notes"
+"""
+    return {
+        "template": template,
+        "required_columns": ["name", "city", "state"],
+        "optional_columns": ["street", "zip_code", "latitude", "longitude", "website", "phone", "notes"],
+        "notes": [
+            "latitude and longitude are required for accurate deduplication",
+            "state should be 2-letter abbreviation (e.g., 'PA', 'TX')",
+            "affiliation, rite, and use_or_liturgy are set via the import config"
+        ]
+    }
+
+
+@api_router.get("/mass-locations/ingest/sources")
+async def get_authoritative_sources():
+    """
+    List authoritative data sources for Mass Map ingestion.
+    These are the ONLY approved sources for data.
+    """
+    return {
+        "authoritative_sources": [
+            {
+                "name": "Latin Mass Directory",
+                "url": "https://www.latinmassdir.org/",
+                "affiliation": "Diocesan",
+                "description": "Comprehensive directory of diocesan Traditional Latin Masses",
+                "data_format": "Web scrape to structured data (manual curation required)"
+            },
+            {
+                "name": "FSSP Official Parish Finder",
+                "url": "https://fssp.org/where-to-find-us/",
+                "affiliation": "FSSP",
+                "description": "Official Priestly Fraternity of St. Peter locations",
+                "data_format": "Structured directory"
+            },
+            {
+                "name": "Institute of Christ the King",
+                "url": "https://institute-christ-king.org/locations/",
+                "affiliation": "ICKSP",
+                "description": "Official ICKSP apostolates and oratories",
+                "data_format": "Structured directory"
+            },
+            {
+                "name": "Personal Ordinariate of the Chair of St. Peter",
+                "url": "https://ordinariate.net/parish-finder",
+                "affiliation": "Ordinariate",
+                "description": "Official Ordinariate parish directory",
+                "data_format": "Structured directory"
+            },
+            {
+                "name": "SSPX Chapel Finder",
+                "url": "https://sspx.org/en/mass-and-confession-schedule",
+                "affiliation": "SSPX",
+                "description": "Official Society of St. Pius X chapel listings",
+                "data_format": "Structured directory"
+            },
+            {
+                "name": "Byzantine Catholic Metropolia of Pittsburgh",
+                "url": "https://www.archpitt.org/parishes/",
+                "affiliation": "Eastern Catholic",
+                "rite": "Byzantine",
+                "description": "Byzantine Catholic parishes in Pittsburgh metropolitan area",
+                "data_format": "Parish directory"
+            },
+            {
+                "name": "Ukrainian Catholic Archeparchy of Philadelphia",
+                "url": "https://ukrarcheparchy.us/parishes",
+                "affiliation": "Eastern Catholic",
+                "rite": "Ukrainian",
+                "description": "Ukrainian Catholic parishes",
+                "data_format": "Parish directory"
+            },
+            {
+                "name": "Eparchy of St. Maron of Brooklyn",
+                "url": "https://www.stmaron.org/parishes",
+                "affiliation": "Eastern Catholic",
+                "rite": "Maronite",
+                "description": "Maronite Catholic parishes in the eastern US",
+                "data_format": "Parish directory"
+            },
+            {
+                "name": "Melkite Greek Catholic Eparchy of Newton",
+                "url": "https://melkite.org/parishes",
+                "affiliation": "Eastern Catholic",
+                "rite": "Melkite",
+                "description": "Melkite Greek Catholic parishes",
+                "data_format": "Parish directory"
+            },
+            {
+                "name": "Eparchy of Parma (Ruthenian)",
+                "url": "https://parma.org/parishes",
+                "affiliation": "Eastern Catholic",
+                "rite": "Ruthenian",
+                "description": "Ruthenian Byzantine Catholic parishes",
+                "data_format": "Parish directory"
+            },
+            {
+                "name": "Chaldean Catholic Eparchy of St. Thomas",
+                "url": "https://www.chaldeandiocese.org/parishes",
+                "affiliation": "Eastern Catholic",
+                "rite": "Chaldean",
+                "description": "Chaldean Catholic parishes",
+                "data_format": "Parish directory"
+            }
+        ],
+        "prohibited_sources": [
+            "Unverified user submissions without admin review",
+            "Social media posts",
+            "Unofficial directories or aggregators",
+            "Sedevacantist websites (CMRI, SSPV, etc.)"
+        ],
+        "ingestion_rules": [
+            "All data must come from authoritative sources listed above",
+            "Each import must specify source_name and source_url",
+            "Exclusion rules are automatically applied",
+            "Deduplication is aggressive - locations within 0.5 miles with similar names are flagged",
+            "Dry run mode available for validation before commit"
+        ]
+    }
+
+
+@api_router.get("/mass-locations/ingest/status")
+async def get_ingestion_status():
+    """
+    Get current database status and ingestion statistics.
+    """
+    total = await db.mass_locations.count_documents({})
+    excluded = await db.mass_locations.count_documents({"exclude_flag": True})
+    active = await db.mass_locations.count_documents({"exclude_flag": {"$ne": True}})
+    
+    # Count by source
+    pipeline = [
+        {"$match": {"exclude_flag": {"$ne": True}}},
+        {"$group": {"_id": "$source_name", "count": {"$sum": 1}}}
+    ]
+    source_counts = await db.mass_locations.aggregate(pipeline).to_list(100)
+    by_source = {item["_id"] or "Unknown": item["count"] for item in source_counts}
+    
+    # Count by affiliation
+    pipeline = [
+        {"$match": {"exclude_flag": {"$ne": True}}},
+        {"$group": {"_id": "$affiliation", "count": {"$sum": 1}}}
+    ]
+    affiliation_counts = await db.mass_locations.aggregate(pipeline).to_list(100)
+    by_affiliation = {item["_id"] or "Unknown": item["count"] for item in affiliation_counts}
+    
+    # Count by state
+    pipeline = [
+        {"$match": {"exclude_flag": {"$ne": True}}},
+        {"$group": {"_id": "$state", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    state_counts = await db.mass_locations.aggregate(pipeline).to_list(100)
+    by_state = {item["_id"] or "Unknown": item["count"] for item in state_counts}
+    
+    # Recently added
+    recent = await db.mass_locations.find(
+        {"exclude_flag": {"$ne": True}}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    return {
+        "database_status": {
+            "total_records": total,
+            "active_locations": active,
+            "excluded_locations": excluded
+        },
+        "by_source": by_source,
+        "by_affiliation": by_affiliation,
+        "by_state": by_state,
+        "coverage": {
+            "states_covered": len([s for s in by_state.keys() if s != "Unknown"]),
+            "total_us_states": 50
+        },
+        "recent_additions": [
+            {
+                "name": loc["name"],
+                "city": loc["city"],
+                "state": loc["state"],
+                "affiliation": loc["affiliation"],
+                "source": loc.get("source_name"),
+                "added": loc.get("created_at")
+            }
+            for loc in recent
+        ]
+    }
+
+
+@api_router.post("/mass-locations/ingest/validate")
+async def validate_location(location: dict):
+    """
+    Validate a single location without inserting.
+    Returns validation status and any issues found.
+    """
+    issues = []
+    
+    # Required fields
+    if not location.get("name"):
+        issues.append("Missing required field: name")
+    if not location.get("city"):
+        issues.append("Missing required field: city")
+    if not location.get("state"):
+        issues.append("Missing required field: state")
+    if not location.get("affiliation"):
+        issues.append("Missing required field: affiliation")
+    
+    # Valid affiliation
+    valid_affiliations = ["Diocesan", "FSSP", "ICKSP", "Ordinariate", "SSPX", "Eastern Catholic"]
+    if location.get("affiliation") and location["affiliation"] not in valid_affiliations:
+        issues.append(f"Invalid affiliation: {location['affiliation']}. Must be one of: {valid_affiliations}")
+    
+    # Valid rite
+    valid_rites = ["Latin", "Byzantine", "Maronite", "Melkite", "Ukrainian", "Ruthenian", "Chaldean"]
+    if location.get("rite") and location["rite"] not in valid_rites:
+        issues.append(f"Invalid rite: {location['rite']}. Must be one of: {valid_rites}")
+    
+    # Coordinates
+    if location.get("latitude") or location.get("longitude"):
+        try:
+            lat = float(location.get("latitude", 0))
+            lng = float(location.get("longitude", 0))
+            if not (24 <= lat <= 50):  # US mainland latitude range
+                issues.append(f"Latitude {lat} appears to be outside US mainland range (24-50)")
+            if not (-125 <= lng <= -65):  # US mainland longitude range
+                issues.append(f"Longitude {lng} appears to be outside US mainland range (-125 to -65)")
+        except (ValueError, TypeError):
+            issues.append("Invalid latitude or longitude format")
+    else:
+        issues.append("Warning: No coordinates provided - deduplication will be less accurate")
+    
+    # Check exclusion
+    exclude_flag, exclude_reason = check_exclusion(
+        location.get("name", ""),
+        location.get("affiliation", ""),
+        location.get("notes", "")
+    )
+    if exclude_flag:
+        issues.append(f"EXCLUDED: {exclude_reason}")
+    
+    # Check for duplicates
+    if location.get("name") and location.get("city") and location.get("state"):
+        normalized = await normalize_location(location, "validation", None)
+        duplicate = await find_duplicate(normalized)
+        if duplicate:
+            issues.append(f"Potential duplicate: {duplicate.get('name')} in {duplicate.get('city')}, {duplicate.get('state')}")
+    
+    return {
+        "valid": len([i for i in issues if not i.startswith("Warning")]) == 0,
+        "excluded": exclude_flag,
+        "issues": issues,
+        "location": location
+    }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
