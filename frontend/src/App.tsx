@@ -8,6 +8,7 @@ import SaintsFeasts from './pages/SaintsFeasts';
 import Daily from './pages/Daily';
 import MassMap from './pages/MassMap';
 import Store from './pages/Store';
+import StoreCategory from './pages/StoreCategory';
 import About from './pages/About';
 import './styles/variables.css';
 import './styles/global.css';
@@ -34,9 +35,12 @@ function App() {
             <Route path="/daily/saint" element={<Daily />} />
             <Route path="/daily/feast" element={<Daily />} />
             
+            {/* Store */}
+            <Route path="/store" element={<Store />} />
+            <Route path="/store/:categoryId" element={<StoreCategory />} />
+            
             {/* Additional Pages */}
             <Route path="/mass-map" element={<MassMap />} />
-            <Route path="/store" element={<Store />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </main>
