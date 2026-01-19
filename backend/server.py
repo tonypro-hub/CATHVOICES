@@ -329,17 +329,21 @@ async def get_video(video_id: str):
 
 
 @api_router.get("/content")
-async def get_content(category: Optional[str] = None):
+async def get_content(category: Optional[str] = None, include_shorts: bool = False):
     """
-    Get all content (videos with optional prayer text overlay)
-    This is the primary content endpoint
+    Get all PRIMARY content (long-form videos only by default)
+    Set include_shorts=true to include Shorts as secondary content
     """
     query = {}
     if category:
         query["category"] = category
     
-    # Get all videos
-    videos = await db.videos.find(query).sort("publishedAt", -1).to_list(None)  # No limit - get all
+    # By default, exclude Shorts from primary content
+    if not include_shorts:
+        query["isShort"] = {"$ne": True}
+    
+    # Get videos
+    videos = await db.videos.find(query).sort("publishedAt", -1).to_list(None)
     
     # Enhance with prayer text if available
     content_items = []
@@ -358,12 +362,86 @@ async def get_content(category: Optional[str] = None):
             "category": video.get("category", "Prayers"),
             "duration": video.get("duration", ""),
             "publishedAt": video.get("publishedAt", ""),
+            "isShort": video.get("isShort", False),
             "prayerText": prayer["prayerText"] if prayer else None,
             "hasPrayerText": prayer is not None
         }
         content_items.append(content_item)
     
     return content_items
+
+
+@api_router.get("/shorts")
+async def get_shorts(category: Optional[str] = None):
+    """
+    Get all Shorts (secondary content for daily highlights)
+    """
+    query = {"isShort": True}
+    if category:
+        query["category"] = category
+    
+    # Get only Shorts
+    shorts = await db.videos.find(query).sort("publishedAt", -1).to_list(None)
+    
+    # Enhance with prayer text if available
+    content_items = []
+    for video in shorts:
+        video_id = video['videoId']
+        
+        # Check if there's a prayer entry for this video
+        prayer = await db.prayers.find_one({"videoId": video_id})
+        
+        content_item = {
+            "id": str(video["_id"]),
+            "videoId": video_id,
+            "title": video["title"],
+            "description": video.get("description", ""),
+            "thumbnail": video.get("thumbnail", ""),
+            "category": video.get("category", "Prayers"),
+            "duration": video.get("duration", ""),
+            "publishedAt": video.get("publishedAt", ""),
+            "isShort": True,
+            "prayerText": prayer["prayerText"] if prayer else None,
+            "hasPrayerText": prayer is not None
+        }
+        content_items.append(content_item)
+    
+    return content_items
+
+
+@api_router.get("/shorts/daily")
+async def get_daily_short():
+    """
+    Get today's Short for daily reflection
+    Returns the most recent Short published
+    """
+    # Get the most recent Short
+    short = await db.videos.find_one(
+        {"isShort": True},
+        sort=[("publishedAt", -1)]
+    )
+    
+    if not short:
+        raise HTTPException(status_code=404, detail="No Shorts available")
+    
+    video_id = short['videoId']
+    prayer = await db.prayers.find_one({"videoId": video_id})
+    
+    content_item = {
+        "id": str(short["_id"]),
+        "videoId": video_id,
+        "title": short["title"],
+        "description": short.get("description", ""),
+        "thumbnail": short.get("thumbnail", ""),
+        "category": short.get("category", "Prayers"),
+        "duration": short.get("duration", ""),
+        "publishedAt": short.get("publishedAt", ""),
+        "isShort": True,
+        "prayerText": prayer["prayerText"] if prayer else None,
+        "hasPrayerText": prayer is not None
+    }
+    
+    return content_item
 
 
 @api_router.get("/content/{video_id}")
