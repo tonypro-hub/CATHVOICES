@@ -79,6 +79,8 @@ def video_helper(video) -> dict:
         "thumbnail": video["thumbnail"],
         "duration": video["duration"],
         "publishedAt": video["publishedAt"],
+        "category": video.get("category", "Prayers"),
+        "isShort": video.get("isShort", False),
         "cachedAt": video.get("cachedAt", datetime.utcnow())
     }
 
