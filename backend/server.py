@@ -247,7 +247,72 @@ def fetch_youtube_videos():
         logging.error(f"Error fetching YouTube videos: {str(e)}")
         return []
 
-def extract_category_from_metadata(title: str, description: str):
+def extract_feast_date_from_title(title: str, description: str):
+    """Automatically extract feast date from video title or description"""
+    import re
+    
+    # Common patterns: "Jan 18", "January 18", "(Jan 18)", etc.
+    month_abbr = {
+        'jan': '01', 'january': '01',
+        'feb': '02', 'february': '02',
+        'mar': '03', 'march': '03',
+        'apr': '04', 'april': '04',
+        'may': '05',
+        'jun': '06', 'june': '06',
+        'jul': '07', 'july': '07',
+        'aug': '08', 'august': '08',
+        'sep': '09', 'sept': '09', 'september': '09',
+        'oct': '10', 'october': '10',
+        'nov': '11', 'november': '11',
+        'dec': '12', 'december': '12'
+    }
+    
+    text = (title + ' ' + description).lower()
+    
+    # Pattern: Month Day (e.g., "Jan 18", "January 18")
+    pattern = r'\b(jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|sept|september|oct|october|nov|november|dec|december)\s+(\d{1,2})\b'
+    match = re.search(pattern, text)
+    
+    if match:
+        month_str = match.group(1)
+        day = match.group(2).zfill(2)
+        month = month_abbr.get(month_str)
+        if month:
+            return f"{month}-{day}"
+    
+    return None
+
+def extract_saint_name_from_title(title: str):
+    """Extract saint name from video title"""
+    import re
+    
+    # Patterns for saint names
+    patterns = [
+        r'St\.\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)',  # St. Name
+        r'Saint\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)',  # Saint Name
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, title)
+        if match:
+            return f"St. {match.group(1)}"
+    
+    return None
+
+def feast_day_helper(feast) -> dict:
+    """Convert feast day mapping to dict"""
+    return {
+        "id": str(feast["_id"]),
+        "videoId": feast["videoId"],
+        "feastDate": feast["feastDate"],
+        "saintName": feast.get("saintName"),
+        "feastName": feast.get("feastName"),
+        "liturgicalCalendar": feast.get("liturgicalCalendar", "roman"),
+        "priority": feast.get("priority", 50),
+        "notes": feast.get("notes"),
+        "isManualOverride": feast.get("isManualOverride", False),
+        "createdAt": feast.get("createdAt", datetime.utcnow())
+    }
     """Extract category from video title or description"""
     title_lower = title.lower()
     desc_lower = description.lower()
