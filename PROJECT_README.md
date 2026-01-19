@@ -173,9 +173,9 @@ YOUTUBE_CHANNEL_ID="UCRRPmmYLLHxRJlsKjJER1Ig"
 
 ### Frontend (.env)
 ```
-EXPO_TUNNEL_SUBDOMAIN=sacred-media-2
-EXPO_PACKAGER_HOSTNAME=https://sacred-media-2.preview.emergentagent.com
-EXPO_PUBLIC_BACKEND_URL=https://sacred-media-2.preview.emergentagent.com
+EXPO_TUNNEL_SUBDOMAIN=prayer-finder-5
+EXPO_PACKAGER_HOSTNAME=https://prayer-finder-5.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://prayer-finder-5.preview.emergentagent.com
 ```
 
 ## 🌐 Social Media Links

@@ -229,7 +229,7 @@ When making changes or adding features:
 
 ## 📞 Support & Maintenance
 
-- **Preview URL:** https://sacred-media-2.preview.emergentagent.com
+- **Preview URL:** https://prayer-finder-5.preview.emergentagent.com
 - **Tech Stack:** Vite + React + FastAPI + MongoDB
 - **Project Type:** DESKTOP WEBSITE (responsive)
 
