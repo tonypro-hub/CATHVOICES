@@ -82,4 +82,6 @@ export default function PrayersListScreen() {
       </div>
     </div>
   );
-}
+};
+
+export default Prayers;
