@@ -85,46 +85,59 @@ def video_helper(video) -> dict:
 
 # YouTube API functions
 def fetch_youtube_videos():
-    """Fetch ALL videos from YouTube channel's Videos section"""
+    """Fetch ALL videos from YouTube channel's Videos section using pagination"""
     try:
-        url = f"{YOUTUBE_API_BASE}/search"
-        params = {
-            'key': YOUTUBE_API_KEY,
-            'channelId': YOUTUBE_CHANNEL_ID,
-            'part': 'snippet',
-            'type': 'video',
-            'order': 'date',
-            'maxResults': 50  # Fetch all videos, no duration filter
-        }
+        all_videos = []
+        next_page_token = None
         
-        response = requests.get(url, params=params)
-        response.raise_for_status()
-        data = response.json()
+        while True:
+            url = f"{YOUTUBE_API_BASE}/search"
+            params = {
+                'key': YOUTUBE_API_KEY,
+                'channelId': YOUTUBE_CHANNEL_ID,
+                'part': 'snippet',
+                'type': 'video',
+                'order': 'date',
+                'maxResults': 50  # Max per page
+            }
+            
+            if next_page_token:
+                params['pageToken'] = next_page_token
+            
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            
+            # Process videos from this page
+            for item in data.get('items', []):
+                video_id = item['id']['videoId']
+                snippet = item['snippet']
+                
+                # Get video details for duration and other metadata
+                video_details = get_video_details(video_id)
+                
+                # Extract category/tags from title and description
+                category = extract_category_from_metadata(snippet['title'], snippet['description'])
+                
+                all_videos.append({
+                    'videoId': video_id,
+                    'title': snippet['title'],
+                    'description': snippet['description'],
+                    'thumbnail': snippet['thumbnails']['high']['url'],
+                    'duration': video_details.get('duration', 'Unknown'),
+                    'publishedAt': snippet['publishedAt'],
+                    'category': category,
+                    'tags': video_details.get('tags', []),
+                    'cachedAt': datetime.utcnow()
+                })
+            
+            # Check if there are more pages
+            next_page_token = data.get('nextPageToken')
+            if not next_page_token:
+                break  # No more pages
         
-        videos = []
-        for item in data.get('items', []):
-            video_id = item['id']['videoId']
-            snippet = item['snippet']
-            
-            # Get video details for duration and other metadata
-            video_details = get_video_details(video_id)
-            
-            # Extract category/tags from title and description
-            category = extract_category_from_metadata(snippet['title'], snippet['description'])
-            
-            videos.append({
-                'videoId': video_id,
-                'title': snippet['title'],
-                'description': snippet['description'],
-                'thumbnail': snippet['thumbnails']['high']['url'],
-                'duration': video_details.get('duration', 'Unknown'),
-                'publishedAt': snippet['publishedAt'],
-                'category': category,
-                'tags': video_details.get('tags', []),
-                'cachedAt': datetime.utcnow()
-            })
-        
-        return videos
+        logging.info(f"Successfully fetched {len(all_videos)} videos from YouTube channel")
+        return all_videos
     except Exception as e:
         logging.error(f"Error fetching YouTube videos: {str(e)}")
         return []
