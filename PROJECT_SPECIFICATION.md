@@ -1,5 +1,21 @@
 # Catholic Voices & Prayers - Project Specification
 
+## ⚠️ ARCHITECTURE LOCK - READ FIRST
+
+**🔒 This project's architecture is LOCKED to prevent unintended changes.**
+
+**Before making ANY structural changes, consult: `/app/ARCHITECTURE_LOCK.md`**
+
+Key Locked Rules:
+- ✅ This IS a responsive desktop website (NOT a mobile app)
+- ✅ Long-form videos (>3 min) are PRIMARY content
+- ✅ Shorts (≤3 min) are SECONDARY content only
+- ✅ YouTube is the single source of truth
+- ❌ DO NOT reintroduce app-style UI patterns
+- ❌ DO NOT mix Shorts into primary prayer libraries
+
+---
+
 ## ⚠️ CRITICAL PROJECT TYPE DEFINITION
 
 **THIS IS A RESPONSIVE DESKTOP WEBSITE - NOT A MOBILE APP**
