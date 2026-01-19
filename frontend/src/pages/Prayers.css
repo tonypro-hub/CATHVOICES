@@ -1,6 +1,7 @@
 .prayers-page {
   min-height: calc(100vh - var(--header-height));
   padding: var(--spacing-xl) 0;
+  background-color: #000000;
 }
 
 .prayers-header {
@@ -8,7 +9,7 @@
   margin-bottom: var(--spacing-xl);
   padding: var(--spacing-lg);
   background: linear-gradient(135deg, rgba(139, 0, 0, 0.1) 0%, rgba(139, 0, 0, 0.05) 100%);
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid rgba(139, 0, 0, 0.2);
 }
 
@@ -16,79 +17,94 @@
   font-size: 2.5rem;
   color: var(--color-gold);
   margin-bottom: var(--spacing-sm);
+  font-weight: 600;
 }
 
 .prayers-subtitle {
   font-size: 1.1rem;
   color: var(--color-cream);
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 .prayers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: var(--spacing-md);
 }
 
 .prayer-card {
-  background-color: rgba(139, 0, 0, 0.1);
+  background-color: #0a0a0a;
   border: 1px solid rgba(139, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: var(--spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
+  border-radius: 8px;
+  overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .prayer-card:hover {
-  background-color: rgba(139, 0, 0, 0.15);
   border-color: var(--color-burgundy);
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(139, 0, 0, 0.3);
 }
 
-.prayer-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.prayer-card-thumbnail {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background-color: #000;
+  overflow: hidden;
 }
 
-.prayer-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: rgba(139, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   color: var(--color-gold);
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.prayer-card:hover .play-icon {
+  opacity: 1;
+}
+
+.prayer-card-content {
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
 }
 
 .prayer-category {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   color: var(--color-gold);
-  background-color: rgba(212, 175, 55, 0.1);
-  padding: 4px 12px;
-  border-radius: 16px;
+  font-weight: 600;
 }
 
 .prayer-card-title {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   color: var(--color-cream);
   line-height: 1.4;
-  margin: var(--spacing-xs) 0;
+  margin: 0;
 }
 
-.prayer-card-arrow {
+.has-prayer-badge {
+  font-size: 0.75rem;
   color: var(--color-gold);
-  align-self: flex-end;
-  transition: transform 0.3s ease;
-}
-
-.prayer-card:hover .prayer-card-arrow {
-  transform: translateX(4px);
+  background-color: rgba(212, 175, 55, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  align-self: flex-start;
+  margin-top: var(--spacing-xs);
 }
 
 .loading {
@@ -98,14 +114,12 @@
   color: var(--color-gold);
 }
 
-/* Tablet */
 @media (max-width: 1024px) {
   .prayers-grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   .prayers-page {
     padding: var(--spacing-md) 0;

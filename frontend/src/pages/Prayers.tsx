@@ -1,29 +1,39 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import './Prayers.css';
 
-interface Prayer {
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+interface ContentItem {
   id: string;
-  title: string;
   videoId: string;
+  title: string;
+  description: string;
+  thumbnail: string;
   category: string;
+  duration: string;
+  publishedAt: string;
+  hasPrayerText: boolean;
 }
 
-const Prayers = () => {
-  const [prayers, setPrayers] = useState<Prayer[]>([]);
+export default function PrayersListScreen() {
+  const [content, setContent] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPrayers();
+    fetchContent();
   }, []);
 
-  const fetchPrayers = async () => {
+  const fetchContent = async () => {
     try {
-      const response = await axios.get('/api/prayers');
-      setPrayers(response.data);
+      setLoading(true);
+      const response = await axios.get('/api/content');
+      setContent(response.data);
     } catch (error) {
-      console.error('Error fetching prayers:', error);
+      console.error('Error fetching content:', error);
     } finally {
       setLoading(false);
     }
@@ -33,7 +43,7 @@ const Prayers = () => {
     return (
       <div className="prayers-page">
         <div className="container">
-          <div className="loading">Loading prayers...</div>
+          <div className="loading">Loading content...</div>
         </div>
       </div>
     );
@@ -43,27 +53,28 @@ const Prayers = () => {
     <div className="prayers-page">
       <div className="container">
         <div className="prayers-header">
-          <h1 className="prayers-title">Traditional Catholic Prayers</h1>
-          <p className="prayers-subtitle">Select a prayer to watch the video and read along</p>
+          <h1 className="prayers-title">All Videos & Prayers</h1>
+          <p className="prayers-subtitle">{content.length} videos from Catholic Voices & Prayers</p>
         </div>
 
         <div className="prayers-grid">
-          {prayers.map((prayer) => (
-            <Link to={`/prayers/${prayer.id}`} key={prayer.id} className="prayer-card">
-              <div className="prayer-card-header">
-                <div className="prayer-icon">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M23 7l-7 5 7 5V7z"/>
-                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          {content.map((item) => (
+            <Link to={`/prayers/${item.videoId}`} key={item.videoId} className="prayer-card">
+              <div className="prayer-card-thumbnail">
+                <img src={item.thumbnail} alt={item.title} className="thumbnail-img" />
+                <div className="play-icon">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polygon points="10 8 16 12 10 16 10 8"/>
                   </svg>
                 </div>
-                <span className="prayer-category">{prayer.category}</span>
               </div>
-              <h3 className="prayer-card-title">{prayer.title}</h3>
-              <div className="prayer-card-arrow">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
+              <div className="prayer-card-content">
+                <span className="prayer-category">{item.category}</span>
+                <h3 className="prayer-card-title">{item.title}</h3>
+                {item.hasPrayerText && (
+                  <span className="has-prayer-badge">Prayer Text Available</span>
+                )}
               </div>
             </Link>
           ))}
@@ -71,6 +82,4 @@ const Prayers = () => {
       </div>
     </div>
   );
-};
-
-export default Prayers;
+}
