@@ -1,11 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import './Prayers.css';
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 interface ContentItem {
   id: string;
@@ -19,7 +15,7 @@ interface ContentItem {
   hasPrayerText: boolean;
 }
 
-export default function PrayersListScreen() {
+const Prayers = () => {
   const [content, setContent] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
 
