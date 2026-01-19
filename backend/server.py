@@ -85,7 +85,7 @@ def video_helper(video) -> dict:
 
 # YouTube API functions
 def fetch_youtube_videos():
-    """Fetch videos from YouTube channel, filter for long-form content"""
+    """Fetch ALL videos from YouTube channel's Videos section"""
     try:
         url = f"{YOUTUBE_API_BASE}/search"
         params = {
@@ -94,8 +94,7 @@ def fetch_youtube_videos():
             'part': 'snippet',
             'type': 'video',
             'order': 'date',
-            'maxResults': 50,
-            'videoDuration': 'long'  # Only long videos (>20 min)
+            'maxResults': 50  # Fetch all videos, no duration filter
         }
         
         response = requests.get(url, params=params)
@@ -107,8 +106,11 @@ def fetch_youtube_videos():
             video_id = item['id']['videoId']
             snippet = item['snippet']
             
-            # Get video details for duration
+            # Get video details for duration and other metadata
             video_details = get_video_details(video_id)
+            
+            # Extract category/tags from title and description
+            category = extract_category_from_metadata(snippet['title'], snippet['description'])
             
             videos.append({
                 'videoId': video_id,
@@ -117,6 +119,8 @@ def fetch_youtube_videos():
                 'thumbnail': snippet['thumbnails']['high']['url'],
                 'duration': video_details.get('duration', 'Unknown'),
                 'publishedAt': snippet['publishedAt'],
+                'category': category,
+                'tags': video_details.get('tags', []),
                 'cachedAt': datetime.utcnow()
             })
         
@@ -124,6 +128,25 @@ def fetch_youtube_videos():
     except Exception as e:
         logging.error(f"Error fetching YouTube videos: {str(e)}")
         return []
+
+def extract_category_from_metadata(title: str, description: str):
+    """Extract category from video title or description"""
+    title_lower = title.lower()
+    desc_lower = description.lower()
+    
+    # Define category keywords
+    if 'rosary' in title_lower or 'rosary' in desc_lower:
+        return 'The Rosary'
+    elif 'novena' in title_lower or 'novena' in desc_lower:
+        return 'Novenas'
+    elif any(word in title_lower for word in ['our father', 'hail mary', 'glory be', 'apostles creed']):
+        return 'Traditional Prayers'
+    elif 'saint' in title_lower or 'st.' in title_lower or 'saint' in desc_lower:
+        return 'Saints & Feast Days'
+    elif 'chaplet' in title_lower or 'litany' in title_lower:
+        return 'Devotions'
+    else:
+        return 'Prayers'
 
 def get_video_details(video_id: str):
     """Get detailed information about a specific video"""
