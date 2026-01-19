@@ -1,5 +1,16 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import './MassMap.css';
+
+// Fix Leaflet default marker icons
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 // Types
 interface MassLocation {
@@ -51,6 +62,38 @@ const AFFILIATION_COLORS: Record<string, string> = {
   'Eastern Catholic': '#0891b2' // Cyan
 };
 
+// US States for filter
+const US_STATES = [
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME',
+  'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI',
+  'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
+
+// Create custom marker icons
+const createMarkerIcon = (color: string, isSelected: boolean = false) => {
+  const size = isSelected ? 16 : 12;
+  const svgIcon = `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="${size/2}" cy="${size/2}" r="${size/2 - 1}" fill="${color}" stroke="white" stroke-width="2"/>
+    </svg>
+  `;
+  return L.divIcon({
+    html: svgIcon,
+    className: `custom-marker ${isSelected ? 'selected' : ''}`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+  });
+};
+
+// Map controller component for flying to location
+const MapController = ({ center, zoom }: { center: [number, number]; zoom: number }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, zoom, { duration: 1 });
+  }, [center, zoom, map]);
+  return null;
+};
+
 const MassMap = () => {
   const [locations, setLocations] = useState<MassLocation[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<MassLocation | null>(null);
@@ -61,14 +104,17 @@ const MassMap = () => {
   // Filter state
   const [activeAffiliation, setActiveAffiliation] = useState<string>('');
   const [activeRite, setActiveRite] = useState<string>('');
+  const [activeState, setActiveState] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
   
   // Map state
-  const [mapCenter, setMapCenter] = useState({ lat: 39.8283, lng: -98.5795 }); // Center of US
+  const [mapCenter, setMapCenter] = useState<[number, number]>([39.8283, -98.5795]); // Center of US
   const [mapZoom, setMapZoom] = useState(4);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [hoveredLocation, setHoveredLocation] = useState<string | null>(null);
+  
+  // Mobile panel state
+  const [showMobileList, setShowMobileList] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Fetch initial data
   useEffect(() => {
@@ -80,7 +126,7 @@ const MassMap = () => {
   // Fetch locations when filters change
   useEffect(() => {
     fetchLocations();
-  }, [activeAffiliation, activeRite, searchQuery]);
+  }, [activeAffiliation, activeRite, activeState, searchQuery]);
 
   const fetchFilters = async () => {
     try {
@@ -114,6 +160,7 @@ const MassMap = () => {
       
       if (activeAffiliation) params.append('affiliation', activeAffiliation);
       if (activeRite) params.append('rite', activeRite);
+      if (activeState) params.append('state', activeState);
       if (searchQuery) {
         url = '/api/mass-locations/search?';
         params.append('q', searchQuery);
@@ -139,38 +186,41 @@ const MassMap = () => {
   const clearFilters = () => {
     setActiveAffiliation('');
     setActiveRite('');
+    setActiveState('');
     setSearchQuery('');
     setSearchInput('');
     setSelectedLocation(null);
+    setMapCenter([39.8283, -98.5795]);
+    setMapZoom(4);
   };
 
   const selectLocation = (location: MassLocation) => {
     setSelectedLocation(location);
-    setMapCenter({ lat: location.latitude, lng: location.longitude });
-    setMapZoom(12);
+    setMapCenter([location.latitude, location.longitude]);
+    setMapZoom(13);
+    setShowMobileList(false);
   };
 
   const getMarkerColor = (affiliation: string) => {
     return AFFILIATION_COLORS[affiliation] || '#6b7280';
   };
 
-  // Calculate marker position on map
-  const getMarkerPosition = (lat: number, lng: number) => {
-    // Simple equirectangular projection for US
-    // Map bounds: roughly lat 25-50, lng -125 to -65
-    const mapWidth = mapRef.current?.clientWidth || 800;
-    const mapHeight = mapRef.current?.clientHeight || 500;
-    
-    const minLat = 24;
-    const maxLat = 50;
-    const minLng = -125;
-    const maxLng = -65;
-    
-    const x = ((lng - minLng) / (maxLng - minLng)) * mapWidth;
-    const y = ((maxLat - lat) / (maxLat - minLat)) * mapHeight;
-    
-    return { x, y };
-  };
+  // Get unique states from locations
+  const availableStates = useMemo(() => {
+    const states = new Set(locations.map(loc => loc.state));
+    return US_STATES.filter(state => states.has(state));
+  }, [locations]);
+
+  // Filter counts
+  const filterCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    locations.forEach(loc => {
+      counts[loc.affiliation] = (counts[loc.affiliation] || 0) + 1;
+      counts[loc.rite] = (counts[loc.rite] || 0) + 1;
+      counts[loc.state] = (counts[loc.state] || 0) + 1;
+    });
+    return counts;
+  }, [locations]);
 
   return (
     <div className="mass-map-page">
@@ -196,7 +246,7 @@ const MassMap = () => {
               </svg>
               <input
                 type="text"
-                placeholder="Search by city, state, or ZIP code..."
+                placeholder="Search by city, state, or parish name..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="search-input"
@@ -216,8 +266,25 @@ const MassMap = () => {
             <button type="submit" className="search-btn">Search</button>
           </form>
 
+          {/* Mobile Filter Toggle */}
+          <button 
+            className="mobile-filter-toggle"
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            Filters
+            {(activeAffiliation || activeRite || activeState) && (
+              <span className="filter-badge">
+                {[activeAffiliation, activeRite, activeState].filter(Boolean).length}
+              </span>
+            )}
+          </button>
+
           {/* Filter Chips */}
-          <div className="filter-section">
+          <div className={`filter-section ${showMobileFilters ? 'show-mobile' : ''}`}>
+            {/* Affiliation Filter */}
             <div className="filter-group">
               <span className="filter-label">Affiliation:</span>
               <div className="filter-chips">
@@ -241,11 +308,15 @@ const MassMap = () => {
                       style={{ backgroundColor: getMarkerColor(aff) }}
                     />
                     {aff}
+                    {stats?.by_affiliation[aff] && (
+                      <span className="chip-count">({stats.by_affiliation[aff]})</span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Rite Filter */}
             <div className="filter-group">
               <span className="filter-label">Rite:</span>
               <div className="filter-chips">
@@ -267,7 +338,24 @@ const MassMap = () => {
               </div>
             </div>
 
-            {(activeAffiliation || activeRite || searchQuery) && (
+            {/* State Filter */}
+            <div className="filter-group">
+              <span className="filter-label">State:</span>
+              <select 
+                className="state-select"
+                value={activeState}
+                onChange={(e) => setActiveState(e.target.value)}
+              >
+                <option value="">All States</option>
+                {US_STATES.map(state => (
+                  <option key={state} value={state}>
+                    {state} {filterCounts[state] ? `(${filterCounts[state]})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {(activeAffiliation || activeRite || activeState || searchQuery) && (
               <button className="clear-filters" onClick={clearFilters}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 6L6 18M6 6l12 12" />
@@ -283,51 +371,54 @@ const MassMap = () => {
       <section className="map-content">
         <div className="container">
           <div className="map-layout">
-            {/* Interactive Map */}
+            {/* Interactive Leaflet Map */}
             <div className="map-container">
-              <div className="map-wrapper" ref={mapRef}>
-                {/* US Map Background */}
-                <div className="map-background">
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Map_of_USA_with_state_names.svg/1200px-Map_of_USA_with_state_names.svg.png" 
-                    alt="US Map"
-                    className="us-map-img"
-                  />
-                </div>
+              <MapContainer
+                center={mapCenter}
+                zoom={mapZoom}
+                className="leaflet-map"
+                scrollWheelZoom={true}
+                zoomControl={true}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <MapController center={mapCenter} zoom={mapZoom} />
                 
-                {/* Markers */}
-                <div className="markers-layer">
-                  {locations.map((loc) => {
-                    const pos = getMarkerPosition(loc.latitude, loc.longitude);
-                    return (
-                      <button
-                        key={loc.id}
-                        className={`map-marker ${
-                          selectedLocation?.id === loc.id ? 'marker-selected' : ''
-                        } ${
-                          hoveredLocation === loc.id ? 'marker-hovered' : ''
-                        }`}
-                        style={{
-                          left: `${pos.x}px`,
-                          top: `${pos.y}px`,
-                          backgroundColor: getMarkerColor(loc.affiliation)
-                        }}
-                        onClick={() => selectLocation(loc)}
-                        onMouseEnter={() => setHoveredLocation(loc.id)}
-                        onMouseLeave={() => setHoveredLocation(null)}
-                        title={loc.name}
-                      >
-                        <span className="marker-pulse" />
-                      </button>
-                    );
-                  })}
-                </div>
+                {locations.map((loc) => (
+                  <Marker
+                    key={loc.id}
+                    position={[loc.latitude, loc.longitude]}
+                    icon={createMarkerIcon(getMarkerColor(loc.affiliation), selectedLocation?.id === loc.id)}
+                    eventHandlers={{
+                      click: () => selectLocation(loc),
+                    }}
+                  >
+                    <Popup>
+                      <div className="marker-popup">
+                        <h4>{loc.name}</h4>
+                        <p className="popup-location">{loc.city}, {loc.state}</p>
+                        <p className="popup-affiliation" style={{ color: getMarkerColor(loc.affiliation) }}>
+                          {loc.affiliation} • {loc.rite}
+                        </p>
+                        {loc.notes && <p className="popup-notes">{loc.notes}</p>}
+                        <button 
+                          className="popup-details-btn"
+                          onClick={() => selectLocation(loc)}
+                        >
+                          View Details →
+                        </button>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
 
-                {/* Location Count */}
-                <div className="map-stats">
-                  <span className="stats-count">{locations.length}</span>
-                  <span className="stats-label">locations</span>
-                </div>
+              {/* Location Count Badge */}
+              <div className="map-stats-badge">
+                <span className="stats-count">{locations.length}</span>
+                <span className="stats-label">locations</span>
               </div>
 
               {/* Legend */}
@@ -342,10 +433,31 @@ const MassMap = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Zoom Controls Info */}
+              <div className="zoom-info">
+                <span>Use scroll or +/- to zoom</span>
+              </div>
             </div>
 
+            {/* Mobile List Toggle */}
+            <button 
+              className="mobile-list-toggle"
+              onClick={() => setShowMobileList(!showMobileList)}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+              </svg>
+              {showMobileList ? 'Hide List' : 'Show List'} ({locations.length})
+            </button>
+
             {/* Location List / Detail Panel */}
-            <div className="locations-panel">
+            <div className={`locations-panel ${showMobileList ? 'show-mobile' : ''}`}>
               {selectedLocation ? (
                 // Detail View
                 <div className="location-detail">
@@ -379,7 +491,7 @@ const MassMap = () => {
                         <circle cx="12" cy="10" r="3" />
                       </svg>
                       <div>
-                        <p className="info-primary">{selectedLocation.street}</p>
+                        <p className="info-primary">{selectedLocation.street || 'Address not available'}</p>
                         <p className="info-secondary">
                           {selectedLocation.city}, {selectedLocation.state} {selectedLocation.zip_code}
                         </p>
@@ -397,45 +509,60 @@ const MassMap = () => {
                       </div>
                     </div>
 
-                    {selectedLocation.notes && (
+                    {selectedLocation.phone && (
                       <div className="info-row">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M12 16v-4M12 8h.01" />
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                         </svg>
-                        <p className="info-note">{selectedLocation.notes}</p>
+                        <a href={`tel:${selectedLocation.phone}`} className="info-link">
+                          {selectedLocation.phone}
+                        </a>
+                      </div>
+                    )}
+
+                    {selectedLocation.notes && (
+                      <div className="info-row info-notes">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="4" width="18" height="18" rx="2" />
+                          <line x1="3" y1="10" x2="21" y2="10" />
+                          <line x1="9" y1="4" x2="9" y2="10" />
+                        </svg>
+                        <div>
+                          <p className="info-label">Mass Schedule Notes</p>
+                          <p className="info-note">{selectedLocation.notes}</p>
+                        </div>
                       </div>
                     )}
                   </div>
 
                   <div className="detail-actions">
-                    {selectedLocation.mass_schedule_url && (
-                      <a 
-                        href={selectedLocation.mass_schedule_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="action-btn action-primary"
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="4" width="18" height="18" rx="2" />
-                          <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
-                        Mass Schedule
-                      </a>
-                    )}
                     {selectedLocation.website_url && (
                       <a 
                         href={selectedLocation.website_url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="action-btn"
+                        className="action-btn action-primary"
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <circle cx="12" cy="12" r="10" />
                           <line x1="2" y1="12" x2="22" y2="12" />
                           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                         </svg>
-                        Website
+                        Parish Website
+                      </a>
+                    )}
+                    {selectedLocation.mass_schedule_url && (
+                      <a 
+                        href={selectedLocation.mass_schedule_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="action-btn"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="4" width="18" height="18" rx="2" />
+                          <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        Mass Schedule
                       </a>
                     )}
                     <a 
@@ -447,7 +574,7 @@ const MassMap = () => {
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polygon points="3 11 22 2 13 21 11 13 3 11" />
                       </svg>
-                      Directions
+                      Get Directions
                     </a>
                   </div>
                 </div>
@@ -469,12 +596,8 @@ const MassMap = () => {
                       {locations.map((loc) => (
                         <button
                           key={loc.id}
-                          className={`location-card ${
-                            hoveredLocation === loc.id ? 'card-hovered' : ''
-                          }`}
+                          className="location-card"
                           onClick={() => selectLocation(loc)}
-                          onMouseEnter={() => setHoveredLocation(loc.id)}
-                          onMouseLeave={() => setHoveredLocation(null)}
                         >
                           <div 
                             className="card-indicator" 
@@ -489,6 +612,9 @@ const MassMap = () => {
                               <span className="card-tag">{loc.affiliation}</span>
                               <span className="card-tag">{loc.rite}</span>
                             </div>
+                            {loc.notes && (
+                              <p className="card-schedule">{loc.notes.substring(0, 60)}...</p>
+                            )}
                           </div>
                           <svg className="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M9 18l6-6-6-6" />
@@ -517,12 +643,13 @@ const MassMap = () => {
       {stats && (
         <section className="map-stats-section">
           <div className="container">
+            <h3 className="stats-title">Directory Statistics</h3>
             <div className="stats-grid">
-              <div className="stat-card">
+              <div className="stat-card stat-card-total">
                 <span className="stat-number">{stats.total}</span>
                 <span className="stat-label">Total Locations</span>
               </div>
-              {Object.entries(stats.by_affiliation).map(([name, count]) => (
+              {Object.entries(stats.by_affiliation).sort((a, b) => b[1] - a[1]).map(([name, count]) => (
                 <div key={name} className="stat-card">
                   <span 
                     className="stat-number" 
