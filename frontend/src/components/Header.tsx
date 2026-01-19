@@ -47,7 +47,7 @@ const Header = () => {
       <div className="header-container">
         {/* Logo */}
         <Link to="/" className="logo-link">
-          <span className="logo-text">Catholic Voices & Prayers</span>
+          <img src="/logo.png" alt="Catholic Voices & Prayers" className="logo-image" />
         </Link>
         
         {/* Desktop Navigation */}
