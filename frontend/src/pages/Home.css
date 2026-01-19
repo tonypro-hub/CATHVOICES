@@ -1,241 +1,413 @@
-.home {
-  min-height: calc(100vh - var(--header-height));
-}
-
 /* Hero Section */
-.hero {
-  background: linear-gradient(135deg, var(--color-burgundy) 0%, #5a0000 100%);
-  padding: var(--spacing-2xl) 0;
+.hero-section {
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #6a0000 100%);
+  padding: 80px 0;
   min-height: 600px;
   display: flex;
   align-items: center;
 }
 
-.hero-content {
+.hero-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-xl);
+  gap: 60px;
   align-items: center;
 }
 
-.hero-text {
+.hero-content {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: 24px;
 }
 
 .hero-title {
-  font-size: 3rem;
-  color: var(--color-cream);
-  line-height: 1.2;
-  margin-bottom: var(--spacing-sm);
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--color-white);
+  line-height: 1.1;
+  margin: 0;
 }
 
-.hero-description {
-  font-size: 1.25rem;
+.hero-subtitle {
+  font-size: 1.5rem;
   color: var(--color-cream);
+  line-height: 1.6;
   opacity: 0.95;
-  line-height: 1.8;
-}
-
-.hero-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
 }
 
 .hero-image {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
-.hero-logo {
-  max-width: 400px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+.hero-img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
-/* Features Section */
-.features {
-  padding: var(--spacing-2xl) 0;
-}
-
-.section-title {
-  font-size: 2.5rem;
-  color: var(--color-gold);
+/* CTA Buttons */
+.cta-button {
+  display: inline-block;
+  padding: 18px 40px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  transition: all 0.3s ease;
   text-align: center;
-  margin-bottom: var(--spacing-xl);
+  border: none;
 }
 
-.features-grid {
+.primary-cta {
+  background-color: var(--color-gold);
+  color: var(--color-dark);
+}
+
+.primary-cta:hover {
+  background-color: #c9a434;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+}
+
+.secondary-cta {
+  background-color: var(--color-cream);
+  color: var(--color-burgundy);
+}
+
+.secondary-cta:hover {
+  background-color: #e5e5cc;
+  transform: translateY(-2px);
+}
+
+.large-cta {
+  padding: 22px 50px;
+  font-size: 1.25rem;
+}
+
+/* Feature Cards */
+.features-section {
+  padding: 80px 0;
+  background-color: var(--color-dark);
+}
+
+.feature-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-lg);
+  gap: 40px;
 }
 
 .feature-card {
-  background-color: rgba(139, 0, 0, 0.1);
-  border: 1px solid rgba(139, 0, 0, 0.3);
-  border-radius: 12px;
-  padding: var(--spacing-lg);
   text-align: center;
-  transition: all 0.3s ease;
+  padding: 40px 20px;
 }
 
-.feature-card:hover {
-  background-color: rgba(139, 0, 0, 0.15);
-  border-color: var(--color-burgundy);
-  transform: translateY(-4px);
-}
-
-.feature-icon {
-  color: var(--color-gold);
-  margin-bottom: var(--spacing-sm);
+.feature-image {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
 }
 
 .feature-title {
   font-size: 1.5rem;
   color: var(--color-gold);
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: 16px;
 }
 
 .feature-description {
+  font-size: 1rem;
   color: var(--color-cream);
-  opacity: 0.9;
   line-height: 1.6;
+  opacity: 0.9;
 }
 
-/* CTA Section */
-.cta {
-  background-color: var(--color-burgundy);
-  padding: var(--spacing-2xl) 0;
+/* Scripture Section */
+.scripture-section {
+  background-color: #0a0a0a;
+  padding: 60px 0;
+}
+
+.scripture-container {
+  max-width: 800px;
   text-align: center;
 }
 
-.cta-content {
+.scripture-reference {
+  font-size: 0.9rem;
+  color: var(--color-gold);
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.scripture-quote {
+  font-size: 1.5rem;
+  font-style: italic;
+  color: var(--color-cream);
+  line-height: 1.8;
+  border-left: 4px solid var(--color-gold);
+  padding-left: 24px;
+  margin: 0;
+}
+
+/* Prayers Grid Section */
+.prayers-grid-section {
+  padding: 80px 0;
+  background-color: var(--color-dark);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  color: var(--color-gold);
+  margin: 0;
+}
+
+.section-title-center {
+  font-size: 2.5rem;
+  color: var(--color-gold);
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.see-all-link {
+  color: var(--color-gold);
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: opacity 0.3s ease;
+}
+
+.see-all-link:hover {
+  opacity: 0.8;
+}
+
+.horizontal-scroll {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-burgundy) var(--color-dark);
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-burgundy);
+  border-radius: 4px;
+}
+
+.prayer-card-horizontal {
+  flex: 0 0 280px;
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.15) 0%, rgba(139, 0, 0, 0.05) 100%);
+  border: 1px solid rgba(139, 0, 0, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prayer-card-horizontal:hover {
+  transform: translateY(-8px);
+  border-color: var(--color-burgundy);
+  box-shadow: 0 12px 40px rgba(139, 0, 0, 0.3);
+}
+
+.card-image-placeholder {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #5a0000 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold);
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-cream);
+  margin: 0;
+}
+
+.card-category {
+  font-size: 0.9rem;
+  color: var(--color-gold);
+  margin: 0;
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(135deg, var(--color-burgundy) 0%, #6a0000 100%);
+  padding: 100px 0;
+}
+
+.cta-container {
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: 32px;
 }
 
-.cta-cross {
+.cta-icon {
   font-size: 4rem;
   color: var(--color-gold);
 }
 
 .cta-title {
-  font-size: 2.5rem;
-  color: var(--color-cream);
+  font-size: 3rem;
+  color: var(--color-white);
+  margin: 0;
 }
 
-.cta-description {
-  font-size: 1.25rem;
-  color: var(--color-cream);
-  opacity: 0.95;
-  max-width: 700px;
+/* Categories Section */
+.categories-section {
+  padding: 80px 0;
+  background-color: var(--color-dark);
 }
 
-/* Buttons */
-.btn {
-  display: inline-block;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.category-card {
   text-align: center;
-  cursor: pointer;
+  padding: 40px;
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.1) 0%, rgba(139, 0, 0, 0.05) 100%);
+  border: 1px solid rgba(139, 0, 0, 0.2);
+  border-radius: 20px;
+  transition: all 0.3s ease;
 }
 
-.btn-primary {
+.category-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--color-burgundy);
+  box-shadow: 0 16px 48px rgba(139, 0, 0, 0.3);
+}
+
+.category-image-placeholder {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.burgundy-bg {
   background-color: var(--color-burgundy);
   color: var(--color-cream);
-  border: 2px solid var(--color-burgundy);
 }
 
-.btn-primary:hover {
-  background-color: #6a0000;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+.gold-bg {
+  background-color: var(--color-gold);
+  color: var(--color-dark);
 }
 
-.btn-secondary {
+.cream-bg {
   background-color: var(--color-cream);
   color: var(--color-burgundy);
-  border: 2px solid var(--color-cream);
 }
 
-.btn-secondary:hover {
-  background-color: transparent;
+.category-title {
+  font-size: 1.5rem;
+  color: var(--color-gold);
+  margin-bottom: 12px;
+}
+
+.category-description {
+  font-size: 1rem;
   color: var(--color-cream);
-  border-color: var(--color-cream);
+  opacity: 0.9;
 }
 
-.btn-large {
-  padding: var(--spacing-md) var(--spacing-xl);
+/* Final CTA */
+.final-cta {
+  background-color: #0a0a0a;
+  padding: 80px 0;
+}
+
+.final-cta-container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.prayers-count {
   font-size: 1.25rem;
+  color: var(--color-cream);
+  opacity: 0.9;
 }
 
-/* Tablet */
+/* Tablet Responsive */
 @media (max-width: 1024px) {
-  .hero-content {
+  .hero-container {
     grid-template-columns: 1fr;
     text-align: center;
   }
   
   .hero-title {
-    font-size: 2.5rem;
+    font-size: 3rem;
   }
   
-  .hero-actions {
-    justify-content: center;
-  }
-  
-  .features-grid {
+  .feature-cards,
+  .categories-grid {
     grid-template-columns: 1fr;
     max-width: 600px;
     margin: 0 auto;
   }
 }
 
-/* Mobile */
+/* Mobile Responsive */
 @media (max-width: 768px) {
-  .hero {
-    padding: var(--spacing-xl) 0;
-    min-height: auto;
+  .hero-section {
+    padding: 60px 0;
   }
   
   .hero-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
   
-  .hero-description {
-    font-size: 1.1rem;
+  .hero-subtitle {
+    font-size: 1.25rem;
   }
   
-  .hero-logo {
-    max-width: 250px;
-  }
-  
-  .hero-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .btn {
-    width: 100%;
-  }
-  
-  .section-title {
-    font-size: 2rem;
-  }
-  
-  .cta-cross {
-    font-size: 3rem;
-  }
-  
+  .section-title,
+  .section-title-center,
   .cta-title {
     font-size: 2rem;
+  }
+  
+  .cta-button {
+    width: 100%;
+  }
+  
+  .prayer-card-horizontal {
+    flex: 0 0 240px;
   }
 }
