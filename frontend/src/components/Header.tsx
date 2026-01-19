@@ -4,36 +4,27 @@ import './Header.css';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (mobileMenuOpen && !target.closest('.nav') && !target.closest('.mobile-menu-toggle')) {
-        setMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [mobileMenuOpen]);
-
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [mobileMenuOpen]);
 
   const navItems = [
@@ -47,37 +38,20 @@ const Header = () => {
   ];
 
   const isActive = (path: string) => {
-    if (path === '/') {
-      return location.pathname === '/';
-    }
+    if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
   return (
-    <header className="header">
-      <div className="container header-content">
+    <header className={`header ${scrolled ? 'header-scrolled' : ''}`}>
+      <div className="header-container">
+        {/* Logo */}
         <Link to="/" className="logo-link">
-          <img 
-            src="/assets/brand/logo-white.png" 
-            alt="Catholic Voices and Prayers" 
-            className="logo"
-          />
+          <span className="logo-text">Catholic Voices & Prayers</span>
         </Link>
         
-        {/* Hamburger Menu Button */}
-        <button 
-          className={`mobile-menu-toggle ${mobileMenuOpen ? 'menu-open' : ''}`}
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-          aria-expanded={mobileMenuOpen}
-        >
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-        </button>
-        
-        {/* Navigation */}
-        <nav className={`nav ${mobileMenuOpen ? 'nav-open' : ''}`}>
+        {/* Desktop Navigation */}
+        <nav className="nav-desktop">
           {navItems.map((item) => (
             <Link 
               key={item.path}
@@ -89,9 +63,41 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* Mobile Menu Overlay */}
-        {mobileMenuOpen && <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)} />}
+        {/* Mobile Menu Toggle */}
+        <button 
+          className={`menu-toggle ${mobileMenuOpen ? 'menu-open' : ''}`}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+          aria-expanded={mobileMenuOpen}
+        >
+          <span className="menu-bar"></span>
+          <span className="menu-bar"></span>
+        </button>
       </div>
+
+      {/* Mobile Navigation */}
+      <div className={`nav-mobile ${mobileMenuOpen ? 'nav-mobile-open' : ''}`}>
+        <nav className="nav-mobile-inner">
+          {navItems.map((item) => (
+            <Link 
+              key={item.path}
+              to={item.path} 
+              className={`nav-mobile-link ${isActive(item.path) ? 'nav-mobile-link-active' : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="nav-mobile-overlay" 
+          onClick={() => setMobileMenuOpen(false)} 
+        />
+      )}
     </header>
   );
 };
