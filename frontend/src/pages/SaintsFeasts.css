@@ -1,0 +1,143 @@
+/* =====================================================
+   SAINTS & FEASTS PAGE STYLES
+   ===================================================== */
+
+.saints-feasts-page {
+  min-height: calc(100vh - var(--header-height));
+  padding: var(--spacing-2xl) 0;
+}
+
+/* Hero Section */
+.page-hero {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.page-title {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  color: var(--color-gold);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 400;
+}
+
+.page-subtitle {
+  font-size: 1.2rem;
+  color: var(--color-cream);
+  opacity: 0.85;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* Section Cards Grid */
+.section-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+  max-width: 900px;
+  margin: 0 auto var(--spacing-2xl);
+}
+
+.section-card {
+  background: linear-gradient(145deg, rgba(139, 0, 0, 0.3), rgba(26, 26, 26, 0.8));
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+  padding: var(--spacing-xl);
+  text-align: center;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.section-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-gold);
+  box-shadow: 0 8px 32px rgba(212, 175, 55, 0.15);
+}
+
+.card-icon {
+  color: var(--color-gold);
+  margin-bottom: var(--spacing-md);
+  opacity: 0.9;
+}
+
+.card-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--color-cream);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 500;
+}
+
+.card-description {
+  font-size: 1rem;
+  color: var(--color-cream);
+  opacity: 0.75;
+  line-height: 1.6;
+  margin-bottom: var(--spacing-md);
+  flex-grow: 1;
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-gold);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: gap 0.2s ease;
+}
+
+.section-card:hover .card-link {
+  gap: 12px;
+}
+
+/* Coming Soon Notice */
+.coming-soon-notice {
+  text-align: center;
+  padding: var(--spacing-lg);
+  background-color: rgba(139, 0, 0, 0.15);
+  border-radius: 8px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.notice-icon {
+  font-size: 2rem;
+  color: var(--color-gold);
+  margin-bottom: var(--spacing-sm);
+}
+
+.notice-text {
+  font-size: 1rem;
+  color: var(--color-cream);
+  opacity: 0.8;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .saints-feasts-page {
+    padding: var(--spacing-xl) 0;
+  }
+
+  .page-title {
+    font-size: 2.2rem;
+  }
+
+  .page-subtitle {
+    font-size: 1.05rem;
+  }
+
+  .section-cards {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .section-card {
+    padding: var(--spacing-lg);
+  }
+}

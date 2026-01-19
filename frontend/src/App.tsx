@@ -4,6 +4,10 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Prayers from './pages/Prayers';
 import PrayerDetail from './pages/PrayerDetail';
+import SaintsFeasts from './pages/SaintsFeasts';
+import Daily from './pages/Daily';
+import MassMap from './pages/MassMap';
+import Store from './pages/Store';
 import About from './pages/About';
 import './styles/variables.css';
 import './styles/global.css';
@@ -15,9 +19,24 @@ function App() {
         <Header />
         <main className="main-content">
           <Routes>
+            {/* Core Pages */}
             <Route path="/" element={<Home />} />
             <Route path="/prayers" element={<Prayers />} />
             <Route path="/prayers/:id" element={<PrayerDetail />} />
+            
+            {/* Saints & Feasts */}
+            <Route path="/saints-feasts" element={<SaintsFeasts />} />
+            <Route path="/saints-feasts/saints" element={<SaintsFeasts />} />
+            <Route path="/saints-feasts/calendar" element={<SaintsFeasts />} />
+            
+            {/* Daily */}
+            <Route path="/daily" element={<Daily />} />
+            <Route path="/daily/saint" element={<Daily />} />
+            <Route path="/daily/feast" element={<Daily />} />
+            
+            {/* Additional Pages */}
+            <Route path="/mass-map" element={<MassMap />} />
+            <Route path="/store" element={<Store />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </main>
