@@ -58,6 +58,19 @@ class PrayerCreate(BaseModel):
     prayerText: str
     category: Optional[str] = "General"
 
+class FeastDayMapping(BaseModel):
+    """Manual mapping of videos to feast days and saints"""
+    id: Optional[str] = None
+    videoId: str
+    feastDate: str  # Format: "MM-DD" (e.g., "01-18" for January 18)
+    saintName: Optional[str] = None  # e.g., "St. Prisca"
+    feastName: Optional[str] = None  # e.g., "Feast of St. Prisca"
+    liturgicalCalendar: str = "roman"  # roman, traditional, regional
+    priority: int = 100  # Higher = takes precedence (manual=100, auto=50)
+    notes: Optional[str] = None
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    isManualOverride: bool = True
+
 
 # Helper function to convert ObjectId to string
 def prayer_helper(prayer) -> dict:
