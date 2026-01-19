@@ -21,15 +21,15 @@ const Home = () => {
 
   const fetchPrayers = async () => {
     try {
-      const response = await axios.get('/api/prayers');
-      const allPrayers = response.data;
-      setPrayers(allPrayers);
-      // Set first prayer as featured
-      if (allPrayers.length > 0) {
-        setFeaturedPrayer(allPrayers[0]);
+      const response = await axios.get('/api/content');
+      const allContent = response.data;
+      setPrayers(allContent);
+      // Set first item as featured
+      if (allContent.length > 0) {
+        setFeaturedPrayer(allContent[0]);
       }
     } catch (error) {
-      console.error('Error fetching prayers:', error);
+      console.error('Error fetching content:', error);
     }
   };
 
@@ -62,16 +62,17 @@ const Home = () => {
               <div className="featured-text">
                 <h2 className="featured-title">{featuredPrayer.title}</h2>
                 <p className="featured-excerpt">
-                  {featuredPrayer.prayerText.slice(0, 280)}...
+                  {featuredPrayer.description ? featuredPrayer.description.slice(0, 280) + '...' : 
+                   (featuredPrayer.prayerText ? featuredPrayer.prayerText.slice(0, 280) + '...' : '')}
                 </p>
-                <Link to={`/prayers/${featuredPrayer.id}`} className="text-link">
-                  Pray Now →
+                <Link to={`/prayers/${featuredPrayer.videoId}`} className="text-link">
+                  Watch Now →
                 </Link>
               </div>
               <div className="featured-media">
                 <div className="video-thumbnail">
                   <img 
-                    src={`https://img.youtube.com/vi/${featuredPrayer.videoId}/maxresdefault.jpg`}
+                    src={featuredPrayer.thumbnail || `https://img.youtube.com/vi/${featuredPrayer.videoId}/maxresdefault.jpg`}
                     alt={featuredPrayer.title}
                     className="thumbnail-image"
                   />
@@ -130,8 +131,8 @@ const Home = () => {
                   <div className="category-prayers">
                     {categoryPrayers.slice(0, 3).map(prayer => (
                       <Link 
-                        key={prayer.id} 
-                        to={`/prayers/${prayer.id}`} 
+                        key={prayer.videoId} 
+                        to={`/prayers/${prayer.videoId}`} 
                         className="prayer-link"
                       >
                         {prayer.title}
