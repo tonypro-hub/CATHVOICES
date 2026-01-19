@@ -184,19 +184,19 @@ async def root():
 
 @api_router.get("/videos/refresh")
 async def refresh_videos():
-    """Manually refresh videos from YouTube"""
+    """Fetch ALL videos from YouTube channel and cache them"""
     videos = fetch_youtube_videos()
     
     if videos:
         # Clear existing cache
         await db.videos.delete_many({})
         
-        # Insert new videos
+        # Insert all videos
         if videos:
             await db.videos.insert_many(videos)
         
         return {
-            "message": f"Successfully cached {len(videos)} videos",
+            "message": f"Successfully cached {len(videos)} videos from channel",
             "count": len(videos)
         }
     else:
@@ -204,9 +204,13 @@ async def refresh_videos():
 
 
 @api_router.get("/videos")
-async def get_videos():
-    """Get all cached videos"""
-    videos = await db.videos.find().sort("publishedAt", -1).to_list(100)
+async def get_videos(category: Optional[str] = None):
+    """Get all cached videos, optionally filtered by category"""
+    query = {}
+    if category:
+        query["category"] = category
+    
+    videos = await db.videos.find(query).sort("publishedAt", -1).to_list(100)
     return [video_helper(video) for video in videos]
 
 
@@ -217,6 +221,97 @@ async def get_video(video_id: str):
     if video:
         return video_helper(video)
     raise HTTPException(status_code=404, detail="Video not found")
+
+
+@api_router.get("/content")
+async def get_content(category: Optional[str] = None):
+    """
+    Get all content (videos with optional prayer text overlay)
+    This is the primary content endpoint
+    """
+    query = {}
+    if category:
+        query["category"] = category
+    
+    # Get all videos
+    videos = await db.videos.find(query).sort("publishedAt", -1).to_list(100)
+    
+    # Enhance with prayer text if available
+    content_items = []
+    for video in videos:
+        video_id = video['videoId']
+        
+        # Check if there's a prayer entry for this video
+        prayer = await db.prayers.find_one({"videoId": video_id})
+        
+        content_item = {
+            "id": str(video["_id"]),
+            "videoId": video_id,
+            "title": video["title"],
+            "description": video.get("description", ""),
+            "thumbnail": video.get("thumbnail", ""),
+            "category": video.get("category", "Prayers"),
+            "duration": video.get("duration", ""),
+            "publishedAt": video.get("publishedAt", ""),
+            "prayerText": prayer["prayerText"] if prayer else None,
+            "hasPrayerText": prayer is not None
+        }
+        content_items.append(content_item)
+    
+    return content_items
+
+
+@api_router.get("/content/{video_id}")
+async def get_content_item(video_id: str):
+    """Get a specific content item (video with optional prayer text)"""
+    # Get video
+    video = await db.videos.find_one({"videoId": video_id})
+    if not video:
+        raise HTTPException(status_code=404, detail="Content not found")
+    
+    # Check for prayer text
+    prayer = await db.prayers.find_one({"videoId": video_id})
+    
+    content_item = {
+        "id": str(video["_id"]),
+        "videoId": video_id,
+        "title": video["title"],
+        "description": video.get("description", ""),
+        "thumbnail": video.get("thumbnail", ""),
+        "category": video.get("category", "Prayers"),
+        "duration": video.get("duration", ""),
+        "publishedAt": video.get("publishedAt", ""),
+        "tags": video.get("tags", []),
+        "prayerText": prayer["prayerText"] if prayer else None,
+        "hasPrayerText": prayer is not None
+    }
+    
+    return content_item
+
+
+@api_router.post("/content/{video_id}/prayer-text")
+async def add_prayer_text(video_id: str, prayer_data: dict):
+    """Add or update prayer text for a video"""
+    # Verify video exists
+    video = await db.videos.find_one({"videoId": video_id})
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    # Upsert prayer text
+    prayer_text = prayer_data.get("prayerText", "")
+    result = await db.prayers.update_one(
+        {"videoId": video_id},
+        {"$set": {
+            "videoId": video_id,
+            "title": video["title"],
+            "prayerText": prayer_text,
+            "category": video.get("category", "Prayers"),
+            "updatedAt": datetime.utcnow()
+        }},
+        upsert=True
+    )
+    
+    return {"message": "Prayer text added/updated successfully"}
 
 
 @api_router.post("/prayers")
