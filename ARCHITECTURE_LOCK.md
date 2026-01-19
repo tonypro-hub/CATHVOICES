@@ -276,5 +276,21 @@ This is a **desktop-first responsive website** for Catholic prayer content.
 
 ---
 
+## 📍 RELATED ARCHITECTURE LOCKS
+
+### Mass Map Feature
+See **`/app/MASS_MAP_ARCHITECTURE_LOCK.md`** for the locked architecture of the Reverent Catholic Mass Map feature, including:
+- Database schema (locked)
+- Inclusion rules (Diocesan, FSSP, ICKSP, Ordinariate, SSPX, Eastern Catholic)
+- Exclusion rules (sedevacantist groups - non-negotiable)
+- Affiliation and rite categories (locked)
+- UI/UX requirements (desktop-first, no app-style patterns)
+- API endpoints (locked)
+- Marker color scheme (locked)
+
+**The Mass Map architecture is FINAL and must not be modified without explicit user instruction.**
+
+---
+
 *This document serves as the authoritative reference for all development decisions.*
 *Any code changes that contradict this document should be rejected.*
