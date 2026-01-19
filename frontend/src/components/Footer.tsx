@@ -17,7 +17,7 @@ const Footer = () => {
         <div className="footer-main">
           {/* Brand */}
           <div className="footer-brand">
-            <h3 className="footer-logo">Catholic Voices & Prayers</h3>
+            <img src="/logo-white.png" alt="Catholic Voices & Prayers" className="footer-logo-image" />
             <p className="footer-tagline">
               A sacred space for traditional Catholic prayer and devotion.
             </p>
