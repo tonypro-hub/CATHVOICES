@@ -671,13 +671,24 @@ const MassMap = () => {
           <div className="disclaimer-box">
             <h4>About This Directory</h4>
             <p>
-              This map is a curated directory of reverent Catholic Mass locations. It includes 
-              Diocesan Traditional Latin Mass communities, FSSP, ICKSP, Ordinariate parishes, 
-              SSPX chapels, and all Eastern Catholic parishes in full communion with Rome.
+              This map is a curated directory of reverent Catholic Mass locations in the United States. 
+              It includes Diocesan Traditional Latin Mass communities (1962 Roman Missal), parishes of 
+              the FSSP and ICKSP, Ordinariate of the Chair of Saint Peter communities, SSPX chapels, 
+              and all Eastern Catholic parishes in full communion with Rome.
             </p>
             <p>
-              <strong>Note:</strong> This directory does not include sedevacantist groups. 
-              All listings are verified for communion with the Holy See.
+              This directory does not include sedevacantist groups. All listings are reviewed for 
+              Catholic sacramental validity and communion with the Church.
+            </p>
+            <p>
+              Some locations listed, such as those of the Society of Saint Pius X (SSPX), exist in a 
+              canonically irregular situation. While irregular, their Masses are valid and may fulfill 
+              the Sunday obligation under specific conditions.
+            </p>
+            <p className="disclaimer-link">
+              <Link to="/sspx-explained" className="sspx-info-link">
+                Read more about SSPX Masses and the Sunday Obligation →
+              </Link>
             </p>
             <p className="disclaimer-contact">
               To suggest a location or report an error, please contact us through our social media channels.
