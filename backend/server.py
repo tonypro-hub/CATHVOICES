@@ -997,6 +997,822 @@ async def delete_prayer(prayer_id: str):
         raise HTTPException(status_code=400, detail="Invalid prayer ID")
 
 
+# ===================================
+# MASS MAP MODELS & ENDPOINTS
+# ===================================
+
+# Sedevacantist groups to exclude (non-negotiable)
+EXCLUDED_GROUPS = [
+    'cmri', 'sspv', 'sspx-mc', 'sspx marian corps',
+    'sedevacantist', 'vacantist', 'non una cum'
+]
+
+class MassLocationCreate(BaseModel):
+    """Model for creating a new Mass location"""
+    name: str
+    entity_type: str = "Parish"  # Parish, Oratory, Chapel, Mission
+    jurisdiction: str = "Diocese"  # Diocese, Eparchy, Ordinariate, Society
+    affiliation: str  # Diocesan, FSSP, ICKSP, Ordinariate, SSPX, Eastern Catholic
+    rite: str = "Latin"  # Latin, Byzantine, Maronite, Melkite, Ukrainian, Ruthenian, Chaldean
+    use_or_liturgy: str = "1962 Roman Missal"  # 1962 Roman Missal, Ordinariate Use, Divine Liturgy
+    street: str
+    city: str
+    state: str
+    zip_code: str
+    country: str = "USA"
+    latitude: float
+    longitude: float
+    mass_schedule_url: Optional[str] = None
+    confession_url: Optional[str] = None
+    adoration_url: Optional[str] = None
+    livestream_url: Optional[str] = None
+    website_url: Optional[str] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+    source_name: Optional[str] = None
+    source_url: Optional[str] = None
+
+class MassLocationUpdate(BaseModel):
+    """Model for updating a Mass location"""
+    name: Optional[str] = None
+    entity_type: Optional[str] = None
+    jurisdiction: Optional[str] = None
+    affiliation: Optional[str] = None
+    rite: Optional[str] = None
+    use_or_liturgy: Optional[str] = None
+    street: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    country: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    mass_schedule_url: Optional[str] = None
+    confession_url: Optional[str] = None
+    adoration_url: Optional[str] = None
+    livestream_url: Optional[str] = None
+    website_url: Optional[str] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+    source_name: Optional[str] = None
+    source_url: Optional[str] = None
+    last_verified_date: Optional[datetime] = None
+    verification_method: Optional[str] = None
+
+class MassLocationSubmission(BaseModel):
+    """Model for user-submitted locations (requires approval)"""
+    name: str
+    entity_type: str = "Parish"
+    jurisdiction: str = "Diocese"
+    affiliation: str
+    rite: str = "Latin"
+    use_or_liturgy: str = "1962 Roman Missal"
+    street: str
+    city: str
+    state: str
+    zip_code: str
+    country: str = "USA"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    mass_schedule_url: Optional[str] = None
+    website_url: Optional[str] = None
+    notes: Optional[str] = None
+    submitter_email: Optional[str] = None
+
+def check_exclusion(name: str, affiliation: str, notes: str = "") -> tuple:
+    """Check if location should be excluded based on sedevacantist affiliation"""
+    combined_text = f"{name} {affiliation} {notes}".lower()
+    
+    for excluded in EXCLUDED_GROUPS:
+        if excluded in combined_text:
+            return True, f"Matches excluded group: {excluded}"
+    
+    return False, None
+
+def mass_location_helper(location) -> dict:
+    """Convert MongoDB document to API response"""
+    return {
+        "id": str(location["_id"]),
+        "location_id": location.get("location_id", str(location["_id"])),
+        "name": location["name"],
+        "entity_type": location.get("entity_type", "Parish"),
+        "jurisdiction": location.get("jurisdiction", "Diocese"),
+        "affiliation": location["affiliation"],
+        "rite": location.get("rite", "Latin"),
+        "use_or_liturgy": location.get("use_or_liturgy", "1962 Roman Missal"),
+        "street": location.get("street", ""),
+        "city": location["city"],
+        "state": location["state"],
+        "zip_code": location.get("zip_code", ""),
+        "country": location.get("country", "USA"),
+        "latitude": location["latitude"],
+        "longitude": location["longitude"],
+        "mass_schedule_url": location.get("mass_schedule_url"),
+        "confession_url": location.get("confession_url"),
+        "adoration_url": location.get("adoration_url"),
+        "livestream_url": location.get("livestream_url"),
+        "website_url": location.get("website_url"),
+        "phone": location.get("phone"),
+        "notes": location.get("notes"),
+        "source_name": location.get("source_name"),
+        "source_url": location.get("source_url"),
+        "last_verified_date": location.get("last_verified_date"),
+        "verification_method": location.get("verification_method"),
+        "created_at": location.get("created_at", datetime.utcnow()),
+        "updated_at": location.get("updated_at")
+    }
+
+
+@api_router.get("/mass-locations")
+async def get_mass_locations(
+    affiliation: Optional[str] = None,
+    rite: Optional[str] = None,
+    use_or_liturgy: Optional[str] = None,
+    state: Optional[str] = None,
+    city: Optional[str] = None,
+    limit: int = 500
+):
+    """
+    Get all Mass locations with optional filters
+    Only returns non-excluded locations
+    """
+    query = {"exclude_flag": {"$ne": True}}
+    
+    if affiliation:
+        query["affiliation"] = affiliation
+    if rite:
+        query["rite"] = rite
+    if use_or_liturgy:
+        query["use_or_liturgy"] = use_or_liturgy
+    if state:
+        query["state"] = {"$regex": state, "$options": "i"}
+    if city:
+        query["city"] = {"$regex": city, "$options": "i"}
+    
+    locations = await db.mass_locations.find(query).limit(limit).to_list(limit)
+    return [mass_location_helper(loc) for loc in locations]
+
+
+@api_router.get("/mass-locations/search")
+async def search_mass_locations(
+    q: Optional[str] = None,
+    lat: Optional[float] = None,
+    lng: Optional[float] = None,
+    radius_miles: float = 50,
+    affiliation: Optional[str] = None,
+    rite: Optional[str] = None
+):
+    """
+    Search Mass locations by text query or proximity to coordinates
+    """
+    query = {"exclude_flag": {"$ne": True}}
+    
+    if affiliation:
+        query["affiliation"] = affiliation
+    if rite:
+        query["rite"] = rite
+    
+    # Text search by city, state, or zip
+    if q:
+        query["$or"] = [
+            {"city": {"$regex": q, "$options": "i"}},
+            {"state": {"$regex": q, "$options": "i"}},
+            {"zip_code": {"$regex": q, "$options": "i"}},
+            {"name": {"$regex": q, "$options": "i"}}
+        ]
+    
+    locations = await db.mass_locations.find(query).to_list(500)
+    result = [mass_location_helper(loc) for loc in locations]
+    
+    # If coordinates provided, filter by distance
+    if lat is not None and lng is not None:
+        import math
+        
+        def haversine(lat1, lon1, lat2, lon2):
+            """Calculate distance between two points in miles"""
+            R = 3959  # Earth's radius in miles
+            lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+            dlat = lat2 - lat1
+            dlon = lon2 - lon1
+            a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+            c = 2 * math.asin(math.sqrt(a))
+            return R * c
+        
+        filtered = []
+        for loc in result:
+            distance = haversine(lat, lng, loc["latitude"], loc["longitude"])
+            if distance <= radius_miles:
+                loc["distance_miles"] = round(distance, 1)
+                filtered.append(loc)
+        
+        # Sort by distance
+        filtered.sort(key=lambda x: x.get("distance_miles", 999))
+        return filtered
+    
+    return result
+
+
+@api_router.get("/mass-locations/nearby")
+async def get_nearby_locations(
+    lat: float,
+    lng: float,
+    radius_miles: float = 25,
+    affiliation: Optional[str] = None,
+    rite: Optional[str] = None,
+    limit: int = 50
+):
+    """
+    Get Mass locations within radius of given coordinates
+    """
+    import math
+    
+    def haversine(lat1, lon1, lat2, lon2):
+        R = 3959
+        lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        c = 2 * math.asin(math.sqrt(a))
+        return R * c
+    
+    query = {"exclude_flag": {"$ne": True}}
+    if affiliation:
+        query["affiliation"] = affiliation
+    if rite:
+        query["rite"] = rite
+    
+    # Get all locations and filter by distance
+    locations = await db.mass_locations.find(query).to_list(1000)
+    
+    nearby = []
+    for loc in locations:
+        distance = haversine(lat, lng, loc["latitude"], loc["longitude"])
+        if distance <= radius_miles:
+            loc_data = mass_location_helper(loc)
+            loc_data["distance_miles"] = round(distance, 1)
+            nearby.append(loc_data)
+    
+    # Sort by distance and limit
+    nearby.sort(key=lambda x: x["distance_miles"])
+    return nearby[:limit]
+
+
+@api_router.get("/mass-locations/filters")
+async def get_mass_location_filters():
+    """
+    Get available filter options for the mass map
+    """
+    query = {"exclude_flag": {"$ne": True}}
+    
+    # Get distinct values for each filter field
+    affiliations = await db.mass_locations.distinct("affiliation", query)
+    rites = await db.mass_locations.distinct("rite", query)
+    liturgies = await db.mass_locations.distinct("use_or_liturgy", query)
+    states = await db.mass_locations.distinct("state", query)
+    
+    return {
+        "affiliations": sorted([a for a in affiliations if a]),
+        "rites": sorted([r for r in rites if r]),
+        "liturgies": sorted([l for l in liturgies if l]),
+        "states": sorted([s for s in states if s])
+    }
+
+
+@api_router.get("/mass-locations/stats")
+async def get_mass_location_stats():
+    """
+    Get statistics about Mass locations
+    """
+    query = {"exclude_flag": {"$ne": True}}
+    
+    total = await db.mass_locations.count_documents(query)
+    
+    # Count by affiliation
+    pipeline = [
+        {"$match": query},
+        {"$group": {"_id": "$affiliation", "count": {"$sum": 1}}}
+    ]
+    affiliation_counts = await db.mass_locations.aggregate(pipeline).to_list(100)
+    by_affiliation = {item["_id"]: item["count"] for item in affiliation_counts if item["_id"]}
+    
+    # Count by rite
+    pipeline = [
+        {"$match": query},
+        {"$group": {"_id": "$rite", "count": {"$sum": 1}}}
+    ]
+    rite_counts = await db.mass_locations.aggregate(pipeline).to_list(100)
+    by_rite = {item["_id"]: item["count"] for item in rite_counts if item["_id"]}
+    
+    return {
+        "total": total,
+        "by_affiliation": by_affiliation,
+        "by_rite": by_rite
+    }
+
+
+@api_router.get("/mass-locations/{location_id}")
+async def get_mass_location(location_id: str):
+    """
+    Get a specific Mass location by ID
+    """
+    try:
+        location = await db.mass_locations.find_one({
+            "_id": ObjectId(location_id),
+            "exclude_flag": {"$ne": True}
+        })
+        
+        if not location:
+            raise HTTPException(status_code=404, detail="Location not found")
+        
+        return mass_location_helper(location)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@api_router.post("/mass-locations")
+async def create_mass_location(location: MassLocationCreate):
+    """
+    Create a new Mass location (admin only in production)
+    """
+    # Check exclusion rules
+    exclude_flag, exclude_reason = check_exclusion(
+        location.name, 
+        location.affiliation, 
+        location.notes or ""
+    )
+    
+    location_dict = location.dict()
+    location_dict["location_id"] = str(uuid.uuid4())
+    location_dict["exclude_flag"] = exclude_flag
+    location_dict["exclude_reason"] = exclude_reason
+    location_dict["created_at"] = datetime.utcnow()
+    location_dict["last_verified_date"] = datetime.utcnow()
+    location_dict["verification_method"] = "initial_entry"
+    
+    # Check for duplicates based on name + address + proximity
+    existing = await db.mass_locations.find_one({
+        "name": location.name,
+        "city": location.city,
+        "state": location.state
+    })
+    
+    if existing:
+        raise HTTPException(
+            status_code=400, 
+            detail="A location with this name and address already exists"
+        )
+    
+    result = await db.mass_locations.insert_one(location_dict)
+    new_location = await db.mass_locations.find_one({"_id": result.inserted_id})
+    
+    if exclude_flag:
+        return {
+            "message": "Location stored but excluded from public display",
+            "exclude_reason": exclude_reason
+        }
+    
+    return mass_location_helper(new_location)
+
+
+@api_router.put("/mass-locations/{location_id}")
+async def update_mass_location(location_id: str, location: MassLocationUpdate):
+    """
+    Update a Mass location (admin only in production)
+    """
+    try:
+        update_data = {k: v for k, v in location.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.utcnow()
+        
+        # Re-check exclusion rules if relevant fields updated
+        if any(k in update_data for k in ["name", "affiliation", "notes"]):
+            existing = await db.mass_locations.find_one({"_id": ObjectId(location_id)})
+            if existing:
+                name = update_data.get("name", existing.get("name", ""))
+                affiliation = update_data.get("affiliation", existing.get("affiliation", ""))
+                notes = update_data.get("notes", existing.get("notes", ""))
+                exclude_flag, exclude_reason = check_exclusion(name, affiliation, notes)
+                update_data["exclude_flag"] = exclude_flag
+                update_data["exclude_reason"] = exclude_reason
+        
+        result = await db.mass_locations.update_one(
+            {"_id": ObjectId(location_id)},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Location not found")
+        
+        updated = await db.mass_locations.find_one({"_id": ObjectId(location_id)})
+        return mass_location_helper(updated)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@api_router.delete("/mass-locations/{location_id}")
+async def delete_mass_location(location_id: str):
+    """
+    Delete a Mass location (admin only in production)
+    """
+    try:
+        result = await db.mass_locations.delete_one({"_id": ObjectId(location_id)})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Location not found")
+        
+        return {"message": "Location deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@api_router.post("/mass-locations/submit")
+async def submit_mass_location(submission: MassLocationSubmission):
+    """
+    Submit a new Mass location for review (public endpoint)
+    Requires admin approval before appearing on map
+    """
+    # Check exclusion rules first
+    exclude_flag, exclude_reason = check_exclusion(
+        submission.name,
+        submission.affiliation,
+        submission.notes or ""
+    )
+    
+    if exclude_flag:
+        return {
+            "message": "Thank you for your submission. However, this location cannot be included.",
+            "status": "rejected"
+        }
+    
+    submission_dict = submission.dict()
+    submission_dict["submission_id"] = str(uuid.uuid4())
+    submission_dict["status"] = "pending"
+    submission_dict["submitted_at"] = datetime.utcnow()
+    
+    # Check for potential duplicates
+    existing = await db.mass_locations.find_one({
+        "name": {"$regex": submission.name, "$options": "i"},
+        "city": {"$regex": submission.city, "$options": "i"},
+        "state": {"$regex": submission.state, "$options": "i"}
+    })
+    
+    if existing:
+        return {
+            "message": "A similar location may already exist. Your submission will be reviewed.",
+            "status": "review_duplicate"
+        }
+    
+    await db.mass_location_submissions.insert_one(submission_dict)
+    
+    return {
+        "message": "Thank you for your submission. It will be reviewed before appearing on the map.",
+        "status": "pending"
+    }
+
+
+@api_router.post("/mass-locations/seed")
+async def seed_mass_locations():
+    """
+    Seed the database with initial sample Mass locations
+    This creates representative entries for each category
+    """
+    sample_locations = [
+        # Diocesan TLM
+        {
+            "name": "St. John Cantius Church",
+            "entity_type": "Parish",
+            "jurisdiction": "Diocese",
+            "affiliation": "Diocesan",
+            "rite": "Latin",
+            "use_or_liturgy": "1962 Roman Missal",
+            "street": "825 N Carpenter St",
+            "city": "Chicago",
+            "state": "IL",
+            "zip_code": "60642",
+            "country": "USA",
+            "latitude": 41.8969,
+            "longitude": -87.6524,
+            "mass_schedule_url": "https://www.cantius.org/mass-times",
+            "website_url": "https://www.cantius.org",
+            "notes": "One of Chicago's premier Traditional Latin Mass parishes",
+            "source_name": "Official Website"
+        },
+        {
+            "name": "Holy Innocents Church",
+            "entity_type": "Parish",
+            "jurisdiction": "Diocese",
+            "affiliation": "Diocesan",
+            "rite": "Latin",
+            "use_or_liturgy": "1962 Roman Missal",
+            "street": "128 W 37th St",
+            "city": "New York",
+            "state": "NY",
+            "zip_code": "10018",
+            "country": "USA",
+            "latitude": 40.7527,
+            "longitude": -73.9902,
+            "mass_schedule_url": "https://www.holyinnocentsnyc.org/mass-times",
+            "website_url": "https://www.holyinnocentsnyc.org",
+            "source_name": "Official Website"
+        },
+        # FSSP
+        {
+            "name": "St. Mary Mother of God",
+            "entity_type": "Parish",
+            "jurisdiction": "Society",
+            "affiliation": "FSSP",
+            "rite": "Latin",
+            "use_or_liturgy": "1962 Roman Missal",
+            "street": "727 5th St NW",
+            "city": "Washington",
+            "state": "DC",
+            "zip_code": "20001",
+            "country": "USA",
+            "latitude": 38.9006,
+            "longitude": -77.0211,
+            "mass_schedule_url": "https://www.stmarymotherof god.org/mass-schedule",
+            "website_url": "https://www.stmarymotherof god.org",
+            "notes": "FSSP Apostolate",
+            "source_name": "FSSP Directory"
+        },
+        {
+            "name": "Mater Dei Latin Mass Parish",
+            "entity_type": "Parish",
+            "jurisdiction": "Society",
+            "affiliation": "FSSP",
+            "rite": "Latin",
+            "use_or_liturgy": "1962 Roman Missal",
+            "street": "9550 Bauer Rd",
+            "city": "Irving",
+            "state": "TX",
+            "zip_code": "75061",
+            "country": "USA",
+            "latitude": 32.8599,
+            "longitude": -96.9808,
+            "website_url": "https://materdeiparish.com",
+            "source_name": "FSSP Directory"
+        },
+        # ICKSP
+        {
+            "name": "St. Francis de Sales Oratory",
+            "entity_type": "Oratory",
+            "jurisdiction": "Society",
+            "affiliation": "ICKSP",
+            "rite": "Latin",
+            "use_or_liturgy": "1962 Roman Missal",
+            "street": "2653 Ohio Ave",
+            "city": "St. Louis",
+            "state": "MO",
+            "zip_code": "63118",
+            "country": "USA",
+            "latitude": 38.5934,
+            "longitude": -90.2347,
+            "website_url": "https://institute-christ-king.org/stlouis",
+            "notes": "Institute of Christ the King Sovereign Priest",
+            "source_name": "ICKSP Directory"
+        },
+        {
+            "name": "Shrine of Christ the King",
+            "entity_type": "Oratory",
+            "jurisdiction": "Society",
+            "affiliation": "ICKSP",
+            "rite": "Latin",
+            "use_or_liturgy": "1962 Roman Missal",
+            "street": "6415 S Woodlawn Ave",
+            "city": "Chicago",
+            "state": "IL",
+            "zip_code": "60637",
+            "country": "USA",
+            "latitude": 41.7764,
+            "longitude": -87.5962,
+            "website_url": "https://institute-christ-king.org/chicago",
+            "source_name": "ICKSP Directory"
+        },
+        # Ordinariate
+        {
+            "name": "Our Lady of the Atonement",
+            "entity_type": "Parish",
+            "jurisdiction": "Ordinariate",
+            "affiliation": "Ordinariate",
+            "rite": "Latin",
+            "use_or_liturgy": "Ordinariate Use",
+            "street": "15415 Red Robin Rd",
+            "city": "San Antonio",
+            "state": "TX",
+            "zip_code": "78255",
+            "country": "USA",
+            "latitude": 29.5889,
+            "longitude": -98.6192,
+            "website_url": "https://www.atonementonline.com",
+            "notes": "Personal Ordinariate of the Chair of St. Peter",
+            "source_name": "Ordinariate Directory"
+        },
+        {
+            "name": "Our Lady of Walsingham",
+            "entity_type": "Parish",
+            "jurisdiction": "Ordinariate",
+            "affiliation": "Ordinariate",
+            "rite": "Latin",
+            "use_or_liturgy": "Ordinariate Use",
+            "street": "7809 Shadyvilla Ln",
+            "city": "Houston",
+            "state": "TX",
+            "zip_code": "77055",
+            "country": "USA",
+            "latitude": 29.8055,
+            "longitude": -95.4955,
+            "website_url": "https://www.walsingham.org",
+            "notes": "Cathedral of the Personal Ordinariate",
+            "source_name": "Ordinariate Directory"
+        },
+        # SSPX
+        {
+            "name": "St. Mary's Church",
+            "entity_type": "Chapel",
+            "jurisdiction": "Society",
+            "affiliation": "SSPX",
+            "rite": "Latin",
+            "use_or_liturgy": "1962 Roman Missal",
+            "street": "411 N Rosemont St",
+            "city": "St. Marys",
+            "state": "KS",
+            "zip_code": "66536",
+            "country": "USA",
+            "latitude": 39.1953,
+            "longitude": -96.0718,
+            "website_url": "https://sspx.org/en/chapel/st-marys-chapel-st-marys",
+            "notes": "Society of St. Pius X",
+            "source_name": "SSPX Directory"
+        },
+        {
+            "name": "Queen of Angels Chapel",
+            "entity_type": "Chapel",
+            "jurisdiction": "Society",
+            "affiliation": "SSPX",
+            "rite": "Latin",
+            "use_or_liturgy": "1962 Roman Missal",
+            "street": "12661 Shade Tree Ln",
+            "city": "Dickinson",
+            "state": "TX",
+            "zip_code": "77539",
+            "country": "USA",
+            "latitude": 29.4563,
+            "longitude": -95.0525,
+            "website_url": "https://sspx.org/en/chapel/queen-angels-chapel-dickinson",
+            "source_name": "SSPX Directory"
+        },
+        # Eastern Catholic - Byzantine
+        {
+            "name": "St. John Chrysostom Byzantine Catholic Church",
+            "entity_type": "Parish",
+            "jurisdiction": "Eparchy",
+            "affiliation": "Eastern Catholic",
+            "rite": "Byzantine",
+            "use_or_liturgy": "Divine Liturgy",
+            "street": "506 Saline St",
+            "city": "Pittsburgh",
+            "state": "PA",
+            "zip_code": "15207",
+            "country": "USA",
+            "latitude": 40.4199,
+            "longitude": -79.9233,
+            "website_url": "https://stjohnsbyzantine.com",
+            "notes": "Byzantine Catholic Metropolia of Pittsburgh",
+            "source_name": "Eparchy Directory"
+        },
+        # Eastern Catholic - Ukrainian
+        {
+            "name": "Immaculate Conception Ukrainian Catholic Cathedral",
+            "entity_type": "Parish",
+            "jurisdiction": "Eparchy",
+            "affiliation": "Eastern Catholic",
+            "rite": "Ukrainian",
+            "use_or_liturgy": "Divine Liturgy",
+            "street": "830 N Franklin St",
+            "city": "Philadelphia",
+            "state": "PA",
+            "zip_code": "19123",
+            "country": "USA",
+            "latitude": 39.9633,
+            "longitude": -75.1536,
+            "notes": "Ukrainian Catholic Archeparchy of Philadelphia",
+            "source_name": "Eparchy Directory"
+        },
+        # Eastern Catholic - Maronite
+        {
+            "name": "Our Lady of Lebanon Maronite Cathedral",
+            "entity_type": "Parish",
+            "jurisdiction": "Eparchy",
+            "affiliation": "Eastern Catholic",
+            "rite": "Maronite",
+            "use_or_liturgy": "Divine Liturgy",
+            "street": "113 Remsen St",
+            "city": "Brooklyn",
+            "state": "NY",
+            "zip_code": "11201",
+            "country": "USA",
+            "latitude": 40.6964,
+            "longitude": -73.9969,
+            "website_url": "https://ololc.org",
+            "notes": "Eparchy of St. Maron of Brooklyn",
+            "source_name": "Eparchy Directory"
+        },
+        # Eastern Catholic - Melkite
+        {
+            "name": "Our Lady of the Annunciation Melkite Cathedral",
+            "entity_type": "Parish",
+            "jurisdiction": "Eparchy",
+            "affiliation": "Eastern Catholic",
+            "rite": "Melkite",
+            "use_or_liturgy": "Divine Liturgy",
+            "street": "7 VFW Parkway",
+            "city": "West Roxbury",
+            "state": "MA",
+            "zip_code": "02132",
+            "country": "USA",
+            "latitude": 42.2794,
+            "longitude": -71.1631,
+            "website_url": "https://www.melkite.org/cathedral",
+            "notes": "Melkite Greek Catholic Eparchy of Newton",
+            "source_name": "Eparchy Directory"
+        },
+        # Eastern Catholic - Ruthenian
+        {
+            "name": "St. Gregory Byzantine Catholic Church",
+            "entity_type": "Parish",
+            "jurisdiction": "Eparchy",
+            "affiliation": "Eastern Catholic",
+            "rite": "Ruthenian",
+            "use_or_liturgy": "Divine Liturgy",
+            "street": "8710 S Hoyne Ave",
+            "city": "Chicago",
+            "state": "IL",
+            "zip_code": "60620",
+            "country": "USA",
+            "latitude": 41.7353,
+            "longitude": -87.6695,
+            "notes": "Ruthenian Byzantine Catholic Eparchy of Parma",
+            "source_name": "Eparchy Directory"
+        },
+        # Eastern Catholic - Chaldean
+        {
+            "name": "Mother of God Chaldean Catholic Church",
+            "entity_type": "Parish",
+            "jurisdiction": "Eparchy",
+            "affiliation": "Eastern Catholic",
+            "rite": "Chaldean",
+            "use_or_liturgy": "Divine Liturgy",
+            "street": "25585 Berg Rd",
+            "city": "Southfield",
+            "state": "MI",
+            "zip_code": "48033",
+            "country": "USA",
+            "latitude": 42.4733,
+            "longitude": -83.2691,
+            "website_url": "https://www.mothergodchurch.org",
+            "notes": "Chaldean Catholic Eparchy of St. Thomas the Apostle",
+            "source_name": "Eparchy Directory"
+        }
+    ]
+    
+    inserted_count = 0
+    skipped_count = 0
+    
+    for loc in sample_locations:
+        # Check for existing
+        existing = await db.mass_locations.find_one({
+            "name": loc["name"],
+            "city": loc["city"],
+            "state": loc["state"]
+        })
+        
+        if existing:
+            skipped_count += 1
+            continue
+        
+        # Check exclusion
+        exclude_flag, exclude_reason = check_exclusion(
+            loc["name"],
+            loc["affiliation"],
+            loc.get("notes", "")
+        )
+        
+        loc["location_id"] = str(uuid.uuid4())
+        loc["exclude_flag"] = exclude_flag
+        loc["exclude_reason"] = exclude_reason
+        loc["created_at"] = datetime.utcnow()
+        loc["last_verified_date"] = datetime.utcnow()
+        loc["verification_method"] = "initial_seed"
+        
+        await db.mass_locations.insert_one(loc)
+        inserted_count += 1
+    
+    return {
+        "message": "Database seeded successfully",
+        "inserted": inserted_count,
+        "skipped": skipped_count
+    }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
