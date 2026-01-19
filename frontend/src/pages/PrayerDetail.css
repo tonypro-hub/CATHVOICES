@@ -120,6 +120,22 @@
   margin-bottom: 80px;
 }
 
+.content-description {
+  padding: var(--spacing-lg);
+  background-color: rgba(139, 0, 0, 0.05);
+  border-left: 3px solid var(--color-burgundy);
+  border-radius: 4px;
+  margin-bottom: var(--spacing-xl);
+}
+
+.content-description p {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--color-cream);
+  opacity: 0.9;
+  margin: 0;
+}
+
 .prayer-text {
   /* Typography optimized for extended reading */
   font-family: Georgia, 'Times New Roman', Times, serif;
