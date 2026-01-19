@@ -89,8 +89,12 @@ def fetch_youtube_videos():
     try:
         all_videos = []
         next_page_token = None
+        page_count = 0
         
         while True:
+            page_count += 1
+            logging.info(f"Fetching page {page_count} of videos...")
+            
             url = f"{YOUTUBE_API_BASE}/search"
             params = {
                 'key': YOUTUBE_API_KEY,
@@ -103,10 +107,14 @@ def fetch_youtube_videos():
             
             if next_page_token:
                 params['pageToken'] = next_page_token
+                logging.info(f"Using pageToken: {next_page_token[:20]}...")
             
             response = requests.get(url, params=params)
             response.raise_for_status()
             data = response.json()
+            
+            items_count = len(data.get('items', []))
+            logging.info(f"Page {page_count}: Retrieved {items_count} videos")
             
             # Process videos from this page
             for item in data.get('items', []):
@@ -133,7 +141,10 @@ def fetch_youtube_videos():
             
             # Check if there are more pages
             next_page_token = data.get('nextPageToken')
-            if not next_page_token:
+            if next_page_token:
+                logging.info(f"Found nextPageToken, continuing to page {page_count + 1}")
+            else:
+                logging.info(f"No more pages. Total pages fetched: {page_count}")
                 break  # No more pages
         
         logging.info(f"Successfully fetched {len(all_videos)} videos from YouTube channel")
