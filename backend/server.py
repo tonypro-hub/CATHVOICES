@@ -258,7 +258,7 @@ async def get_content(category: Optional[str] = None):
         query["category"] = category
     
     # Get all videos
-    videos = await db.videos.find(query).sort("publishedAt", -1).to_list(100)
+    videos = await db.videos.find(query).sort("publishedAt", -1).to_list(None)  # No limit - get all
     
     # Enhance with prayer text if available
     content_items = []
