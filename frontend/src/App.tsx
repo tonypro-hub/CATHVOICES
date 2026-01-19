@@ -42,6 +42,7 @@ function App() {
             
             {/* Additional Pages */}
             <Route path="/mass-map" element={<MassMap />} />
+            <Route path="/sspx-explained" element={<SspxExplained />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </main>
