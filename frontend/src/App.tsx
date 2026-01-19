@@ -7,6 +7,7 @@ import PrayerDetail from './pages/PrayerDetail';
 import SaintsFeasts from './pages/SaintsFeasts';
 import Daily from './pages/Daily';
 import MassMap from './pages/MassMap';
+import SspxExplained from './pages/SspxExplained';
 import Store from './pages/Store';
 import StoreCategory from './pages/StoreCategory';
 import About from './pages/About';
