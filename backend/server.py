@@ -84,25 +84,90 @@ def video_helper(video) -> dict:
 
 
 # YouTube API functions
-def fetch_youtube_videos():
-    """Fetch ALL videos from YouTube channel's Videos section using pagination"""
+def get_uploads_playlist_id():
+    """Get the uploads playlist ID for the channel"""
     try:
+        url = f"{YOUTUBE_API_BASE}/channels"
+        params = {
+            'key': YOUTUBE_API_KEY,
+            'id': YOUTUBE_CHANNEL_ID,
+            'part': 'contentDetails'
+        }
+        
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data.get('items'):
+            uploads_playlist_id = data['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+            logging.info(f"Found uploads playlist ID: {uploads_playlist_id}")
+            return uploads_playlist_id
+        return None
+    except Exception as e:
+        logging.error(f"Error fetching uploads playlist ID: {str(e)}")
+        return None
+
+def parse_duration_to_seconds(duration_str: str):
+    """Convert YouTube duration format (PT1M30S) to seconds"""
+    import re
+    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration_str)
+    if not match:
+        return 0
+    
+    hours = int(match.group(1)) if match.group(1) else 0
+    minutes = int(match.group(2)) if match.group(2) else 0
+    seconds = int(match.group(3)) if match.group(3) else 0
+    
+    return hours * 3600 + minutes * 60 + seconds
+
+def is_youtube_short(video_details: dict):
+    """Check if a video is a YouTube Short"""
+    duration_str = video_details.get('duration', 'PT0S')
+    duration_seconds = parse_duration_to_seconds(duration_str)
+    
+    # A video is a Short if it's 60 seconds or less
+    if duration_seconds <= 60:
+        return True
+    
+    # Check if YouTube marks it as a short (sometimes in description or tags)
+    description = video_details.get('description', '').lower()
+    tags = video_details.get('tags', [])
+    
+    # Check for #shorts or #short tags
+    if '#shorts' in description or '#short' in description:
+        return True
+    
+    if tags:
+        tags_lower = [tag.lower() for tag in tags]
+        if 'shorts' in tags_lower or 'short' in tags_lower:
+            return True
+    
+    return False
+
+def fetch_youtube_videos():
+    """Fetch ALL long-form videos from channel's Uploads playlist, excluding Shorts"""
+    try:
+        # Step 1: Get the uploads playlist ID
+        uploads_playlist_id = get_uploads_playlist_id()
+        if not uploads_playlist_id:
+            logging.error("Could not retrieve uploads playlist ID")
+            return []
+        
         all_videos = []
         next_page_token = None
         page_count = 0
+        shorts_filtered = 0
         
         while True:
             page_count += 1
-            logging.info(f"Fetching page {page_count} of videos...")
+            logging.info(f"Fetching page {page_count} from uploads playlist...")
             
-            url = f"{YOUTUBE_API_BASE}/search"
+            url = f"{YOUTUBE_API_BASE}/playlistItems"
             params = {
                 'key': YOUTUBE_API_KEY,
-                'channelId': YOUTUBE_CHANNEL_ID,
+                'playlistId': uploads_playlist_id,
                 'part': 'snippet',
-                'type': 'video',
-                'order': 'date',
-                'maxResults': 50  # Max per page
+                'maxResults': 50
             }
             
             if next_page_token:
@@ -114,15 +179,21 @@ def fetch_youtube_videos():
             data = response.json()
             
             items_count = len(data.get('items', []))
-            logging.info(f"Page {page_count}: Retrieved {items_count} videos")
+            logging.info(f"Page {page_count}: Retrieved {items_count} items from playlist")
             
             # Process videos from this page
             for item in data.get('items', []):
-                video_id = item['id']['videoId']
+                video_id = item['snippet']['resourceId']['videoId']
                 snippet = item['snippet']
                 
-                # Get video details for duration and other metadata
+                # Get video details for duration and metadata
                 video_details = get_video_details(video_id)
+                
+                # Skip if it's a Short
+                if is_youtube_short(video_details):
+                    shorts_filtered += 1
+                    logging.info(f"Filtered out Short: {snippet['title'][:50]}...")
+                    continue
                 
                 # Extract category/tags from title and description
                 category = extract_category_from_metadata(snippet['title'], snippet['description'])
@@ -131,7 +202,7 @@ def fetch_youtube_videos():
                     'videoId': video_id,
                     'title': snippet['title'],
                     'description': snippet['description'],
-                    'thumbnail': snippet['thumbnails']['high']['url'],
+                    'thumbnail': snippet['thumbnails']['high']['url'] if 'high' in snippet['thumbnails'] else snippet['thumbnails']['default']['url'],
                     'duration': video_details.get('duration', 'Unknown'),
                     'publishedAt': snippet['publishedAt'],
                     'category': category,
@@ -145,9 +216,9 @@ def fetch_youtube_videos():
                 logging.info(f"Found nextPageToken, continuing to page {page_count + 1}")
             else:
                 logging.info(f"No more pages. Total pages fetched: {page_count}")
-                break  # No more pages
+                break
         
-        logging.info(f"Successfully fetched {len(all_videos)} videos from YouTube channel")
+        logging.info(f"Successfully fetched {len(all_videos)} long-form videos (filtered out {shorts_filtered} Shorts)")
         return all_videos
     except Exception as e:
         logging.error(f"Error fetching YouTube videos: {str(e)}")
