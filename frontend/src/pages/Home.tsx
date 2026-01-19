@@ -20,7 +20,8 @@ interface ContentItem {
 const Home = () => {
   const [dailyShort, setDailyShort] = useState<ContentItem | null>(null);
   const [featuredPrayer, setFeaturedPrayer] = useState<ContentItem | null>(null);
-  const [evergreenContent, setEvergreenContent] = useState<ContentItem[]>([]);
+  const [recentPrayers, setRecentPrayers] = useState<ContentItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchContent();
@@ -28,7 +29,7 @@ const Home = () => {
 
   const fetchContent = async () => {
     try {
-      // Fetch daily Short (secondary content)
+      // Fetch daily Short
       try {
         const dailyResponse = await axios.get('/api/shorts/daily');
         setDailyShort(dailyResponse.data);
@@ -36,70 +37,69 @@ const Home = () => {
         console.log('No daily Short available');
       }
 
-      // Fetch evergreen long-form content (primary)
-      const contentResponse = await axios.get('/api/content'); // Excludes Shorts by default
+      // Fetch long-form content
+      const contentResponse = await axios.get('/api/content');
       const longFormVideos = contentResponse.data;
-      setEvergreenContent(longFormVideos);
       
-      // Set first long-form video as featured
       if (longFormVideos.length > 0) {
         setFeaturedPrayer(longFormVideos[0]);
+        setRecentPrayers(longFormVideos.slice(1, 7));
       }
     } catch (error) {
       console.error('Error fetching content:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Get unique categories from evergreen content
-  const categories = Array.from(new Set(evergreenContent.map(p => p.category)));
-
   return (
     <div className="home">
-      {/* Hero Section - Mission Statement */}
+      {/* Hero Section */}
       <section className="hero">
-        <div className="hero-container">
-          <div className="hero-symbol">✝</div>
-          <h1 className="hero-title">Catholic Voices & Prayers</h1>
-          <p className="hero-mission">
-            A sacred space for traditional Catholic prayer and devotion,<br />
-            guided by the wisdom of Bishop Fulton Sheen and the voices of faithful Catholics.
+        <div className="hero-content">
+          <h1 className="hero-title">Find peace in prayer</h1>
+          <p className="hero-subtitle">
+            A sacred space for traditional Catholic prayer and devotion,
+            guided by the wisdom of the Church and the voices of faithful Catholics.
           </p>
-          <p className="hero-invitation">
-            Enter into prayer. Draw closer to Christ.
-          </p>
+          <Link to="/prayers" className="btn-primary">
+            Begin Praying
+          </Link>
         </div>
       </section>
 
-      {/* DAILY CONTENT SECTION (Secondary - Powered by Shorts) */}
+      {/* Daily Focus Section */}
       {dailyShort && (
-        <section className="daily-section">
-          <div className="content-container">
-            <div className="section-label daily-label">Today's Reflection</div>
-            <div className="daily-content">
-              <div className="daily-video">
-                <Link to={`/prayers/${dailyShort.videoId}`} className="daily-thumbnail-link">
-                  <img 
-                    src={dailyShort.thumbnail}
-                    alt={dailyShort.title}
-                    className="daily-thumbnail"
-                  />
-                  <div className="play-overlay">
-                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"/>
-                      <polygon points="10 8 16 12 10 16 10 8"/>
-                    </svg>
-                  </div>
-                  <div className="short-badge">Short Reflection</div>
-                </Link>
-              </div>
-              <div className="daily-text">
+        <section className="section daily-focus">
+          <div className="container">
+            <div className="section-header">
+              <span className="section-label">Today's Reflection</span>
+              <h2 className="section-title">Daily Devotion</h2>
+            </div>
+            <div className="daily-card">
+              <Link to={`/prayers/${dailyShort.videoId}`} className="daily-media">
+                <img 
+                  src={dailyShort.thumbnail}
+                  alt={dailyShort.title}
+                  className="daily-image"
+                />
+                <div className="play-button">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="10 8 16 12 10 16 10 8"/>
+                  </svg>
+                </div>
+              </Link>
+              <div className="daily-info">
                 <span className="daily-category">{dailyShort.category}</span>
-                <h2 className="daily-title">{dailyShort.title}</h2>
+                <h3 className="daily-title">{dailyShort.title}</h3>
                 <p className="daily-description">
-                  {dailyShort.description ? dailyShort.description.slice(0, 200) + '...' : 'A brief daily reflection to guide your prayer.'}
+                  {dailyShort.description ? dailyShort.description.slice(0, 150) + '...' : 'A brief reflection to guide your prayer today.'}
                 </p>
                 <Link to={`/prayers/${dailyShort.videoId}`} className="text-link">
-                  Watch Now →
+                  Watch Now
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
                 </Link>
               </div>
             </div>
@@ -107,125 +107,171 @@ const Home = () => {
         </section>
       )}
 
-      {/* Divider */}
-      <div className="section-divider">
-        <div className="divider-line"></div>
-      </div>
-
-      {/* FEATURED PRAYER SECTION (Primary - Evergreen Long-Form) */}
+      {/* Featured Prayer Section */}
       {featuredPrayer && (
-        <section className="featured-section">
-          <div className="content-container">
-            <div className="section-label">Featured Prayer</div>
-            <div className="featured-content">
-              <div className="featured-text">
+        <section className="section featured-prayer">
+          <div className="container">
+            <div className="featured-grid">
+              <div className="featured-content">
+                <span className="section-label">Featured Prayer</span>
                 <h2 className="featured-title">{featuredPrayer.title}</h2>
                 <p className="featured-excerpt">
-                  {featuredPrayer.description ? featuredPrayer.description.slice(0, 280) + '...' : 
-                   (featuredPrayer.prayerText ? featuredPrayer.prayerText.slice(0, 280) + '...' : '')}
+                  {featuredPrayer.description ? 
+                    featuredPrayer.description.slice(0, 200) + '...' : 
+                    'Experience the beauty of this traditional Catholic prayer.'}
                 </p>
-                <Link to={`/prayers/${featuredPrayer.videoId}`} className="text-link">
-                  Pray Now →
-                </Link>
+                <div className="featured-actions">
+                  <Link to={`/prayers/${featuredPrayer.videoId}`} className="btn-primary">
+                    Pray Now
+                  </Link>
+                  <Link to="/prayers" className="btn-secondary">
+                    Browse All
+                  </Link>
+                </div>
               </div>
-              <div className="featured-media">
-                <Link to={`/prayers/${featuredPrayer.videoId}`} className="video-thumbnail">
-                  <img 
-                    src={featuredPrayer.thumbnail || `https://img.youtube.com/vi/${featuredPrayer.videoId}/maxresdefault.jpg`}
-                    alt={featuredPrayer.title}
-                    className="thumbnail-image"
-                  />
-                  <div className="play-overlay">
-                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"/>
-                      <polygon points="10 8 16 12 10 16 10 8"/>
-                    </svg>
-                  </div>
-                </Link>
-              </div>
+              <Link to={`/prayers/${featuredPrayer.videoId}`} className="featured-media">
+                <img 
+                  src={featuredPrayer.thumbnail}
+                  alt={featuredPrayer.title}
+                  className="featured-image"
+                />
+                <div className="play-button play-button-lg">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="10 8 16 12 10 16 10 8"/>
+                  </svg>
+                </div>
+              </Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* Divider */}
-      <div className="section-divider">
-        <div className="divider-line"></div>
-      </div>
+      {/* Content Modules */}
+      <section className="section modules">
+        <div className="container">
+          <div className="modules-grid">
+            {/* Prayers Module */}
+            <Link to="/prayers" className="module-card">
+              <div className="module-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+              <h3 className="module-title">Prayers & Devotions</h3>
+              <p className="module-description">Traditional prayers for every occasion</p>
+              <span className="module-link">
+                Explore
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </span>
+            </Link>
 
-      {/* EVERGREEN PRAYER CATEGORIES (Primary - Long-Form Only) */}
-      <section className="categories-section">
-        <div className="content-container">
-          <h2 className="section-heading">Traditional Catholic Prayers</h2>
-          <p className="section-subheading">
-            Explore our collection of prayers, organized by tradition and devotion.
-          </p>
-          
-          <div className="categories-list">
-            {categories.map((category, index) => {
-              const categoryContent = evergreenContent.filter(p => p.category === category);
-              return (
-                <div key={index} className="category-item">
-                  <div className="category-header">
-                    <h3 className="category-name">{category}</h3>
-                    <span className="category-count">{categoryContent.length} {categoryContent.length === 1 ? 'video' : 'videos'}</span>
-                  </div>
-                  <div className="category-prayers">
-                    {categoryContent.slice(0, 3).map(content => (
-                      <Link 
-                        key={content.videoId} 
-                        to={`/prayers/${content.videoId}`} 
-                        className="prayer-link"
-                      >
-                        {content.title}
-                      </Link>
-                    ))}
-                  </div>
-                  <Link to="/prayers" className="category-link">
-                    View all →
-                  </Link>
-                </div>
-              );
-            })}
+            {/* Saints Module */}
+            <Link to="/saints-feasts" className="module-card">
+              <div className="module-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M12 2v2"/>
+                  <path d="M12 12c-4 0-8 2-8 6v2h16v-2c0-4-4-6-8-6z"/>
+                </svg>
+              </div>
+              <h3 className="module-title">Saints & Feast Days</h3>
+              <p className="module-description">Discover the lives of holy men and women</p>
+              <span className="module-link">
+                Explore
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </span>
+            </Link>
+
+            {/* Daily Module */}
+            <Link to="/daily" className="module-card">
+              <div className="module-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <h3 className="module-title">Daily Reflections</h3>
+              <p className="module-description">Brief moments of prayer for each day</p>
+              <span className="module-link">
+                Explore
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </span>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="section-divider">
-        <div className="divider-line"></div>
-      </div>
+      {/* Recent Prayers Grid */}
+      {recentPrayers.length > 0 && (
+        <section className="section recent-prayers">
+          <div className="container">
+            <div className="section-header">
+              <h2 className="section-title">Recent Prayers</h2>
+              <Link to="/prayers" className="text-link">
+                View All
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </Link>
+            </div>
+            <div className="prayers-grid">
+              {recentPrayers.map((prayer) => (
+                <Link 
+                  key={prayer.videoId} 
+                  to={`/prayers/${prayer.videoId}`} 
+                  className="prayer-card"
+                >
+                  <div className="prayer-card-media">
+                    <img src={prayer.thumbnail} alt={prayer.title} />
+                    <div className="play-button play-button-sm">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="10 8 16 12 10 16 10 8"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="prayer-card-content">
+                    <span className="prayer-card-category">{prayer.category}</span>
+                    <h3 className="prayer-card-title">{prayer.title}</h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
-      {/* INVITATION TO EXPLORE */}
-      <section className="invitation-section">
-        <div className="content-container">
+      {/* Invitation Section */}
+      <section className="section-lg invitation">
+        <div className="container container-narrow">
           <div className="invitation-content">
-            <div className="invitation-symbol">✝</div>
-            <h2 className="invitation-title">
-              Come and pray with us
-            </h2>
+            <h2 className="invitation-title">Begin your prayer journey</h2>
             <p className="invitation-text">
-              Whether you seek the comfort of the Rosary, the power of novenas,<br />
+              Whether you seek the comfort of the Rosary, the power of novenas,
               or the beauty of traditional prayers, you will find a home here.
             </p>
             <div className="invitation-actions">
-              <Link to="/prayers" className="primary-link">
-                Browse All Prayers
-              </Link>
-              <Link to="/about" className="secondary-link">
-                Learn More About Us
-              </Link>
+              <Link to="/prayers" className="btn-primary">Explore Prayers</Link>
+              <Link to="/about" className="btn-secondary">Learn More</Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FINAL BLESSING */}
-      <section className="blessing-section">
-        <div className="content-container">
-          <p className="blessing-text">
-            "Pray without ceasing." — 1 Thessalonians 5:17
-          </p>
+      {/* Scripture Quote */}
+      <section className="section scripture">
+        <div className="container container-narrow">
+          <blockquote className="scripture-quote">
+            <p>"Pray without ceasing."</p>
+            <cite>— 1 Thessalonians 5:17</cite>
+          </blockquote>
         </div>
       </section>
     </div>

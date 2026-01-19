@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './PrayerDetail.css';
 
@@ -46,9 +46,10 @@ const PrayerDetail = () => {
 
   if (loading) {
     return (
-      <div className="prayer-page">
-        <div className="prayer-container">
-          <div className="loading-state">Loading...</div>
+      <div className="detail-page">
+        <div className="loading">
+          <div className="spinner"></div>
+          <span>Loading...</span>
         </div>
       </div>
     );
@@ -56,54 +57,73 @@ const PrayerDetail = () => {
 
   if (!content) {
     return (
-      <div className="prayer-page">
-        <div className="prayer-container">
-          <div className="error-state">Content not found</div>
+      <div className="detail-page">
+        <div className="container">
+          <div className="error-state">
+            <h2>Content not found</h2>
+            <Link to="/prayers" className="btn-primary">Back to Prayers</Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="prayer-page">
-      {/* Video Section */}
-      <div className="video-section">
-        <div className="video-wrapper">
-          <iframe
-            src={`https://www.youtube.com/embed/${content.videoId}?rel=0&modestbranding=1`}
-            title={content.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="video-iframe"
-          ></iframe>
+    <div className="detail-page">
+      {/* Breadcrumb */}
+      <nav className="breadcrumb">
+        <div className="container">
+          <Link to="/" className="breadcrumb-link">Home</Link>
+          <span className="breadcrumb-separator">/</span>
+          <Link to="/prayers" className="breadcrumb-link">Prayers</Link>
+          <span className="breadcrumb-separator">/</span>
+          <span className="breadcrumb-current">{content.category}</span>
         </div>
-      </div>
+      </nav>
 
-      {/* Content */}
-      <div className="prayer-content">
-        <div className="prayer-container">
-          {/* Header */}
-          <div className="prayer-header">
-            <div className="prayer-category">{content.category}</div>
-            <h1 className="prayer-title">{content.title}</h1>
+      {/* Video Section */}
+      <section className="video-section">
+        <div className="video-container">
+          <div className="video-wrapper">
+            <iframe
+              src={`https://www.youtube.com/embed/${content.videoId}?rel=0&modestbranding=1`}
+              title={content.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
           </div>
+        </div>
+      </section>
+
+      {/* Content Section */}
+      <section className="content-section">
+        <div className="content-container">
+          {/* Header */}
+          <header className="detail-header">
+            <span className="detail-category">{content.category}</span>
+            <h1 className="detail-title">{content.title}</h1>
+          </header>
 
           {/* Description */}
           {content.description && (
-            <div className="content-description">
+            <div className="detail-description">
               <p>{content.description}</p>
             </div>
           )}
 
-          {/* Prayer Text Section (if available) */}
+          {/* Prayer Text */}
           {content.hasPrayerText && content.prayerText && (
-            <>
+            <div className="prayer-text-container">
+              {/* Divider */}
+              <hr className="divider" />
+              
               {/* Copy Button */}
-              <div className="copy-section">
+              <div className="copy-row">
+                <h2 className="prayer-text-heading">Prayer Text</h2>
                 <button 
                   onClick={handleCopyText} 
-                  className="copy-button"
+                  className="copy-btn"
                   aria-label="Copy prayer text"
                 >
                   {copied ? (
@@ -111,7 +131,7 @@ const PrayerDetail = () => {
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polyline points="20 6 9 17 4 12"/>
                       </svg>
-                      <span>Copied</span>
+                      Copied
                     </>
                   ) : (
                     <>
@@ -119,26 +139,35 @@ const PrayerDetail = () => {
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                       </svg>
-                      <span>Copy Prayer Text</span>
+                      Copy Text
                     </>
                   )}
                 </button>
               </div>
 
               {/* Prayer Text */}
-              <div className="prayer-text-section">
-                <div className="prayer-text">{content.prayerText}</div>
+              <div className="prayer-text prose">
+                {content.prayerText}
               </div>
 
               {/* Closing */}
               <div className="prayer-closing">
-                <div className="closing-symbol">✝</div>
-                <p className="closing-text">Amen</p>
+                <span className="closing-amen">Amen.</span>
               </div>
-            </>
+            </div>
           )}
+
+          {/* Back Link */}
+          <div className="back-section">
+            <Link to="/prayers" className="back-link">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              Back to All Prayers
+            </Link>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
