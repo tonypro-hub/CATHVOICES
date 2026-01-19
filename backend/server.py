@@ -147,7 +147,7 @@ def is_youtube_short(video_details: dict):
     return False
 
 def fetch_youtube_videos():
-    """Fetch ALL long-form videos from channel's Uploads playlist, excluding Shorts"""
+    """Fetch ALL videos from channel's Uploads playlist, categorizing as long-form or Shorts"""
     try:
         # Step 1: Get the uploads playlist ID
         uploads_playlist_id = get_uploads_playlist_id()
@@ -156,9 +156,9 @@ def fetch_youtube_videos():
             return []
         
         all_videos = []
+        shorts_videos = []
         next_page_token = None
         page_count = 0
-        shorts_filtered = 0
         
         while True:
             page_count += 1
@@ -191,16 +191,13 @@ def fetch_youtube_videos():
                 # Get video details for duration and metadata
                 video_details = get_video_details(video_id)
                 
-                # Skip if it's a Short
-                if is_youtube_short(video_details):
-                    shorts_filtered += 1
-                    logging.info(f"Filtered out Short: {snippet['title'][:50]}...")
-                    continue
-                
                 # Extract category/tags from title and description
                 category = extract_category_from_metadata(snippet['title'], snippet['description'])
                 
-                all_videos.append({
+                # Determine if it's a Short
+                is_short = is_youtube_short(video_details)
+                
+                video_data = {
                     'videoId': video_id,
                     'title': snippet['title'],
                     'description': snippet['description'],
@@ -209,8 +206,15 @@ def fetch_youtube_videos():
                     'publishedAt': snippet['publishedAt'],
                     'category': category,
                     'tags': video_details.get('tags', []),
+                    'isShort': is_short,
                     'cachedAt': datetime.utcnow()
-                })
+                }
+                
+                if is_short:
+                    shorts_videos.append(video_data)
+                    logging.info(f"Categorized as Short: {snippet['title'][:50]}...")
+                else:
+                    all_videos.append(video_data)
             
             # Check if there are more pages
             next_page_token = data.get('nextPageToken')
@@ -220,8 +224,10 @@ def fetch_youtube_videos():
                 logging.info(f"No more pages. Total pages fetched: {page_count}")
                 break
         
-        logging.info(f"Successfully fetched {len(all_videos)} long-form videos (filtered out {shorts_filtered} Shorts)")
-        return all_videos
+        logging.info(f"Successfully fetched {len(all_videos)} long-form videos and {len(shorts_videos)} Shorts")
+        
+        # Return both types combined with isShort flag
+        return all_videos + shorts_videos
     except Exception as e:
         logging.error(f"Error fetching YouTube videos: {str(e)}")
         return []
