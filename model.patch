@@ -1,167 +1,323 @@
-diff --git a/frontend/src/pages/PrayerDetail.css b/frontend/src/pages/PrayerDetail.css
-index 952fb48..1c66c1e 100644
---- a/frontend/src/pages/PrayerDetail.css
-+++ b/frontend/src/pages/PrayerDetail.css
-@@ -120,6 +120,22 @@
-   margin-bottom: 80px;
- }
+diff --git a/backend/server.py b/backend/server.py
+index 40bb5ea..146b786 100644
+--- a/backend/server.py
++++ b/backend/server.py
+@@ -84,25 +84,92 @@ def video_helper(video) -> dict:
  
-+.content-description {
-+  padding: var(--spacing-lg);
-+  background-color: rgba(139, 0, 0, 0.05);
-+  border-left: 3px solid var(--color-burgundy);
-+  border-radius: 4px;
-+  margin-bottom: var(--spacing-xl);
-+}
+ 
+ # YouTube API functions
++def get_uploads_playlist_id():
++    """Get the uploads playlist ID for the channel"""
++    try:
++        url = f"{YOUTUBE_API_BASE}/channels"
++        params = {
++            'key': YOUTUBE_API_KEY,
++            'id': YOUTUBE_CHANNEL_ID,
++            'part': 'contentDetails'
++        }
++        
++        response = requests.get(url, params=params)
++        response.raise_for_status()
++        data = response.json()
++        
++        if data.get('items'):
++            uploads_playlist_id = data['items'][0]['contentDetails']['relatedPlaylists']['uploads']
++            logging.info(f"Found uploads playlist ID: {uploads_playlist_id}")
++            return uploads_playlist_id
++        return None
++    except Exception as e:
++        logging.error(f"Error fetching uploads playlist ID: {str(e)}")
++        return None
 +
-+.content-description p {
-+  font-size: 1.125rem;
-+  line-height: 1.8;
-+  color: var(--color-cream);
-+  opacity: 0.9;
-+  margin: 0;
-+}
++def parse_duration_to_seconds(duration_str: str):
++    """Convert YouTube duration format (PT1M30S) to seconds"""
++    import re
++    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration_str)
++    if not match:
++        return 0
++    
++    hours = int(match.group(1)) if match.group(1) else 0
++    minutes = int(match.group(2)) if match.group(2) else 0
++    seconds = int(match.group(3)) if match.group(3) else 0
++    
++    return hours * 3600 + minutes * 60 + seconds
 +
- .prayer-text {
-   /* Typography optimized for extended reading */
-   font-family: Georgia, 'Times New Roman', Times, serif;
++def is_youtube_short(video_details: dict):
++    """Check if a video is a YouTube Short"""
++    duration_str = video_details.get('duration', 'PT0S')
++    duration_seconds = parse_duration_to_seconds(duration_str)
++    
++    # YouTube Shorts can be up to 3 minutes (180 seconds) as of 2024
++    # But most traditional long-form content is significantly longer
++    # We'll use 3 minutes as the cutoff for Shorts
++    if duration_seconds <= 180:
++        return True
++    
++    # Check if YouTube marks it as a short (sometimes in description or tags)
++    description = video_details.get('description', '').lower()
++    tags = video_details.get('tags', [])
++    
++    # Check for #shorts or #short tags
++    if '#shorts' in description or '#short' in description:
++        return True
++    
++    if tags:
++        tags_lower = [tag.lower() for tag in tags]
++        if 'shorts' in tags_lower or 'short' in tags_lower:
++            return True
++    
++    return False
++
+ def fetch_youtube_videos():
+-    """Fetch ALL videos from YouTube channel's Videos section using pagination"""
++    """Fetch ALL long-form videos from channel's Uploads playlist, excluding Shorts"""
+     try:
++        # Step 1: Get the uploads playlist ID
++        uploads_playlist_id = get_uploads_playlist_id()
++        if not uploads_playlist_id:
++            logging.error("Could not retrieve uploads playlist ID")
++            return []
++        
+         all_videos = []
+         next_page_token = None
+         page_count = 0
++        shorts_filtered = 0
+         
+         while True:
+             page_count += 1
+-            logging.info(f"Fetching page {page_count} of videos...")
++            logging.info(f"Fetching page {page_count} from uploads playlist...")
+             
+-            url = f"{YOUTUBE_API_BASE}/search"
++            url = f"{YOUTUBE_API_BASE}/playlistItems"
+             params = {
+                 'key': YOUTUBE_API_KEY,
+-                'channelId': YOUTUBE_CHANNEL_ID,
++                'playlistId': uploads_playlist_id,
+                 'part': 'snippet',
+-                'type': 'video',
+-                'order': 'date',
+-                'maxResults': 50  # Max per page
++                'maxResults': 50
+             }
+             
+             if next_page_token:
+@@ -114,16 +181,22 @@ def fetch_youtube_videos():
+             data = response.json()
+             
+             items_count = len(data.get('items', []))
+-            logging.info(f"Page {page_count}: Retrieved {items_count} videos")
++            logging.info(f"Page {page_count}: Retrieved {items_count} items from playlist")
+             
+             # Process videos from this page
+             for item in data.get('items', []):
+-                video_id = item['id']['videoId']
++                video_id = item['snippet']['resourceId']['videoId']
+                 snippet = item['snippet']
+                 
+-                # Get video details for duration and other metadata
++                # Get video details for duration and metadata
+                 video_details = get_video_details(video_id)
+                 
++                # Skip if it's a Short
++                if is_youtube_short(video_details):
++                    shorts_filtered += 1
++                    logging.info(f"Filtered out Short: {snippet['title'][:50]}...")
++                    continue
++                
+                 # Extract category/tags from title and description
+                 category = extract_category_from_metadata(snippet['title'], snippet['description'])
+                 
+@@ -131,7 +204,7 @@ def fetch_youtube_videos():
+                     'videoId': video_id,
+                     'title': snippet['title'],
+                     'description': snippet['description'],
+-                    'thumbnail': snippet['thumbnails']['high']['url'],
++                    'thumbnail': snippet['thumbnails']['high']['url'] if 'high' in snippet['thumbnails'] else snippet['thumbnails']['default']['url'],
+                     'duration': video_details.get('duration', 'Unknown'),
+                     'publishedAt': snippet['publishedAt'],
+                     'category': category,
+@@ -145,9 +218,9 @@ def fetch_youtube_videos():
+                 logging.info(f"Found nextPageToken, continuing to page {page_count + 1}")
+             else:
+                 logging.info(f"No more pages. Total pages fetched: {page_count}")
+-                break  # No more pages
++                break
+         
+-        logging.info(f"Successfully fetched {len(all_videos)} videos from YouTube channel")
++        logging.info(f"Successfully fetched {len(all_videos)} long-form videos (filtered out {shorts_filtered} Shorts)")
+         return all_videos
+     except Exception as e:
+         logging.error(f"Error fetching YouTube videos: {str(e)}")
 diff --git a/model.patch b/model.patch
-index 3b7c518..e69de29 100644
+index c266358..6fa1a57 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,135 +0,0 @@
+@@ -1,167 +0,0 @@
+-diff --git a/frontend/src/pages/PrayerDetail.css b/frontend/src/pages/PrayerDetail.css
+-index 952fb48..1c66c1e 100644
+---- a/frontend/src/pages/PrayerDetail.css
+-+++ b/frontend/src/pages/PrayerDetail.css
+-@@ -120,6 +120,22 @@
+-   margin-bottom: 80px;
+- }
+- 
+-+.content-description {
+-+  padding: var(--spacing-lg);
+-+  background-color: rgba(139, 0, 0, 0.05);
+-+  border-left: 3px solid var(--color-burgundy);
+-+  border-radius: 4px;
+-+  margin-bottom: var(--spacing-xl);
+-+}
+-+
+-+.content-description p {
+-+  font-size: 1.125rem;
+-+  line-height: 1.8;
+-+  color: var(--color-cream);
+-+  opacity: 0.9;
+-+  margin: 0;
+-+}
+-+
+- .prayer-text {
+-   /* Typography optimized for extended reading */
+-   font-family: Georgia, 'Times New Roman', Times, serif;
 -diff --git a/model.patch b/model.patch
--index 5fe0d2b..e69de29 100644
+-index 3b7c518..e69de29 100644
 ---- a/model.patch
 -+++ b/model.patch
--@@ -1,130 +0,0 @@
---diff --git a/test_result.md b/test_result.md
---index 187cba4..982bb88 100644
------ a/test_result.md
---+++ b/test_result.md
---@@ -100,4 +100,122 @@
--- 
--- #====================================================================================================
--- # Testing Data - Main Agent and testing sub agent both should log testing data below this section
----#====================================================================================================
---\ No newline at end of file
---+#====================================================================================================
---+
---+user_problem_statement: "Test the Catholic Voices & Prayers API backend with YouTube Data API integration and MongoDB for storing prayers and cached videos"
---+
---+backend:
---+  - task: "YouTube Integration - Refresh Videos API"
---+    implemented: true
---+    working: true
---+    file: "/app/backend/server.py"
---+    stuck_count: 0
---+    priority: "high"
---+    needs_retesting: false
---+    status_history:
---+      - working: true
---+        agent: "testing"
---+        comment: "✅ GET /api/videos/refresh successfully fetches and caches 18 videos from YouTube Channel UCRRPmmYLLHxRJlsKjJER1Ig. YouTube API integration working correctly."
---+
---+  - task: "YouTube Integration - Get Cached Videos API"
---+    implemented: true
---+    working: true
---+    file: "/app/backend/server.py"
---+    stuck_count: 0
---+    priority: "high"
---+    needs_retesting: false
---+    status_history:
---+      - working: true
---+        agent: "testing"
---+        comment: "✅ GET /api/videos returns 18 cached videos with proper structure (id, videoId, title, description, thumbnail, duration, publishedAt, cachedAt). All required fields present."
---+
---+  - task: "YouTube Integration - Get Video by ID API"
---+    implemented: true
---+    working: true
---+    file: "/app/backend/server.py"
---+    stuck_count: 0
---+    priority: "high"
---+    needs_retesting: false
---+    status_history:
---+      - working: true
---+        agent: "testing"
---+        comment: "✅ GET /api/videos/{videoId} successfully retrieves specific video details. Tested with video 'Bishop Fulton J. Sheen Recites the Holy Rosary in Latin' - returns correct video object."
---+
---+  - task: "Prayers CRUD - Get All Prayers API"
---+    implemented: true
---+    working: true
---+    file: "/app/backend/server.py"
---+    stuck_count: 0
---+    priority: "high"
---+    needs_retesting: false
---+    status_history:
---+      - working: true
---+        agent: "testing"
---+        comment: "✅ GET /api/prayers returns all 5 sample prayers correctly: The Holy Rosary, Holy Cloak of St. Joseph Novena, The Our Father, The Hail Mary, Glory Be (Doxology). All prayer objects contain required fields (id, title, videoId, prayerText, category, createdAt)."
---+
---+  - task: "Prayers CRUD - Get Prayer by ID API"
---+    implemented: true
---+    working: true
---+    file: "/app/backend/server.py"
---+    stuck_count: 0
---+    priority: "high"
---+    needs_retesting: false
---+    status_history:
---+      - working: true
---+        agent: "testing"
---+        comment: "✅ GET /api/prayers/{id} successfully retrieves specific prayer by MongoDB ObjectId. Proper ObjectId handling implemented and working correctly."
---+
---+  - task: "Prayers CRUD - Create Prayer API"
---+    implemented: true
---+    working: true
---+    file: "/app/backend/server.py"
---+    stuck_count: 0
---+    priority: "high"
---+    needs_retesting: false
---+    status_history:
---+      - working: true
---+        agent: "testing"
---+        comment: "✅ POST /api/prayers successfully creates new prayer entries. Returns proper prayer object with generated MongoDB ObjectId. All validation working correctly."
---+
---+  - task: "Prayers CRUD - Delete Prayer API"
---+    implemented: true
---+    working: true
---+    file: "/app/backend/server.py"
---+    stuck_count: 0
---+    priority: "high"
---+    needs_retesting: false
---+    status_history:
---+      - working: true
---+        agent: "testing"
---+        comment: "✅ DELETE /api/prayers/{id} successfully deletes prayers by ObjectId. Proper error handling for invalid IDs and non-existent prayers."
---+
---+  - task: "API Root Endpoint"
---+    implemented: true
---+    working: true
---+    file: "/app/backend/server.py"
---+    stuck_count: 0
---+    priority: "medium"
---+    needs_retesting: false
---+    status_history:
---+      - working: true
---+        agent: "testing"
---+        comment: "✅ GET /api/ returns correct API identification message: 'Catholic Voices and Prayers API'. Root endpoint responding properly."
---+
---+frontend:
---+  # No frontend testing performed as per instructions
---+
---+metadata:
---+  created_by: "testing_agent"
---+  version: "1.0"
---+  test_sequence: 1
---+  run_ui: false
---+
---+test_plan:
---+  current_focus: []
---+  stuck_tasks: []
---+  test_all: false
---+  test_priority: "high_first"
---+
---+agent_communication:
---+  - agent: "testing"
---+    message: "Comprehensive backend testing completed successfully. All 8 backend tasks tested and working correctly. YouTube API integration is functional, fetching real videos from channel UCRRPmmYLLHxRJlsKjJER1Ig. All CRUD operations for prayers working with proper ObjectId handling. Sample data confirmed: 5 prayers (The Holy Rosary, Holy Cloak of St. Joseph Novena, The Our Father, The Hail Mary, Glory Be) and 18 cached YouTube videos. 100% test success rate (10/10 tests passed). Backend API is production-ready."
---\ No newline at end of file
+-@@ -1,135 +0,0 @@
+--diff --git a/model.patch b/model.patch
+--index 5fe0d2b..e69de29 100644
+----- a/model.patch
+--+++ b/model.patch
+--@@ -1,130 +0,0 @@
+---diff --git a/test_result.md b/test_result.md
+---index 187cba4..982bb88 100644
+------ a/test_result.md
+---+++ b/test_result.md
+---@@ -100,4 +100,122 @@
+--- 
+--- #====================================================================================================
+--- # Testing Data - Main Agent and testing sub agent both should log testing data below this section
+----#====================================================================================================
+---\ No newline at end of file
+---+#====================================================================================================
+---+
+---+user_problem_statement: "Test the Catholic Voices & Prayers API backend with YouTube Data API integration and MongoDB for storing prayers and cached videos"
+---+
+---+backend:
+---+  - task: "YouTube Integration - Refresh Videos API"
+---+    implemented: true
+---+    working: true
+---+    file: "/app/backend/server.py"
+---+    stuck_count: 0
+---+    priority: "high"
+---+    needs_retesting: false
+---+    status_history:
+---+      - working: true
+---+        agent: "testing"
+---+        comment: "✅ GET /api/videos/refresh successfully fetches and caches 18 videos from YouTube Channel UCRRPmmYLLHxRJlsKjJER1Ig. YouTube API integration working correctly."
+---+
+---+  - task: "YouTube Integration - Get Cached Videos API"
+---+    implemented: true
+---+    working: true
+---+    file: "/app/backend/server.py"
+---+    stuck_count: 0
+---+    priority: "high"
+---+    needs_retesting: false
+---+    status_history:
+---+      - working: true
+---+        agent: "testing"
+---+        comment: "✅ GET /api/videos returns 18 cached videos with proper structure (id, videoId, title, description, thumbnail, duration, publishedAt, cachedAt). All required fields present."
+---+
+---+  - task: "YouTube Integration - Get Video by ID API"
+---+    implemented: true
+---+    working: true
+---+    file: "/app/backend/server.py"
+---+    stuck_count: 0
+---+    priority: "high"
+---+    needs_retesting: false
+---+    status_history:
+---+      - working: true
+---+        agent: "testing"
+---+        comment: "✅ GET /api/videos/{videoId} successfully retrieves specific video details. Tested with video 'Bishop Fulton J. Sheen Recites the Holy Rosary in Latin' - returns correct video object."
+---+
+---+  - task: "Prayers CRUD - Get All Prayers API"
+---+    implemented: true
+---+    working: true
+---+    file: "/app/backend/server.py"
+---+    stuck_count: 0
+---+    priority: "high"
+---+    needs_retesting: false
+---+    status_history:
+---+      - working: true
+---+        agent: "testing"
+---+        comment: "✅ GET /api/prayers returns all 5 sample prayers correctly: The Holy Rosary, Holy Cloak of St. Joseph Novena, The Our Father, The Hail Mary, Glory Be (Doxology). All prayer objects contain required fields (id, title, videoId, prayerText, category, createdAt)."
+---+
+---+  - task: "Prayers CRUD - Get Prayer by ID API"
+---+    implemented: true
+---+    working: true
+---+    file: "/app/backend/server.py"
+---+    stuck_count: 0
+---+    priority: "high"
+---+    needs_retesting: false
+---+    status_history:
+---+      - working: true
+---+        agent: "testing"
+---+        comment: "✅ GET /api/prayers/{id} successfully retrieves specific prayer by MongoDB ObjectId. Proper ObjectId handling implemented and working correctly."
+---+
+---+  - task: "Prayers CRUD - Create Prayer API"
+---+    implemented: true
+---+    working: true
+---+    file: "/app/backend/server.py"
+---+    stuck_count: 0
+---+    priority: "high"
+---+    needs_retesting: false
+---+    status_history:
+---+      - working: true
+---+        agent: "testing"
+---+        comment: "✅ POST /api/prayers successfully creates new prayer entries. Returns proper prayer object with generated MongoDB ObjectId. All validation working correctly."
+---+
+---+  - task: "Prayers CRUD - Delete Prayer API"
+---+    implemented: true
+---+    working: true
+---+    file: "/app/backend/server.py"
+---+    stuck_count: 0
+---+    priority: "high"
+---+    needs_retesting: false
+---+    status_history:
+---+      - working: true
+---+        agent: "testing"
+---+        comment: "✅ DELETE /api/prayers/{id} successfully deletes prayers by ObjectId. Proper error handling for invalid IDs and non-existent prayers."
+---+
+---+  - task: "API Root Endpoint"
+---+    implemented: true
+---+    working: true
+---+    file: "/app/backend/server.py"
+---+    stuck_count: 0
+---+    priority: "medium"
+---+    needs_retesting: false
+---+    status_history:
+---+      - working: true
+---+        agent: "testing"
+---+        comment: "✅ GET /api/ returns correct API identification message: 'Catholic Voices and Prayers API'. Root endpoint responding properly."
+---+
+---+frontend:
+---+  # No frontend testing performed as per instructions
+---+
+---+metadata:
+---+  created_by: "testing_agent"
+---+  version: "1.0"
+---+  test_sequence: 1
+---+  run_ui: false
+---+
+---+test_plan:
+---+  current_focus: []
+---+  stuck_tasks: []
+---+  test_all: false
+---+  test_priority: "high_first"
+---+
+---+agent_communication:
+---+  - agent: "testing"
+---+    message: "Comprehensive backend testing completed successfully. All 8 backend tasks tested and working correctly. YouTube API integration is functional, fetching real videos from channel UCRRPmmYLLHxRJlsKjJER1Ig. All CRUD operations for prayers working with proper ObjectId handling. Sample data confirmed: 5 prayers (The Holy Rosary, Holy Cloak of St. Joseph Novena, The Our Father, The Hail Mary, Glory Be) and 18 cached YouTube videos. 100% test success rate (10/10 tests passed). Backend API is production-ready."
+---\ No newline at end of file
