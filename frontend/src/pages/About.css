@@ -1,153 +1,190 @@
+/* =====================================================
+   ABOUT PAGE - HALLOW-INSPIRED
+   ===================================================== */
+
 .about-page {
-  min-height: calc(100vh - var(--header-height));
-  padding: var(--spacing-xl) 0;
+  background-color: var(--color-bg-primary);
+  min-height: 100vh;
 }
 
+/* Hero */
 .about-hero {
   text-align: center;
-  padding: var(--spacing-xl) 0;
-  background: linear-gradient(135deg, rgba(139, 0, 0, 0.1) 0%, rgba(139, 0, 0, 0.05) 100%);
-  border-radius: 12px;
-  margin-bottom: var(--spacing-xl);
-}
-
-.about-logo {
-  max-width: 300px;
-  margin: 0 auto var(--spacing-md);
+  padding: var(--space-20) var(--space-6) var(--space-16);
+  background-color: var(--color-bg-secondary);
 }
 
 .about-title {
-  font-size: 2.5rem;
-  color: var(--color-gold);
+  font-size: var(--text-5xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
 }
 
-.about-section {
-  max-width: 800px;
-  margin: 0 auto var(--spacing-xl);
+.about-subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
 }
 
-.section-heading {
-  font-size: 2rem;
-  color: var(--color-gold);
-  margin-bottom: var(--spacing-md);
+/* Mission */
+.about-mission {
+  background-color: var(--color-bg-primary);
 }
 
-.section-text {
-  font-size: 1.15rem;
-  color: var(--color-cream);
-  line-height: 1.8;
-  opacity: 0.95;
+.about-mission h2 {
+  font-size: var(--text-2xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-6);
 }
 
-.features-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
+.about-mission p {
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-loose);
+  margin-bottom: var(--space-6);
 }
 
-.feature-item {
+.about-mission p:last-child {
+  margin-bottom: 0;
+}
+
+/* Offerings */
+.about-offerings {
+  background-color: var(--color-bg-secondary);
+}
+
+.offerings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+}
+
+.offering-card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.offering-icon {
+  width: 52px;
+  height: 52px;
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm);
-  background-color: rgba(139, 0, 0, 0.05);
-  border-radius: 8px;
-  font-size: 1.1rem;
-  color: var(--color-cream);
+  justify-content: center;
+  color: var(--color-accent-primary);
+  margin-bottom: var(--space-4);
 }
 
-.feature-check {
-  flex-shrink: 0;
-  color: var(--color-gold);
+.offering-card h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.offering-card p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+/* Connect */
+.about-connect {
+  background-color: var(--color-bg-primary);
+}
+
+.connect-text {
+  text-align: center;
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-10);
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .social-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-md);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
 }
 
 .social-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-lg);
-  background-color: rgba(139, 0, 0, 0.1);
-  border: 1px solid rgba(139, 0, 0, 0.3);
-  border-radius: 12px;
-  color: var(--color-gold);
-  transition: all 0.3s ease;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-8);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  min-width: 120px;
 }
 
 .social-card:hover {
-  background-color: rgba(139, 0, 0, 0.15);
-  border-color: var(--color-burgundy);
+  box-shadow: var(--shadow-md);
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(139, 0, 0, 0.3);
+}
+
+.social-card svg {
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.social-card:hover svg {
+  color: var(--color-accent-primary);
 }
 
 .social-card span {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-cream);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
 }
 
+/* Blessing */
 .about-blessing {
   text-align: center;
-  padding: var(--spacing-2xl) 0;
-  margin-top: var(--spacing-xl);
-  border-top: 2px solid rgba(212, 175, 55, 0.3);
-}
-
-.blessing-cross {
-  font-size: 3rem;
-  color: var(--color-gold);
-  margin-bottom: var(--spacing-sm);
+  background-color: var(--color-bg-secondary);
 }
 
 .blessing-text {
-  font-size: 1.25rem;
-  color: var(--color-gold);
+  font-family: var(--font-serif);
+  font-size: var(--text-xl);
   font-style: italic;
+  color: var(--color-text-secondary);
 }
 
-/* Tablet */
-@media (max-width: 1024px) {
-  .about-title {
-    font-size: 2rem;
-  }
-  
-  .section-heading {
-    font-size: 1.75rem;
-  }
-}
-
-/* Mobile */
+/* Responsive */
 @media (max-width: 768px) {
-  .about-page {
-    padding: var(--spacing-md) 0;
-  }
-  
-  .about-logo {
-    max-width: 200px;
+  .about-hero {
+    padding: var(--space-12) var(--space-4) var(--space-10);
   }
   
   .about-title {
-    font-size: 1.75rem;
+    font-size: var(--text-3xl);
   }
   
-  .section-heading {
-    font-size: 1.5rem;
-  }
-  
-  .section-text {
-    font-size: 1rem;
+  .offerings-grid {
+    grid-template-columns: 1fr;
   }
   
   .social-grid {
-    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+  
+  .social-card {
+    padding: var(--space-4) var(--space-5);
+    min-width: 100px;
+  }
+  
+  .social-card svg {
+    width: 24px;
+    height: 24px;
   }
 }
