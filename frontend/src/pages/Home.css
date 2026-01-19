@@ -75,8 +75,106 @@
   font-weight: 600;
 }
 
+.daily-label {
+  color: var(--color-burgundy);
+  background-color: rgba(139, 0, 0, 0.1);
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 4px;
+}
+
 /* ===================================
-   FEATURED PRAYER SECTION
+   DAILY CONTENT SECTION (Secondary)
+   Powered by Shorts - Resets Daily
+   =================================== */
+
+.daily-section {
+  padding: 80px 0;
+  background: linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
+  border-bottom: 2px solid rgba(139, 0, 0, 0.3);
+}
+
+.daily-content {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 60px;
+  align-items: center;
+  margin-top: var(--spacing-md);
+}
+
+.daily-video {
+  position: relative;
+}
+
+.daily-thumbnail-link {
+  position: relative;
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid rgba(139, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.daily-thumbnail-link:hover {
+  border-color: var(--color-burgundy);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(139, 0, 0, 0.4);
+}
+
+.daily-thumbnail {
+  width: 100%;
+  aspect-ratio: 9/16;
+  object-fit: cover;
+  display: block;
+}
+
+.short-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: var(--color-burgundy);
+  color: var(--color-cream);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.daily-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.daily-category {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--color-burgundy);
+  font-weight: 600;
+}
+
+.daily-title {
+  font-size: 2rem;
+  color: var(--color-cream);
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: var(--spacing-xs);
+}
+
+.daily-description {
+  font-size: 1.125rem;
+  color: var(--color-cream);
+  opacity: 0.8;
+  line-height: 1.7;
+  margin-bottom: var(--spacing-md);
+}
+
+/* ===================================
+   FEATURED PRAYER SECTION (Primary)
+   Evergreen Long-Form Content
    =================================== */
 
 .featured-section {
@@ -137,6 +235,14 @@
   overflow: hidden;
   background-color: #0a0a0a;
   border: 1px solid rgba(139, 0, 0, 0.3);
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.video-thumbnail:hover {
+  border-color: var(--color-gold);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(212, 175, 55, 0.2);
 }
 
 .thumbnail-image {
@@ -157,37 +263,9 @@
   transition: opacity 0.3s ease;
 }
 
-.video-thumbnail:hover .play-overlay {
+.video-thumbnail:hover .play-overlay,
+.daily-thumbnail-link:hover .play-overlay {
   opacity: 1;
-}
-
-/* ===================================
-   DAILY DEVOTION SECTION
-   =================================== */
-
-.daily-section {
-  padding: 100px 0;
-  background: linear-gradient(180deg, #000000 0%, #0a0a0a 100%);
-}
-
-.daily-content {
-  max-width: 700px;
-}
-
-.daily-title {
-  font-size: 2.5rem;
-  color: var(--color-cream);
-  font-weight: 600;
-  margin-bottom: var(--spacing-md);
-  line-height: 1.3;
-}
-
-.daily-description {
-  font-size: 1.25rem;
-  color: var(--color-cream);
-  opacity: 0.8;
-  line-height: 1.8;
-  margin-bottom: var(--spacing-lg);
 }
 
 /* ===================================
@@ -207,7 +285,8 @@
 }
 
 /* ===================================
-   PRAYER CATEGORIES SECTION
+   PRAYER CATEGORIES SECTION (Primary)
+   Evergreen Long-Form Only
    =================================== */
 
 .categories-section {
@@ -399,6 +478,16 @@
     font-size: 3rem;
   }
   
+  .daily-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .daily-thumbnail {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
   .featured-content {
     grid-template-columns: 1fr;
     gap: 60px;
@@ -434,20 +523,21 @@
     font-size: 1.125rem;
   }
   
-  .featured-section,
   .daily-section,
+  .featured-section,
   .categories-section,
   .invitation-section {
     padding: 60px 0;
   }
   
-  .featured-title,
   .daily-title,
+  .featured-title,
   .section-heading,
   .invitation-title {
     font-size: 2rem;
   }
   
+  .daily-content,
   .featured-content {
     gap: 40px;
   }

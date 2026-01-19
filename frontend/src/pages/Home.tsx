@@ -3,38 +3,55 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Home.css';
 
-interface Prayer {
+interface ContentItem {
   id: string;
-  title: string;
   videoId: string;
+  title: string;
+  description: string;
+  thumbnail: string;
   category: string;
-  prayerText: string;
+  duration: string;
+  publishedAt: string;
+  isShort: boolean;
+  prayerText?: string;
+  hasPrayerText: boolean;
 }
 
 const Home = () => {
-  const [featuredPrayer, setFeaturedPrayer] = useState<Prayer | null>(null);
-  const [prayers, setPrayers] = useState<Prayer[]>([]);
+  const [dailyShort, setDailyShort] = useState<ContentItem | null>(null);
+  const [featuredPrayer, setFeaturedPrayer] = useState<ContentItem | null>(null);
+  const [evergreenContent, setEvergreenContent] = useState<ContentItem[]>([]);
 
   useEffect(() => {
-    fetchPrayers();
+    fetchContent();
   }, []);
 
-  const fetchPrayers = async () => {
+  const fetchContent = async () => {
     try {
-      const response = await axios.get('/api/content');
-      const allContent = response.data;
-      setPrayers(allContent);
-      // Set first item as featured
-      if (allContent.length > 0) {
-        setFeaturedPrayer(allContent[0]);
+      // Fetch daily Short (secondary content)
+      try {
+        const dailyResponse = await axios.get('/api/shorts/daily');
+        setDailyShort(dailyResponse.data);
+      } catch (error) {
+        console.log('No daily Short available');
+      }
+
+      // Fetch evergreen long-form content (primary)
+      const contentResponse = await axios.get('/api/content'); // Excludes Shorts by default
+      const longFormVideos = contentResponse.data;
+      setEvergreenContent(longFormVideos);
+      
+      // Set first long-form video as featured
+      if (longFormVideos.length > 0) {
+        setFeaturedPrayer(longFormVideos[0]);
       }
     } catch (error) {
       console.error('Error fetching content:', error);
     }
   };
 
-  // Get unique categories
-  const categories = Array.from(new Set(prayers.map(p => p.category)));
+  // Get unique categories from evergreen content
+  const categories = Array.from(new Set(evergreenContent.map(p => p.category)));
 
   return (
     <div className="home">
@@ -53,7 +70,49 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Prayer Section */}
+      {/* DAILY CONTENT SECTION (Secondary - Powered by Shorts) */}
+      {dailyShort && (
+        <section className="daily-section">
+          <div className="content-container">
+            <div className="section-label daily-label">Today's Reflection</div>
+            <div className="daily-content">
+              <div className="daily-video">
+                <Link to={`/prayers/${dailyShort.videoId}`} className="daily-thumbnail-link">
+                  <img 
+                    src={dailyShort.thumbnail}
+                    alt={dailyShort.title}
+                    className="daily-thumbnail"
+                  />
+                  <div className="play-overlay">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polygon points="10 8 16 12 10 16 10 8"/>
+                    </svg>
+                  </div>
+                  <div className="short-badge">Short Reflection</div>
+                </Link>
+              </div>
+              <div className="daily-text">
+                <span className="daily-category">{dailyShort.category}</span>
+                <h2 className="daily-title">{dailyShort.title}</h2>
+                <p className="daily-description">
+                  {dailyShort.description ? dailyShort.description.slice(0, 200) + '...' : 'A brief daily reflection to guide your prayer.'}
+                </p>
+                <Link to={`/prayers/${dailyShort.videoId}`} className="text-link">
+                  Watch Now →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Divider */}
+      <div className="section-divider">
+        <div className="divider-line"></div>
+      </div>
+
+      {/* FEATURED PRAYER SECTION (Primary - Evergreen Long-Form) */}
       {featuredPrayer && (
         <section className="featured-section">
           <div className="content-container">
@@ -66,11 +125,11 @@ const Home = () => {
                    (featuredPrayer.prayerText ? featuredPrayer.prayerText.slice(0, 280) + '...' : '')}
                 </p>
                 <Link to={`/prayers/${featuredPrayer.videoId}`} className="text-link">
-                  Watch Now →
+                  Pray Now →
                 </Link>
               </div>
               <div className="featured-media">
-                <div className="video-thumbnail">
+                <Link to={`/prayers/${featuredPrayer.videoId}`} className="video-thumbnail">
                   <img 
                     src={featuredPrayer.thumbnail || `https://img.youtube.com/vi/${featuredPrayer.videoId}/maxresdefault.jpg`}
                     alt={featuredPrayer.title}
@@ -82,36 +141,19 @@ const Home = () => {
                       <polygon points="10 8 16 12 10 16 10 8"/>
                     </svg>
                   </div>
-                </div>
+                </Link>
               </div>
             </div>
           </div>
         </section>
       )}
 
-      {/* Daily Feast / Saint Section */}
-      <section className="daily-section">
-        <div className="content-container">
-          <div className="section-label">Today's Devotion</div>
-          <div className="daily-content">
-            <h2 className="daily-title">The Holy Rosary</h2>
-            <p className="daily-description">
-              Join Bishop Fulton J. Sheen in praying the mysteries of the Rosary.<br />
-              Contemplate the Joyful, Sorrowful, and Glorious moments of our salvation.
-            </p>
-            <Link to="/prayers" className="text-link">
-              Watch & Pray →
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Divider */}
       <div className="section-divider">
         <div className="divider-line"></div>
       </div>
 
-      {/* Prayer Categories Section */}
+      {/* EVERGREEN PRAYER CATEGORIES (Primary - Long-Form Only) */}
       <section className="categories-section">
         <div className="content-container">
           <h2 className="section-heading">Traditional Catholic Prayers</h2>
@@ -121,21 +163,21 @@ const Home = () => {
           
           <div className="categories-list">
             {categories.map((category, index) => {
-              const categoryPrayers = prayers.filter(p => p.category === category);
+              const categoryContent = evergreenContent.filter(p => p.category === category);
               return (
                 <div key={index} className="category-item">
                   <div className="category-header">
                     <h3 className="category-name">{category}</h3>
-                    <span className="category-count">{categoryPrayers.length} {categoryPrayers.length === 1 ? 'prayer' : 'prayers'}</span>
+                    <span className="category-count">{categoryContent.length} {categoryContent.length === 1 ? 'video' : 'videos'}</span>
                   </div>
                   <div className="category-prayers">
-                    {categoryPrayers.slice(0, 3).map(prayer => (
+                    {categoryContent.slice(0, 3).map(content => (
                       <Link 
-                        key={prayer.videoId} 
-                        to={`/prayers/${prayer.videoId}`} 
+                        key={content.videoId} 
+                        to={`/prayers/${content.videoId}`} 
                         className="prayer-link"
                       >
-                        {prayer.title}
+                        {content.title}
                       </Link>
                     ))}
                   </div>
@@ -154,7 +196,7 @@ const Home = () => {
         <div className="divider-line"></div>
       </div>
 
-      {/* Invitation to Explore */}
+      {/* INVITATION TO EXPLORE */}
       <section className="invitation-section">
         <div className="content-container">
           <div className="invitation-content">
@@ -178,7 +220,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Final Blessing */}
+      {/* FINAL BLESSING */}
       <section className="blessing-section">
         <div className="content-container">
           <p className="blessing-text">
