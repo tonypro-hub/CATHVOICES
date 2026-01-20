@@ -1,0 +1,283 @@
+/* DAILY SAINT PAGE STYLES */
+
+.daily-saint-page {
+  min-height: 100vh;
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.loading-container p,
+.error-container p {
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.error-container h2 {
+  margin-bottom: var(--space-2);
+}
+
+.error-container .btn-primary {
+  margin-top: var(--space-6);
+}
+
+/* Hero */
+.saint-hero {
+  position: relative;
+  padding: var(--space-24) 0;
+  text-align: center;
+  background-color: var(--color-bg-dark);
+  color: var(--color-white);
+  overflow: hidden;
+}
+
+.saint-hero-background {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1f21 50%, #1a1a1a 100%);
+}
+
+.saint-hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.saint-label {
+  display: inline-block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-accent-gold);
+  margin-bottom: var(--space-4);
+}
+
+.saint-hero-title {
+  font-size: var(--text-5xl);
+  font-weight: var(--font-medium);
+  color: var(--color-white);
+  margin-bottom: var(--space-4);
+}
+
+.saint-date {
+  font-size: var(--text-lg);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.saint-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding: var(--space-3) var(--space-6);
+  background-color: rgba(201, 162, 39, 0.2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  color: var(--color-accent-gold);
+}
+
+/* Video Section */
+.saint-video-section {
+  background-color: var(--color-bg-primary);
+}
+
+.saint-video-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.saint-video-wrapper {
+  position: relative;
+  padding-bottom: 177.78%; /* 9:16 aspect ratio for Shorts */
+  max-height: 80vh;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  background: var(--color-bg-dark);
+}
+
+.saint-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.saint-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+  text-align: center;
+}
+
+.placeholder-icon {
+  color: var(--color-accent-primary);
+  margin-bottom: var(--space-4);
+}
+
+.saint-placeholder p {
+  color: var(--color-text-muted);
+}
+
+/* Description Section */
+.saint-description-section {
+  background-color: var(--color-bg-secondary);
+}
+
+.saint-description-card {
+  background: var(--color-bg-card);
+  padding: var(--space-10);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.saint-description-card h2 {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-6);
+}
+
+.saint-description-text {
+  font-size: var(--text-base);
+  line-height: var(--leading-loose);
+  white-space: pre-line;
+}
+
+/* Actions Section */
+.saint-actions-section {
+  background-color: var(--color-bg-primary);
+}
+
+.saint-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* Share Section */
+.saint-share-section {
+  background-color: var(--color-bg-primary);
+  padding-top: 0;
+}
+
+.share-card {
+  text-align: center;
+  padding: var(--space-8);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+}
+
+.share-card h3 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-4);
+}
+
+.share-buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.share-facebook {
+  background-color: #1877f2;
+  color: white;
+}
+
+.share-twitter {
+  background-color: #1da1f2;
+  color: white;
+}
+
+.share-copy {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Archive Link */
+.saint-archive-link {
+  background-color: var(--color-bg-primary);
+}
+
+.archive-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-base);
+}
+
+.archive-cta:hover {
+  border-color: var(--color-accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.archive-cta-content h3 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-1);
+}
+
+.archive-cta-content p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.archive-cta svg {
+  color: var(--color-accent-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .saint-hero {
+    padding: var(--space-16) 0;
+  }
+  
+  .saint-hero-title {
+    font-size: var(--text-3xl);
+  }
+  
+  .saint-video-wrapper {
+    padding-bottom: 100%; /* More square on mobile */
+  }
+  
+  .saint-description-card {
+    padding: var(--space-6);
+  }
+  
+  .saint-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+}
