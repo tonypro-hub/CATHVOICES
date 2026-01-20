@@ -207,10 +207,11 @@ const MassMap = () => {
   };
 
   // Get unique states from locations
-  const availableStates = useMemo(() => {
+  const _availableStates = useMemo(() => {
     const states = new Set(locations.map(loc => loc.state));
     return US_STATES.filter(state => states.has(state));
   }, [locations]);
+  void _availableStates; // Suppress unused variable warning
 
   // Filter counts
   const filterCounts = useMemo(() => {
