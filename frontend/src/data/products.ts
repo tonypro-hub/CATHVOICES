@@ -38,7 +38,8 @@ export interface Category {
 }
 
 // Placeholder image for products without images
-const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=400&q=80';
+const _PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=400&q=80';
+void _PLACEHOLDER_IMAGE; // Suppress unused variable warning
 
 export const storeCategories: Category[] = [
   {
