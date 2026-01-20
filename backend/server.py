@@ -2853,3 +2853,113 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+# ===================================
+# SCHEDULED TASKS - APScheduler
+# ===================================
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+import pytz
+
+# Initialize scheduler
+scheduler = AsyncIOScheduler()
+
+async def scheduled_saints_refresh():
+    """
+    Scheduled task to refresh saints from YouTube playlist
+    Runs daily at 3:15 PM CST (Central Standard Time)
+    """
+    logging.info("🔄 Running scheduled saints refresh...")
+    try:
+        # Import the function logic directly
+        from datetime import timezone, timedelta
+        
+        cst_now = get_cst_time()
+        today_str = cst_now.strftime("%Y-%m-%d")
+        
+        # Fetch videos from playlist
+        videos = fetch_saints_playlist_videos()
+        
+        if not videos:
+            logging.warning("No videos found in saints playlist during scheduled refresh")
+            return
+        
+        added_count = 0
+        cst = timezone(timedelta(hours=-6))
+        
+        for video in videos:
+            video_id = video['videoId']
+            published_at = video['publishedAt']
+            
+            # Check if video already exists
+            existing = await db.daily_saints.find_one({"videoId": video_id})
+            if existing:
+                continue
+            
+            # Parse the publish date
+            try:
+                published_dt = datetime.fromisoformat(published_at.replace('Z', '+00:00'))
+                published_cst = published_dt.astimezone(cst)
+                video_date = published_cst.strftime("%Y-%m-%d")
+            except:
+                continue
+            
+            # Check if published at or after 3 PM CST
+            if not is_after_3pm_cst(published_at):
+                continue
+            
+            # Extract saint name
+            saint_name = extract_saint_name_from_video(video['title'], video['description'])
+            
+            # Archive any currently active saint for a different date
+            await db.daily_saints.update_many(
+                {"isActive": True, "feastDate": {"$ne": video_date}},
+                {"$set": {"isActive": False, "archivedAt": datetime.utcnow()}}
+            )
+            
+            # Create new saint entry
+            saint_entry = {
+                "videoId": video_id,
+                "saintName": saint_name,
+                "feastDate": video_date,
+                "description": video['description'][:500] if video['description'] else "",
+                "thumbnail": video['thumbnail'],
+                "youtubeUrl": f"https://www.youtube.com/shorts/{video_id}",
+                "publishedAt": published_at,
+                "duration": video['duration'],
+                "isActive": video_date == today_str,
+                "createdAt": datetime.utcnow()
+            }
+            
+            await db.daily_saints.insert_one(saint_entry)
+            added_count += 1
+            logging.info(f"📿 Added saint: {saint_name} for {video_date}")
+        
+        logging.info(f"✅ Scheduled refresh complete. Added {added_count} new saints.")
+    except Exception as e:
+        logging.error(f"❌ Error in scheduled saints refresh: {str(e)}")
+
+# Schedule the job for 3:15 PM CST (21:15 UTC in standard time, 20:15 UTC in DST)
+# Using America/Chicago timezone which handles DST automatically
+cst_timezone = pytz.timezone('America/Chicago')
+
+@app.on_event("startup")
+async def start_scheduler():
+    """Start the APScheduler on app startup"""
+    # Run saints refresh at 3:15 PM CST every day
+    scheduler.add_job(
+        scheduled_saints_refresh,
+        CronTrigger(hour=15, minute=15, timezone=cst_timezone),
+        id='daily_saints_refresh',
+        name='Daily Saints Refresh at 3:15 PM CST',
+        replace_existing=True
+    )
+    scheduler.start()
+    logging.info("🕐 Scheduler started - Saints refresh scheduled for 3:15 PM CST daily")
+
+@app.on_event("shutdown")
+async def shutdown_scheduler():
+    """Shutdown the scheduler gracefully"""
+    scheduler.shutdown()
+    logging.info("🛑 Scheduler shutdown complete")
