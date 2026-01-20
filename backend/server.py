@@ -2514,11 +2514,19 @@ def fetch_saints_playlist_videos():
                 
                 # Only include Shorts (≤ 3 minutes / 180 seconds)
                 if duration_seconds <= 180:
+                    # Get best thumbnail available
+                    thumbnails = snippet.get('thumbnails', {})
+                    thumbnail_url = ''
+                    for quality in ['maxres', 'high', 'medium', 'default']:
+                        if quality in thumbnails and thumbnails[quality].get('url'):
+                            thumbnail_url = thumbnails[quality]['url']
+                            break
+                    
                     video_data = {
                         'videoId': video_id,
                         'title': snippet['title'],
-                        'description': snippet['description'],
-                        'thumbnail': snippet['thumbnails'].get('maxres', snippet['thumbnails'].get('high', snippet['thumbnails']['default']))['url'],
+                        'description': snippet.get('description', ''),
+                        'thumbnail': thumbnail_url,
                         'duration': duration_str,
                         'publishedAt': snippet['publishedAt'],
                     }
