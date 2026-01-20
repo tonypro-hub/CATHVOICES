@@ -30,8 +30,8 @@ const Header = () => {
   const navItems = [
     { path: '/', label: 'Home' },
     { path: '/prayers', label: 'Prayers' },
+    { path: '/daily-saint', label: 'Saint of the Day' },
     { path: '/saints-feasts', label: 'Saints & Feasts' },
-    { path: '/daily', label: 'Daily' },
     { path: '/mass-map', label: 'Mass Map' },
     { path: '/store', label: 'Store' },
     { path: '/about', label: 'About' },
