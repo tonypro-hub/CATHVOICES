@@ -81,4 +81,7 @@ android-sdk/
 
 # Old backup folders
 _old_expo_backup/
-frontend_backup/
+frontend_backup/-e 
+# Environment files
+*.env
+*.env.*
