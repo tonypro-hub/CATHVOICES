@@ -2415,6 +2415,411 @@ async def validate_location(location: dict):
     }
 
 
+# ===================================
+# DAILY SAINTS SYSTEM
+# ===================================
+
+# Daily Lives of the Saints Playlist ID - you'll need to update this with the actual playlist ID
+SAINTS_PLAYLIST_ID = os.environ.get('SAINTS_PLAYLIST_ID', 'PLxcCkHYBRRc4nDlMBf_2pIkUH6M3rK7N_')  # Replace with actual playlist ID
+
+class DailySaintModel(BaseModel):
+    """Model for daily saint entries"""
+    id: Optional[str] = None
+    videoId: str
+    saintName: str
+    feastDate: str  # Format: "YYYY-MM-DD"
+    description: str
+    thumbnail: str
+    youtubeUrl: str
+    publishedAt: str
+    duration: str
+    isActive: bool = True  # Currently displayed saint
+    archivedAt: Optional[datetime] = None
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+
+def daily_saint_helper(saint) -> dict:
+    """Convert MongoDB document to API response"""
+    return {
+        "id": str(saint["_id"]),
+        "videoId": saint["videoId"],
+        "saintName": saint["saintName"],
+        "feastDate": saint["feastDate"],
+        "description": saint["description"],
+        "thumbnail": saint["thumbnail"],
+        "youtubeUrl": saint["youtubeUrl"],
+        "publishedAt": saint["publishedAt"],
+        "duration": saint.get("duration", ""),
+        "isActive": saint.get("isActive", False),
+        "archivedAt": saint.get("archivedAt"),
+        "createdAt": saint.get("createdAt", datetime.utcnow())
+    }
+
+def extract_saint_name_from_video(title: str, description: str) -> str:
+    """Extract saint name from video title"""
+    import re
+    
+    # Pattern: "Saint of the Day - St. [Name]" or similar
+    patterns = [
+        r'(?:Saint of the Day|Daily Lives of the Saints?)[\s\-:]+(?:St\.?\s+)?([A-Za-z\s]+?)(?:\s*[\|\-\(]|$)',
+        r'St\.?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)',
+        r'Saint\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, title, re.IGNORECASE)
+        if match:
+            name = match.group(1).strip()
+            name = name.rstrip('.,!?;:)')
+            if not name.lower().startswith('st'):
+                return f"St. {name}"
+            return name
+    
+    # Fallback: use cleaned title
+    clean_title = re.sub(r'[\|\-\(\)].*$', '', title).strip()
+    return clean_title
+
+def fetch_saints_playlist_videos():
+    """
+    Fetch videos from the Daily Lives of the Saints playlist
+    Only returns Shorts (≤ 3 minutes)
+    """
+    try:
+        all_videos = []
+        next_page_token = None
+        
+        while True:
+            url = f"{YOUTUBE_API_BASE}/playlistItems"
+            params = {
+                'key': YOUTUBE_API_KEY,
+                'playlistId': SAINTS_PLAYLIST_ID,
+                'part': 'snippet',
+                'maxResults': 50
+            }
+            
+            if next_page_token:
+                params['pageToken'] = next_page_token
+            
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            
+            for item in data.get('items', []):
+                video_id = item['snippet']['resourceId']['videoId']
+                snippet = item['snippet']
+                
+                # Get video details for duration
+                video_details = get_video_details(video_id)
+                duration_str = video_details.get('duration', 'PT0S')
+                duration_seconds = parse_duration_to_seconds(duration_str)
+                
+                # Only include Shorts (≤ 3 minutes / 180 seconds)
+                if duration_seconds <= 180:
+                    video_data = {
+                        'videoId': video_id,
+                        'title': snippet['title'],
+                        'description': snippet['description'],
+                        'thumbnail': snippet['thumbnails'].get('maxres', snippet['thumbnails'].get('high', snippet['thumbnails']['default']))['url'],
+                        'duration': duration_str,
+                        'publishedAt': snippet['publishedAt'],
+                    }
+                    all_videos.append(video_data)
+                    logging.info(f"Found saint video: {snippet['title'][:50]}...")
+            
+            next_page_token = data.get('nextPageToken')
+            if not next_page_token:
+                break
+        
+        logging.info(f"Fetched {len(all_videos)} saint videos from playlist")
+        return all_videos
+    except Exception as e:
+        logging.error(f"Error fetching saints playlist: {str(e)}")
+        return []
+
+def get_cst_time():
+    """Get current time in Central Standard Time (CST)"""
+    from datetime import timezone, timedelta
+    utc_now = datetime.now(timezone.utc)
+    cst = timezone(timedelta(hours=-6))  # CST is UTC-6
+    return utc_now.astimezone(cst)
+
+def is_after_3pm_cst(published_at_str: str) -> bool:
+    """Check if video was published at or after 3:00 PM CST"""
+    from datetime import timezone, timedelta
+    
+    try:
+        # Parse YouTube's ISO format
+        published = datetime.fromisoformat(published_at_str.replace('Z', '+00:00'))
+        cst = timezone(timedelta(hours=-6))
+        published_cst = published.astimezone(cst)
+        
+        # Check if it's at or after 3:00 PM (15:00)
+        return published_cst.hour >= 15
+    except Exception as e:
+        logging.error(f"Error parsing date: {e}")
+        return False
+
+
+@api_router.get("/saints/today")
+async def get_todays_saint():
+    """
+    Get today's Saint of the Day
+    Returns the currently active saint, or tries to fetch a new one
+    """
+    from datetime import timezone, timedelta
+    
+    # Get today's date in CST
+    cst_now = get_cst_time()
+    today_str = cst_now.strftime("%Y-%m-%d")
+    
+    # Try to find an active saint for today
+    active_saint = await db.daily_saints.find_one({
+        "feastDate": today_str,
+        "isActive": True
+    })
+    
+    if active_saint:
+        return daily_saint_helper(active_saint)
+    
+    # No active saint for today, try to find most recent active
+    most_recent = await db.daily_saints.find_one(
+        {"isActive": True},
+        sort=[("feastDate", -1)]
+    )
+    
+    if most_recent:
+        # Check if we should show a "coming soon" notice
+        most_recent_data = daily_saint_helper(most_recent)
+        
+        # If it's past 3:15 PM CST and no new saint, show notice
+        if cst_now.hour >= 15 and cst_now.minute >= 15:
+            most_recent_data["notice"] = "Today's saint will be posted shortly."
+        
+        return most_recent_data
+    
+    # No saints at all - return placeholder
+    return {
+        "videoId": None,
+        "saintName": "Saint of the Day",
+        "feastDate": today_str,
+        "description": "Today's saint will be posted shortly.",
+        "thumbnail": "/placeholder-saint.jpg",
+        "youtubeUrl": "",
+        "notice": "Today's saint will be posted shortly."
+    }
+
+
+@api_router.get("/saints/archive")
+async def get_saints_archive(
+    limit: int = 100,
+    offset: int = 0,
+    month: Optional[int] = None,
+    year: Optional[int] = None
+):
+    """
+    Get archived saints with pagination and optional date filtering
+    """
+    query = {}
+    
+    if month and year:
+        # Filter by specific month/year
+        start_date = f"{year}-{month:02d}-01"
+        if month == 12:
+            end_date = f"{year + 1}-01-01"
+        else:
+            end_date = f"{year}-{month + 1:02d}-01"
+        query["feastDate"] = {"$gte": start_date, "$lt": end_date}
+    elif year:
+        query["feastDate"] = {"$regex": f"^{year}"}
+    
+    # Get total count
+    total = await db.daily_saints.count_documents(query)
+    
+    # Get saints with pagination, sorted by date descending
+    saints = await db.daily_saints.find(query).sort(
+        "feastDate", -1
+    ).skip(offset).limit(limit).to_list(limit)
+    
+    return {
+        "saints": [daily_saint_helper(saint) for saint in saints],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "hasMore": offset + len(saints) < total
+    }
+
+
+@api_router.get("/saints/{saint_id}")
+async def get_saint_by_id(saint_id: str):
+    """Get a specific saint entry by ID"""
+    try:
+        saint = await db.daily_saints.find_one({"_id": ObjectId(saint_id)})
+        if not saint:
+            raise HTTPException(status_code=404, detail="Saint not found")
+        return daily_saint_helper(saint)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@api_router.post("/saints/refresh")
+async def refresh_saints_from_playlist():
+    """
+    Refresh saints from the YouTube playlist
+    Checks for new videos published after 3 PM CST today
+    Archives previous day's saint if needed
+    """
+    from datetime import timezone, timedelta
+    
+    cst_now = get_cst_time()
+    today_str = cst_now.strftime("%Y-%m-%d")
+    
+    # Fetch videos from playlist
+    videos = fetch_saints_playlist_videos()
+    
+    if not videos:
+        return {"message": "No videos found in playlist", "added": 0}
+    
+    added_count = 0
+    
+    for video in videos:
+        video_id = video['videoId']
+        published_at = video['publishedAt']
+        
+        # Check if video already exists in our database
+        existing = await db.daily_saints.find_one({"videoId": video_id})
+        if existing:
+            continue
+        
+        # Parse the publish date
+        try:
+            published_dt = datetime.fromisoformat(published_at.replace('Z', '+00:00'))
+            cst = timezone(timedelta(hours=-6))
+            published_cst = published_dt.astimezone(cst)
+            video_date = published_cst.strftime("%Y-%m-%d")
+        except:
+            continue
+        
+        # Check if published at or after 3 PM CST
+        if not is_after_3pm_cst(published_at):
+            continue
+        
+        # Extract saint name
+        saint_name = extract_saint_name_from_video(video['title'], video['description'])
+        
+        # Archive any currently active saint for a different date
+        await db.daily_saints.update_many(
+            {"isActive": True, "feastDate": {"$ne": video_date}},
+            {"$set": {"isActive": False, "archivedAt": datetime.utcnow()}}
+        )
+        
+        # Create new saint entry
+        saint_entry = {
+            "videoId": video_id,
+            "saintName": saint_name,
+            "feastDate": video_date,
+            "description": video['description'][:500] if video['description'] else "",
+            "thumbnail": video['thumbnail'],
+            "youtubeUrl": f"https://www.youtube.com/shorts/{video_id}",
+            "publishedAt": published_at,
+            "duration": video['duration'],
+            "isActive": video_date == today_str,
+            "createdAt": datetime.utcnow()
+        }
+        
+        await db.daily_saints.insert_one(saint_entry)
+        added_count += 1
+        logging.info(f"Added saint: {saint_name} for {video_date}")
+    
+    return {
+        "message": f"Refresh complete",
+        "added": added_count,
+        "total_in_playlist": len(videos)
+    }
+
+
+@api_router.post("/saints/sync-all")
+async def sync_all_saints_from_playlist():
+    """
+    Full sync: Import ALL videos from the saints playlist
+    Useful for initial setup or re-syncing the entire archive
+    """
+    from datetime import timezone, timedelta
+    
+    videos = fetch_saints_playlist_videos()
+    
+    if not videos:
+        return {"message": "No videos found in playlist", "synced": 0}
+    
+    synced_count = 0
+    skipped_count = 0
+    
+    cst = timezone(timedelta(hours=-6))
+    cst_now = get_cst_time()
+    today_str = cst_now.strftime("%Y-%m-%d")
+    
+    for video in videos:
+        video_id = video['videoId']
+        
+        # Skip if already exists
+        existing = await db.daily_saints.find_one({"videoId": video_id})
+        if existing:
+            skipped_count += 1
+            continue
+        
+        # Parse publish date for feast date
+        try:
+            published_dt = datetime.fromisoformat(video['publishedAt'].replace('Z', '+00:00'))
+            published_cst = published_dt.astimezone(cst)
+            video_date = published_cst.strftime("%Y-%m-%d")
+        except:
+            video_date = video['publishedAt'][:10]
+        
+        # Extract saint name
+        saint_name = extract_saint_name_from_video(video['title'], video['description'])
+        
+        # Create saint entry
+        saint_entry = {
+            "videoId": video_id,
+            "saintName": saint_name,
+            "feastDate": video_date,
+            "description": video['description'][:500] if video['description'] else "",
+            "thumbnail": video['thumbnail'],
+            "youtubeUrl": f"https://www.youtube.com/shorts/{video_id}",
+            "publishedAt": video['publishedAt'],
+            "duration": video['duration'],
+            "isActive": video_date == today_str,
+            "createdAt": datetime.utcnow()
+        }
+        
+        await db.daily_saints.insert_one(saint_entry)
+        synced_count += 1
+    
+    # Ensure only today's saint is active
+    await db.daily_saints.update_many(
+        {"feastDate": {"$ne": today_str}},
+        {"$set": {"isActive": False}}
+    )
+    
+    return {
+        "message": "Full sync complete",
+        "synced": synced_count,
+        "skipped": skipped_count,
+        "total_in_playlist": len(videos)
+    }
+
+
+@api_router.get("/saints/date/{date}")
+async def get_saint_by_date(date: str):
+    """
+    Get saint for a specific date (format: YYYY-MM-DD)
+    """
+    saint = await db.daily_saints.find_one({"feastDate": date})
+    
+    if not saint:
+        raise HTTPException(status_code=404, detail=f"No saint found for {date}")
+    
+    return daily_saint_helper(saint)
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
