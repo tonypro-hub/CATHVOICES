@@ -1,53 +1,40 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import Prayers from './pages/Prayers';
+import PrayerDetail from './pages/PrayerDetail';
+import DailySaint from './pages/DailySaint';
+import SaintsArchive from './pages/SaintsArchive';
+import MassMap from './pages/MassMap';
+import SspxExplained from './pages/SspxExplained';
+import Store from './pages/Store';
+import About from './pages/About';
+import './styles/variables.css';
+import './styles/global.css';
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <div className="app">
+        <Header />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/prayers" element={<Prayers />} />
+            <Route path="/prayers/:id" element={<PrayerDetail />} />
+            <Route path="/daily-saint" element={<DailySaint />} />
+            <Route path="/saints-archive" element={<SaintsArchive />} />
+            <Route path="/saints/:id" element={<DailySaint />} />
+            <Route path="/mass-map" element={<MassMap />} />
+            <Route path="/sspx-explained" element={<SspxExplained />} />
+            <Route path="/store" element={<Store />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </BrowserRouter>
   );
 }
 
