@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Catholic Voices and Prayers",
+    "slug": "catholic-voices-prayers",
+    "version": "1.0.0",
+    "platforms": ["web"],
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}
