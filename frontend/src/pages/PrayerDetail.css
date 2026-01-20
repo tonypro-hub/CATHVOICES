@@ -1,0 +1,180 @@
+/* PRAYER DETAIL PAGE STYLES */
+
+.prayer-detail-page {
+  min-height: 100vh;
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.error-container h2 {
+  margin-bottom: var(--space-2);
+}
+
+.error-container p {
+  margin-bottom: var(--space-6);
+  color: var(--color-text-muted);
+}
+
+/* Hero */
+.prayer-hero {
+  background-color: var(--color-bg-dark);
+  color: var(--color-white);
+  padding: var(--space-12) 0;
+  text-align: center;
+}
+
+.prayer-hero .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-accent-gold);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+  transition: gap var(--transition-fast);
+}
+
+.prayer-hero .back-link:hover {
+  gap: var(--space-3);
+}
+
+.prayer-category {
+  display: inline-block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-accent-gold);
+  margin-bottom: var(--space-3);
+}
+
+.prayer-title {
+  font-size: var(--text-4xl);
+  color: var(--color-white);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Video Section */
+.prayer-video-section {
+  background-color: var(--color-bg-primary);
+}
+
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  max-width: 900px;
+  margin: 0 auto;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.prayer-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Prayer Text Section */
+.prayer-text-section {
+  background-color: var(--color-bg-secondary);
+}
+
+.prayer-text-card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.prayer-text-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.prayer-text-header h2 {
+  font-size: var(--text-xl);
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.copy-btn:hover {
+  background: var(--color-accent-primary);
+  color: white;
+  border-color: var(--color-accent-primary);
+}
+
+.prayer-text-content {
+  padding: var(--space-8);
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  line-height: var(--leading-loose);
+  white-space: pre-line;
+  color: var(--color-text-secondary);
+}
+
+/* Actions Section */
+.prayer-actions-section {
+  background-color: var(--color-bg-primary);
+}
+
+.prayer-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .prayer-hero {
+    padding: var(--space-8) 0;
+  }
+  
+  .prayer-title {
+    font-size: var(--text-2xl);
+  }
+  
+  .prayer-text-header {
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+  
+  .prayer-text-content {
+    padding: var(--space-6);
+    font-size: var(--text-base);
+  }
+  
+  .prayer-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+}
