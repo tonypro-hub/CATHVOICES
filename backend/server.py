@@ -562,6 +562,23 @@ async def root():
     return {"message": "Catholic Voices and Prayers API"}
 
 
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint for deployment monitoring"""
+    try:
+        # Check MongoDB connection
+        await db.command('ping')
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
+    return {
+        "status": "healthy",
+        "database": db_status,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
 # ===================================
 # FEAST DAY MAPPING ENDPOINTS
 # ===================================
