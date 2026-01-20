@@ -671,6 +671,24 @@
     grid-column: span 1;
   }
   
+  .saint-spotlight {
+    grid-template-columns: 1fr;
+    gap: var(--space-10);
+  }
+  
+  .saint-spotlight-media {
+    order: -1;
+  }
+  
+  .saint-spotlight-content {
+    text-align: center;
+    max-width: none;
+  }
+  
+  .saint-spotlight-actions {
+    justify-content: center;
+  }
+  
   .mass-highlight-grid {
     grid-template-columns: 1fr;
     gap: var(--space-10);
@@ -706,6 +724,19 @@
   
   .feature-ribbon {
     display: none;
+  }
+  
+  .saint-spotlight-name {
+    font-size: var(--text-2xl);
+  }
+  
+  .saint-spotlight-thumbnail {
+    width: 220px;
+  }
+  
+  .saint-spotlight-actions {
+    flex-direction: column;
+    align-items: center;
   }
   
   .about-title,
