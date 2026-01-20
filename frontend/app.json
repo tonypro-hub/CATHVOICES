@@ -3,10 +3,24 @@
     "name": "Catholic Voices and Prayers",
     "slug": "catholic-voices-prayers",
     "version": "1.0.0",
-    "platforms": ["web"],
+    "platforms": ["ios", "android", "web"],
+    "ios": {
+      "bundleIdentifier": "com.catholicvoices.prayers"
+    },
+    "android": {
+      "package": "com.catholicvoices.prayers"
+    },
     "web": {
       "bundler": "metro",
       "output": "static"
+    },
+    "updates": {
+      "enabled": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": "catholic-voices-prayers"
+      }
     }
   }
 }
