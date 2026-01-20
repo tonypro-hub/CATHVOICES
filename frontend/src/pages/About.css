@@ -1,0 +1,292 @@
+/* ABOUT PAGE STYLES */
+
+.about-page {
+  min-height: 100vh;
+}
+
+/* Hero */
+.about-hero {
+  background-color: var(--color-bg-dark);
+  color: var(--color-white);
+  padding: var(--space-20) 0;
+  text-align: center;
+}
+
+.about-title {
+  font-size: var(--text-5xl);
+  color: var(--color-white);
+  margin-bottom: var(--space-4);
+}
+
+.about-subtitle {
+  font-size: var(--text-xl);
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: var(--leading-relaxed);
+}
+
+/* Mission */
+.about-mission {
+  background-color: var(--color-bg-primary);
+}
+
+.mission-content {
+  text-align: center;
+}
+
+.mission-content h2 {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-6);
+}
+
+.mission-content p {
+  font-size: var(--text-lg);
+  line-height: var(--leading-loose);
+  margin-bottom: var(--space-6);
+}
+
+.mission-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Offerings */
+.about-offerings {
+  background-color: var(--color-bg-secondary);
+}
+
+.offerings-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+.offering-card {
+  background: var(--color-bg-card);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.offering-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.offering-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-primary);
+}
+
+.offering-card h3 {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-3);
+}
+
+.offering-card p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+/* Values */
+.about-values {
+  background-color: var(--color-bg-secondary);
+}
+
+.values-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.value-item {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+}
+
+.value-number {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--color-accent-primary);
+  opacity: 0.3;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 60px;
+}
+
+.value-content h3 {
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-2);
+}
+
+.value-content p {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+/* YouTube */
+.about-youtube {
+  background-color: var(--color-bg-primary);
+}
+
+.youtube-card {
+  background: linear-gradient(135deg, #282828 0%, #1a1a1a 100%);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-16);
+  text-align: center;
+  color: white;
+}
+
+.youtube-logo {
+  color: #ff0000;
+  margin-bottom: var(--space-6);
+}
+
+.youtube-card h2 {
+  font-size: var(--text-3xl);
+  color: white;
+  margin-bottom: var(--space-4);
+}
+
+.youtube-card p {
+  font-size: var(--text-lg);
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: var(--space-8);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.youtube-btn {
+  background-color: #ff0000;
+  border-color: #ff0000;
+}
+
+.youtube-btn:hover {
+  background-color: #cc0000;
+  border-color: #cc0000;
+}
+
+/* CTA */
+.about-cta {
+  background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-primary-dark) 100%);
+  color: white;
+}
+
+.about-cta .cta-content {
+  text-align: center;
+}
+
+.about-cta h2 {
+  font-size: var(--text-4xl);
+  color: white;
+  margin-bottom: var(--space-4);
+}
+
+.about-cta p {
+  font-size: var(--text-lg);
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: var(--space-8);
+}
+
+.about-cta .cta-buttons {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.about-cta .btn-primary {
+  background-color: white;
+  color: var(--color-accent-primary);
+  border-color: white;
+}
+
+.about-cta .btn-primary:hover {
+  background-color: transparent;
+  color: white;
+}
+
+.about-cta .btn-secondary {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.about-cta .btn-secondary:hover {
+  background-color: white;
+  color: var(--color-accent-primary);
+  border-color: white;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .offerings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero {
+    padding: var(--space-16) 0;
+  }
+  
+  .about-title {
+    font-size: var(--text-3xl);
+  }
+  
+  .about-subtitle {
+    font-size: var(--text-base);
+  }
+  
+  .mission-content h2 {
+    font-size: var(--text-2xl);
+  }
+  
+  .mission-content p {
+    font-size: var(--text-base);
+  }
+  
+  .offerings-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .value-item {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  .value-number {
+    font-size: var(--text-2xl);
+    width: auto;
+  }
+  
+  .youtube-card {
+    padding: var(--space-10);
+  }
+  
+  .youtube-card h2 {
+    font-size: var(--text-2xl);
+  }
+  
+  .about-cta h2 {
+    font-size: var(--text-2xl);
+  }
+  
+  .about-cta .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+}
