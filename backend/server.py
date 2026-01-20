@@ -2419,8 +2419,8 @@ async def validate_location(location: dict):
 # DAILY SAINTS SYSTEM
 # ===================================
 
-# Daily Lives of the Saints Playlist ID - you'll need to update this with the actual playlist ID
-SAINTS_PLAYLIST_ID = os.environ.get('SAINTS_PLAYLIST_ID', 'PLxcCkHYBRRc4nDlMBf_2pIkUH6M3rK7N_')  # Replace with actual playlist ID
+# Daily Lives of the Saints Playlist ID
+SAINTS_PLAYLIST_ID = os.environ.get('SAINTS_PLAYLIST_ID', 'PLSFbA-IaB3xprRODsXjEiXMV6QF9iGXol')
 
 class DailySaintModel(BaseModel):
     """Model for daily saint entries"""
