@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/leaflet": "^1.9.21",
     "axios": "^1.13.2",
+    "expo": "^54.0.31",
     "leaflet": "^1.9.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
