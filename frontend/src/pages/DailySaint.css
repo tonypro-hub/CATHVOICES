@@ -1,0 +1,311 @@
+/* =====================================================
+   DAILY SAINT PAGE - PELICAN+ STYLE
+   ===================================================== */
+
+.daily-saint-page {
+  min-height: 100vh;
+}
+
+/* Loading & Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--space-4);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hero Section */
+.saint-hero {
+  position: relative;
+  padding: var(--space-24) 0 var(--space-16);
+  background: linear-gradient(135deg, var(--color-bg-dark) 0%, #2a1f20 50%, var(--color-accent-primary-dark) 100%);
+  color: var(--color-white);
+  text-align: center;
+  overflow: hidden;
+}
+
+.saint-hero-background {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at top, rgba(114, 47, 55, 0.3) 0%, transparent 60%);
+}
+
+.saint-hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.saint-label {
+  display: inline-block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-accent-gold);
+  margin-bottom: var(--space-4);
+}
+
+.saint-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: var(--font-medium);
+  line-height: 1.1;
+  margin-bottom: var(--space-4);
+  color: var(--color-white);
+}
+
+.saint-date {
+  font-size: var(--text-xl);
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: var(--space-4);
+}
+
+.saint-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: var(--space-4);
+}
+
+/* Video Section */
+.saint-video-section {
+  background: var(--color-bg-secondary);
+  padding: var(--space-12) 0;
+}
+
+.saint-video-container {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.saint-video-wrapper {
+  position: relative;
+  padding-bottom: 177.78%; /* 9:16 aspect ratio for Shorts */
+  height: 0;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.saint-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.saint-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.placeholder-icon {
+  color: var(--color-accent-primary);
+  margin-bottom: var(--space-4);
+  opacity: 0.5;
+}
+
+.saint-placeholder p {
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+}
+
+/* Description Section */
+.saint-description-section {
+  background: var(--color-bg-primary);
+}
+
+.saint-description-card {
+  background: var(--color-bg-card);
+  padding: var(--space-10);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.saint-description-card h2 {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-4);
+  color: var(--color-text-primary);
+}
+
+.saint-description-text {
+  font-size: var(--text-lg);
+  line-height: var(--leading-loose);
+  color: var(--color-text-secondary);
+  white-space: pre-line;
+}
+
+/* Actions Section */
+.saint-actions-section {
+  background: var(--color-bg-primary);
+  padding: var(--space-8) 0;
+}
+
+.saint-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.saint-actions .btn-primary,
+.saint-actions .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Share Section */
+.saint-share-section {
+  background: var(--color-bg-secondary);
+}
+
+.share-card {
+  text-align: center;
+  padding: var(--space-8);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+}
+
+.share-card h3 {
+  font-size: var(--text-xl);
+  margin-bottom: var(--space-4);
+}
+
+.share-buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-base);
+  border: none;
+  cursor: pointer;
+}
+
+.share-facebook {
+  background: #1877F2;
+  color: white;
+}
+
+.share-twitter {
+  background: #000;
+  color: white;
+}
+
+.share-copy {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Archive Link */
+.saint-archive-link {
+  background: var(--color-bg-primary);
+  padding: var(--space-8) 0 var(--space-16);
+}
+
+.archive-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-8);
+  background: var(--color-bg-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.archive-cta:hover {
+  border-color: var(--color-accent-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.archive-cta-content h3 {
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.archive-cta-content p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.archive-cta svg {
+  color: var(--color-accent-primary);
+  transition: transform var(--transition-fast);
+}
+
+.archive-cta:hover svg {
+  transform: translateX(4px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .saint-hero {
+    padding: var(--space-16) 0 var(--space-12);
+  }
+
+  .saint-video-container {
+    max-width: 320px;
+  }
+
+  .saint-description-card {
+    padding: var(--space-6);
+  }
+
+  .saint-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .archive-cta {
+    padding: var(--space-4) var(--space-5);
+  }
+}
