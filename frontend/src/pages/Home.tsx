@@ -168,6 +168,48 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Featured Saint of the Day */}
+      {todaysSaint && todaysSaint.videoId && (
+        <section className="section saint-spotlight-section">
+          <div className="container">
+            <div className="saint-spotlight">
+              <div className="saint-spotlight-content">
+                <span className="section-label">Saint of the Day</span>
+                <h2 className="saint-spotlight-name">{todaysSaint.saintName}</h2>
+                <p className="saint-spotlight-date">{formatSaintDate(todaysSaint.feastDate)}</p>
+                <p className="saint-spotlight-description">
+                  {todaysSaint.description.split('\n')[0].slice(0, 200)}
+                  {todaysSaint.description.length > 200 ? '...' : ''}
+                </p>
+                <div className="saint-spotlight-actions">
+                  <Link to="/daily-saint" className="btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="10 8 16 12 10 16 10 8"/>
+                    </svg>
+                    Watch Today's Saint
+                  </Link>
+                  <Link to="/saints-archive" className="btn-secondary">
+                    View All Saints
+                  </Link>
+                </div>
+              </div>
+              <div className="saint-spotlight-media">
+                <Link to="/daily-saint" className="saint-spotlight-thumbnail">
+                  <img src={todaysSaint.thumbnail} alt={todaysSaint.saintName} />
+                  <div className="saint-play-overlay">
+                    <div className="play-button">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="10 8 16 12 10 16 10 8"/>
+                      </svg>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Feature Cards Grid */}
       <section className="section section-cream features-section">
         <div className="container">
