@@ -2628,8 +2628,9 @@ async def get_saints_archive(
 ):
     """
     Get archived saints with pagination and optional date filtering
+    Excludes private videos (those with empty thumbnails)
     """
-    query = {}
+    query = {"thumbnail": {"$ne": ""}}  # Exclude private videos
     
     if month and year:
         # Filter by specific month/year
