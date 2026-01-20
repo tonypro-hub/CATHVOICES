@@ -15,10 +15,13 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-main">
           <div className="footer-brand">
-            <div className="footer-logo">
-              <span className="footer-logo-main">Catholic Voices</span>
-              <span className="footer-logo-sub">& Prayers</span>
-            </div>
+            <Link to="/" className="footer-logo-link">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_catholic-voices-2/artifacts/vlmd967c_CathVoiceslogo_white.png" 
+                alt="Catholic Voices & Prayers"
+                className="footer-logo-img"
+              />
+            </Link>
             <p className="footer-tagline">
               A sacred space for traditional Catholic prayer and devotion.
             </p>
