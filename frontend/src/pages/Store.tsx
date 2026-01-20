@@ -4,7 +4,7 @@ import './Store.css';
 
 // Category icons
 const CategoryIcon = ({ type }: { type: string }) => {
-  const icons: Record<string, JSX.Element> = {
+  const icons: Record<string, React.ReactElement> = {
     book: (
       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
