@@ -17,13 +17,26 @@ interface ContentItem {
   hasPrayerText: boolean;
 }
 
+interface TodaysSaint {
+  id: string;
+  videoId: string;
+  saintName: string;
+  feastDate: string;
+  description: string;
+  thumbnail: string;
+  youtubeUrl: string;
+  notice?: string;
+}
+
 const Home = () => {
   const [featuredContent, setFeaturedContent] = useState<ContentItem[]>([]);
+  const [todaysSaint, setTodaysSaint] = useState<TodaysSaint | null>(null);
   const [_loading, setLoading] = useState(true);
   void _loading;
 
   useEffect(() => {
     fetchContent();
+    fetchTodaysSaint();
   }, []);
 
   const fetchContent = async () => {
@@ -35,6 +48,23 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchTodaysSaint = async () => {
+    try {
+      const response = await axios.get('/api/saints/today');
+      setTodaysSaint(response.data);
+    } catch (error) {
+      console.error('Error fetching today\'s saint:', error);
+    }
+  };
+
+  const formatSaintDate = (dateStr: string) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   return (
