@@ -6,6 +6,8 @@ import Prayers from './pages/Prayers';
 import PrayerDetail from './pages/PrayerDetail';
 import SaintsFeasts from './pages/SaintsFeasts';
 import Daily from './pages/Daily';
+import DailySaint from './pages/DailySaint';
+import SaintsArchive from './pages/SaintsArchive';
 import MassMap from './pages/MassMap';
 import SspxExplained from './pages/SspxExplained';
 import Store from './pages/Store';
@@ -30,6 +32,11 @@ function App() {
             <Route path="/saints-feasts" element={<SaintsFeasts />} />
             <Route path="/saints-feasts/saints" element={<SaintsFeasts />} />
             <Route path="/saints-feasts/calendar" element={<SaintsFeasts />} />
+            
+            {/* Daily Saint System */}
+            <Route path="/daily-saint" element={<DailySaint />} />
+            <Route path="/saints-archive" element={<SaintsArchive />} />
+            <Route path="/saints/:id" element={<DailySaint />} />
             
             {/* Daily */}
             <Route path="/daily" element={<Daily />} />
