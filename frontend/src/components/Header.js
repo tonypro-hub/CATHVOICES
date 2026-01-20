@@ -40,10 +40,11 @@ const Header = () => {
     <header className={`header ${scrolled ? 'header-scrolled' : ''}`} data-testid="header">
       <div className="header-container">
         <Link to="/" className="logo-link" data-testid="logo-link">
-          <div className="logo-text">
-            <span className="logo-main">Catholic Voices</span>
-            <span className="logo-sub">& Prayers</span>
-          </div>
+          <img 
+            src="https://customer-assets.emergentagent.com/job_catholic-voices-2/artifacts/pbi439c0_CathVoiceslogo.png" 
+            alt="Catholic Voices & Prayers"
+            className="header-logo"
+          />
         </Link>
         
         <nav className="nav-desktop">
