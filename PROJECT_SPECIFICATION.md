@@ -229,7 +229,7 @@ When making changes or adding features:
 
 ## 📞 Support & Maintenance
 
-- **Preview URL:** https://mass-locator.preview.emergentagent.com
+- **Preview URL:** https://catholic-voices-1.preview.emergentagent.com
 - **Tech Stack:** Vite + React + FastAPI + MongoDB
 - **Project Type:** DESKTOP WEBSITE (responsive)
 

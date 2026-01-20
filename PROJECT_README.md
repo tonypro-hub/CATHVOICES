@@ -173,9 +173,9 @@ YOUTUBE_CHANNEL_ID="UCRRPmmYLLHxRJlsKjJER1Ig"
 
 ### Frontend (.env)
 ```
-EXPO_TUNNEL_SUBDOMAIN=mass-locator
-EXPO_PACKAGER_HOSTNAME=https://mass-locator.preview.emergentagent.com
-EXPO_PUBLIC_BACKEND_URL=https://mass-locator.preview.emergentagent.com
+EXPO_TUNNEL_SUBDOMAIN=catholic-voices-1
+EXPO_PACKAGER_HOSTNAME=https://catholic-voices-1.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://catholic-voices-1.preview.emergentagent.com
 ```
 
 ## 🌐 Social Media Links
