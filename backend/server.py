@@ -2571,7 +2571,7 @@ def is_after_3pm_cst(published_at_str: str) -> bool:
 async def get_todays_saint():
     """
     Get today's Saint of the Day
-    Returns the currently active saint, or tries to fetch a new one
+    Returns the currently active saint, or the most recent saint if none for today
     """
     from datetime import timezone, timedelta
     
@@ -2579,23 +2579,26 @@ async def get_todays_saint():
     cst_now = get_cst_time()
     today_str = cst_now.strftime("%Y-%m-%d")
     
-    # Try to find an active saint for today
-    active_saint = await db.daily_saints.find_one({
-        "feastDate": today_str,
-        "isActive": True
+    # Try to find a saint for today
+    todays_saint = await db.daily_saints.find_one({
+        "feastDate": today_str
     })
     
-    if active_saint:
-        return daily_saint_helper(active_saint)
+    if todays_saint:
+        # Mark as active
+        await db.daily_saints.update_one(
+            {"_id": todays_saint["_id"]},
+            {"$set": {"isActive": True}}
+        )
+        return daily_saint_helper(todays_saint)
     
-    # No active saint for today, try to find most recent active
+    # No saint for today - get the most recent one
     most_recent = await db.daily_saints.find_one(
-        {"isActive": True},
+        {"thumbnail": {"$ne": ""}},  # Exclude private videos
         sort=[("feastDate", -1)]
     )
     
     if most_recent:
-        # Check if we should show a "coming soon" notice
         most_recent_data = daily_saint_helper(most_recent)
         
         # If it's past 3:15 PM CST and no new saint, show notice
