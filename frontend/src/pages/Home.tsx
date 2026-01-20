@@ -21,7 +21,8 @@ const Home = () => {
   const [dailyShort, setDailyShort] = useState<ContentItem | null>(null);
   const [featuredPrayer, setFeaturedPrayer] = useState<ContentItem | null>(null);
   const [recentPrayers, setRecentPrayers] = useState<ContentItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
+  void _loading; // Suppress unused variable warning
 
   useEffect(() => {
     fetchContent();
