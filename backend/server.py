@@ -887,99 +887,88 @@ async def get_novena_prayers():
 
 @api_router.get("/prayer-library/devotions")
 async def get_devotion_prayers():
-    """Get other prayers and devotions - only long-form videos (no Shorts)"""
+    """Get all prayers and devotions from the main devotions playlist"""
     
-    # First try to get from database (cached from playlists)
+    # First try to get from database (cached from playlist)
     videos = await db.prayer_videos.find({
-        "source_playlist": {"$in": ["devotions", "devotions_playlist_1", "devotions_playlist_2"]}
-    }).sort("publishedAt", -1).to_list(300)
+        "source_playlist": "devotions-main"
+    }).sort("publishedAt", -1).to_list(100)
     
-    # If no cached videos from devotions playlists, fetch from YouTube
+    # If no cached videos, fetch directly from playlist
     if not videos and YOUTUBE_API_KEY:
-        devotion_playlists = [
-            ("devotions_playlist_1", PRAYER_PLAYLISTS.get("devotions_playlist_1")),
-            ("devotions_playlist_2", PRAYER_PLAYLISTS.get("devotions_playlist_2")),
-        ]
-        
-        for playlist_name, playlist_id in devotion_playlists:
-            if playlist_id:
-                try:
-                    playlist_videos = fetch_playlist_videos(playlist_id, max_results=100)
-                    for video in playlist_videos:
-                        video_doc = {
-                            "videoId": video.get("videoId"),
-                            "title": video.get("title", ""),
-                            "description": video.get("description", ""),
-                            "thumbnail": video.get("thumbnail", ""),
-                            "duration": video.get("duration", ""),
-                            "publishedAt": video.get("publishedAt"),
-                            "category": "devotions",
-                            "source_playlist": playlist_name,
-                            "created_at": datetime.now(timezone.utc).isoformat()
-                        }
-                        # Upsert to avoid duplicates
-                        await db.prayer_videos.update_one(
-                            {"videoId": video_doc["videoId"]},
-                            {"$set": video_doc},
-                            upsert=True
-                        )
-                except Exception as e:
-                    logger.error(f"Error fetching devotions playlist {playlist_name}: {str(e)}")
-        
-        # Re-fetch from database
-        videos = await db.prayer_videos.find({
-            "source_playlist": {"$in": ["devotions", "devotions_playlist_1", "devotions_playlist_2"]}
-        }).sort("publishedAt", -1).to_list(300)
+        playlist_id = PRAYER_PLAYLISTS.get("devotions", "PLSFbA-IaB3xod9okzmBdtK4lYH5mKQAnx")
+        if playlist_id:
+            try:
+                playlist_videos = fetch_playlist_videos(playlist_id, max_results=100)
+                for video in playlist_videos:
+                    video_doc = {
+                        "videoId": video.get("videoId"),
+                        "title": video.get("title", ""),
+                        "description": video.get("description", ""),
+                        "thumbnail": video.get("thumbnail", ""),
+                        "duration": video.get("duration", ""),
+                        "publishedAt": video.get("publishedAt"),
+                        "category": "devotions",
+                        "source_playlist": "devotions-main",
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    # Upsert to avoid duplicates
+                    await db.prayer_videos.update_one(
+                        {"videoId": video_doc["videoId"]},
+                        {"$set": video_doc},
+                        upsert=True
+                    )
+                # Re-fetch from database
+                videos = await db.prayer_videos.find({
+                    "source_playlist": "devotions-main"
+                }).sort("publishedAt", -1).to_list(100)
+            except Exception as e:
+                logger.error(f"Error fetching devotions playlist: {str(e)}")
     
-    # Group by devotion type
-    devotion_types = {
+    # Group by category: Rosary, Novenas, Chaplets, Devotions, Sleep, Fulton Sheen, Mother Theresa
+    categories = {
+        "rosary": {"name": "Rosary", "videos": []},
+        "novenas": {"name": "Novenas", "videos": []},
         "chaplets": {"name": "Chaplets", "videos": []},
-        "litanies": {"name": "Litanies", "videos": []},
-        "stations": {"name": "Stations of the Cross", "videos": []},
-        "daily": {"name": "Daily Prayers", "videos": []},
-        "consecrations": {"name": "Consecrations & Devotions", "videos": []},
-        "petitions": {"name": "Petitions & Intentions", "videos": []},
-        "other": {"name": "Other Prayers", "videos": []}
+        "devotions": {"name": "Devotions", "videos": []},
+        "sleep": {"name": "Sleep", "videos": []},
+        "fulton_sheen": {"name": "Fulton Sheen", "videos": []},
+        "mother_theresa": {"name": "Mother Theresa", "videos": []},
     }
     
     all_videos = []
     for video in videos:
-        # Skip YouTube Shorts (videos under 3 minutes)
-        duration = video.get("duration", "PT0S")
-        if is_youtube_short(duration):
-            continue
-        
-        # Skip rosary videos - they belong on the rosary page
-        title_lower = video.get("title", "").lower()
-        if 'rosary' in title_lower and 'chaplet' not in title_lower:
-            continue
-            
         formatted = prayer_video_helper(video)
         formatted["category"] = "devotions"
+        title_lower = video.get("title", "").lower()
+        description_lower = video.get("description", "").lower()
+        combined = title_lower + " " + description_lower
         
-        if 'chaplet' in title_lower or 'divine mercy chaplet' in title_lower or 'coronilla' in title_lower:
-            devotion_types["chaplets"]["videos"].append(formatted)
-        elif 'litany' in title_lower or 'litanies' in title_lower:
-            devotion_types["litanies"]["videos"].append(formatted)
-        elif 'station' in title_lower:
-            devotion_types["stations"]["videos"].append(formatted)
-        elif any(kw in title_lower for kw in ['morning prayer', 'night prayer', 'evening prayer', 'angelus', 'daily prayer']):
-            devotion_types["daily"]["videos"].append(formatted)
-        elif any(kw in title_lower for kw in ['consecration', 'act of']):
-            devotion_types["consecrations"]["videos"].append(formatted)
-        elif any(kw in title_lower for kw in ['petition', 'prayer to st', 'prayer for', 'help', 'protection', 'deliverance', 'urgent']):
-            devotion_types["petitions"]["videos"].append(formatted)
+        # Categorize based on title/description keywords
+        if 'mother teresa' in combined or 'mother theresa' in combined or 'teresa of calcutta' in combined or 'saint teresa of calcutta' in combined:
+            categories["mother_theresa"]["videos"].append(formatted)
+        elif 'fulton sheen' in combined or 'bishop sheen' in combined or 'archbishop sheen' in combined:
+            categories["fulton_sheen"]["videos"].append(formatted)
+        elif 'sleep' in title_lower or 'rest' in title_lower or 'night' in title_lower or 'calming' in title_lower or 'peaceful' in title_lower:
+            categories["sleep"]["videos"].append(formatted)
+        elif 'rosary' in title_lower or 'mysteries' in title_lower:
+            categories["rosary"]["videos"].append(formatted)
+        elif 'novena' in title_lower or 'day 1' in title_lower or 'day 2' in title_lower or '30 day' in title_lower:
+            categories["novenas"]["videos"].append(formatted)
+        elif 'chaplet' in title_lower or 'coronilla' in title_lower or 'divine mercy' in title_lower:
+            categories["chaplets"]["videos"].append(formatted)
         else:
-            devotion_types["other"]["videos"].append(formatted)
+            categories["devotions"]["videos"].append(formatted)
         
         all_videos.append(formatted)
     
-    # Filter out empty categories
-    devotions = [d for d in devotion_types.values() if d["videos"]]
+    # Filter out empty categories and maintain order
+    category_order = ["rosary", "novenas", "chaplets", "devotions", "sleep", "fulton_sheen", "mother_theresa"]
+    devotions = [categories[key] for key in category_order if categories[key]["videos"]]
     
     return {
         "title": "Prayers & Devotions",
-        "description": "Traditional Catholic prayers, chaplets, litanies, and daily devotions",
+        "description": "Traditional Catholic prayers, rosaries, novenas, chaplets, and devotions",
         "devotions": devotions,
         "videos": all_videos,
         "count": len(all_videos)
