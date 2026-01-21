@@ -890,13 +890,48 @@ async def get_novena_prayers():
 @api_router.get("/prayer-library/devotions")
 async def get_devotion_prayers():
     """Get other prayers and devotions - only long-form videos (no Shorts)"""
+    
+    # First try to get from database (cached from playlists)
     videos = await db.prayer_videos.find({
-        "$or": [
-            {"category": "devotions"},
-            {"title": {"$regex": "chaplet|litany|stations|angelus|prayer|divine mercy", "$options": "i"}}
-        ],
-        "title": {"$not": {"$regex": "rosary|novena", "$options": "i"}}
-    }).sort("publishedAt", -1).to_list(200)
+        "source_playlist": {"$in": ["devotions", "devotions_playlist_1", "devotions_playlist_2"]}
+    }).sort("publishedAt", -1).to_list(300)
+    
+    # If no cached videos from devotions playlists, fetch from YouTube
+    if not videos and YOUTUBE_API_KEY:
+        devotion_playlists = [
+            ("devotions_playlist_1", PRAYER_PLAYLISTS.get("devotions_playlist_1")),
+            ("devotions_playlist_2", PRAYER_PLAYLISTS.get("devotions_playlist_2")),
+        ]
+        
+        for playlist_name, playlist_id in devotion_playlists:
+            if playlist_id:
+                try:
+                    playlist_videos = fetch_playlist_videos(playlist_id, max_results=100)
+                    for video in playlist_videos:
+                        video_doc = {
+                            "videoId": video.get("videoId"),
+                            "title": video.get("title", ""),
+                            "description": video.get("description", ""),
+                            "thumbnail": video.get("thumbnail", ""),
+                            "duration": video.get("duration", ""),
+                            "publishedAt": video.get("publishedAt"),
+                            "category": "devotions",
+                            "source_playlist": playlist_name,
+                            "created_at": datetime.now(timezone.utc).isoformat()
+                        }
+                        # Upsert to avoid duplicates
+                        await db.prayer_videos.update_one(
+                            {"videoId": video_doc["videoId"]},
+                            {"$set": video_doc},
+                            upsert=True
+                        )
+                except Exception as e:
+                    logger.error(f"Error fetching devotions playlist {playlist_name}: {str(e)}")
+        
+        # Re-fetch from database
+        videos = await db.prayer_videos.find({
+            "source_playlist": {"$in": ["devotions", "devotions_playlist_1", "devotions_playlist_2"]}
+        }).sort("publishedAt", -1).to_list(300)
     
     # Group by devotion type
     devotion_types = {
