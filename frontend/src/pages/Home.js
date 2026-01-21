@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import SEO from '../components/SEO';
 import './Home.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
