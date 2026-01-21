@@ -90,6 +90,11 @@ const SaintsArchive = () => {
 
   return (
     <div className="saints-archive-page" data-testid="saints-archive-page">
+      <SEO 
+        title="Saints Archive"
+        description={`Browse our complete collection of ${total || ''} daily saints from the Daily Lives of the Saints series. Learn about Catholic saints throughout history.`}
+        keywords="Catholic saints, saints archive, lives of the saints, saint of the day, daily saints, Catholic hagiography"
+      />
       {/* Hero Section */}
       <section className="archive-hero">
         <div className="container">
