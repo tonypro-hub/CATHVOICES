@@ -465,6 +465,84 @@ def mass_location_helper(loc) -> dict:
 
 # Sedevacantist groups to exclude (non-negotiable)
 EXCLUDED_GROUPS = [
+
+# ===================================
+# AUTHENTICATION HELPERS
+# ===================================
+
+def create_jwt_token(username: str) -> str:
+    """Create a JWT token for admin authentication"""
+    payload = {
+        "sub": username,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS),
+        "iat": datetime.now(timezone.utc)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def verify_jwt_token(token: str) -> dict:
+    """Verify and decode a JWT token"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+async def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """Dependency to verify admin authentication"""
+    token = credentials.credentials
+    payload = verify_jwt_token(token)
+    return {"username": payload["sub"]}
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash"""
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+def hash_password(password: str) -> str:
+    """Hash a password"""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+async def send_suggestion_notification(suggestion: dict):
+    """Send email notification for new suggestion"""
+    if not RESEND_API_KEY or not ADMIN_EMAIL:
+        logger.warning("Email not configured - skipping notification")
+        return
+    
+    try:
+        suggestion_type = "New Location" if suggestion.get("suggestion_type") == "new" else "Edit Suggestion"
+        
+        html_content = f"""
+        <h2>New Location Suggestion</h2>
+        <p><strong>Type:</strong> {suggestion_type}</p>
+        <p><strong>From:</strong> {suggestion.get('user_name', 'Anonymous')} ({suggestion.get('user_email')})</p>
+        <hr>
+        <h3>Details:</h3>
+        <ul>
+            <li><strong>Name:</strong> {suggestion.get('name', 'N/A')}</li>
+            <li><strong>Location:</strong> {suggestion.get('city', '')}, {suggestion.get('state', '')} {suggestion.get('country', '')}</li>
+            <li><strong>Affiliation:</strong> {suggestion.get('affiliation', 'N/A')}</li>
+            <li><strong>Address:</strong> {suggestion.get('street', 'N/A')}</li>
+            <li><strong>Website:</strong> {suggestion.get('website_url', 'N/A')}</li>
+        </ul>
+        <p><strong>Reason/Notes:</strong> {suggestion.get('reason', 'No reason provided')}</p>
+        <hr>
+        <p><a href="{os.environ.get('REACT_APP_BACKEND_URL', '')}/admin/suggestions">Review in Admin Panel</a></p>
+        """
+        
+        params = {
+            "from": SENDER_EMAIL,
+            "to": [ADMIN_EMAIL],
+            "subject": f"[Catholic Voices] {suggestion_type}: {suggestion.get('name', 'Unknown')}",
+            "html": html_content
+        }
+        
+        await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Suggestion notification sent to {ADMIN_EMAIL}")
+    except Exception as e:
+        logger.error(f"Failed to send notification email: {str(e)}")
+
+# Sedevacantist groups to exclude (original)
     'cmri', 'sspv', 'sspx-mc', 'sspx marian corps',
     'sedevacantist', 'vacantist', 'non una cum'
 ]
