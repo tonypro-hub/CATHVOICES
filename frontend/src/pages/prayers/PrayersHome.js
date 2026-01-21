@@ -27,43 +27,71 @@ const PrayersHome = () => {
     }
   };
 
-  const categoryIcons = {
-    rosary: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="12" cy="5" r="2" />
-        <circle cx="12" cy="10" r="1.5" />
-        <circle cx="12" cy="14" r="1.5" />
-        <circle cx="12" cy="18" r="1.5" />
-        <circle cx="8" cy="20" r="1.5" />
-        <circle cx="16" cy="20" r="1.5" />
-        <path d="M12 7v11M10 19h4" />
-      </svg>
-    ),
-    novenas: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 2L12 6M12 18L12 22M6 12L2 12M22 12L18 12" />
-        <circle cx="12" cy="12" r="6" />
-        <path d="M12 9v3l2 2" />
-      </svg>
-    ),
-    devotions: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-        <path d="M12 6v6l4 2" />
-      </svg>
-    ),
-    'fulton-sheen': (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-      </svg>
-    )
-  };
-
-  const categoryLinks = {
-    rosary: '/prayers/rosary',
-    novenas: '/prayers/novenas',
-    devotions: '/prayers/devotions',
-    'fulton-sheen': '/prayers/fulton-sheen'
+  const categoryConfig = {
+    'fulton-sheen': {
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      ),
+      link: '/prayers/fulton-sheen',
+      color: 'fulton-sheen'
+    },
+    saints: {
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="8" r="5" />
+          <path d="M12 13v8M8 17h8" />
+          <path d="M7 3l2 2M17 3l-2 2" />
+        </svg>
+      ),
+      link: '/prayers/saints',
+      color: 'saints'
+    },
+    teachings: {
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </svg>
+      ),
+      link: '/prayers/teachings',
+      color: 'teachings'
+    },
+    rosary: {
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="5" r="2" />
+          <circle cx="12" cy="10" r="1.5" />
+          <circle cx="12" cy="14" r="1.5" />
+          <circle cx="12" cy="18" r="1.5" />
+          <path d="M12 7v11" />
+        </svg>
+      ),
+      link: '/prayers/rosary',
+      color: 'rosary'
+    },
+    novenas: {
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2L12 6M12 18L12 22M6 12L2 12M22 12L18 12" />
+          <circle cx="12" cy="12" r="6" />
+          <path d="M12 9v3l2 2" />
+        </svg>
+      ),
+      link: '/prayers/novenas',
+      color: 'novenas'
+    },
+    devotions: {
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+          <path d="M12 6v6l4 2" />
+        </svg>
+      ),
+      link: '/prayers/devotions',
+      color: 'devotions'
+    }
   };
 
   return (
