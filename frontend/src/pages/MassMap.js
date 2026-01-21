@@ -859,6 +859,17 @@ const MassMap = () => {
                     >
                       Suggest Edit
                     </button>
+                    <button 
+                      className="action-btn action-report"
+                      onClick={() => openReportModal(selectedLocation)}
+                      data-testid="report-issue-btn"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 8v4M12 16h.01" />
+                      </svg>
+                      Report Issue
+                    </button>
                   </div>
                 </div>
               ) : (
