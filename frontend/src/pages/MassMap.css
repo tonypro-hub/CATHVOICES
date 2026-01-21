@@ -913,6 +913,13 @@
   .stat-card-total {
     grid-column: span 1;
   }
+  
+  .detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 768px) {
