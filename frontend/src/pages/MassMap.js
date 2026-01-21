@@ -300,6 +300,112 @@ const MassMap = () => {
 
   const getMarkerColor = (affiliation) => AFFILIATION_COLORS[affiliation] || '#6b7280';
 
+  // Suggestion handlers
+  const openSuggestionModal = (type = 'new', location = null) => {
+    setSuggestionType(type);
+    setSuggestionSuccess(false);
+    setSuggestionError('');
+    
+    if (type === 'edit' && location) {
+      setSuggestionForm({
+        name: location.name || '',
+        street: location.street || '',
+        city: location.city || '',
+        state: location.state || '',
+        zip_code: location.zip_code || '',
+        country: location.country || 'USA',
+        affiliation: location.affiliation || 'Diocesan',
+        rite: location.rite || 'Latin',
+        mass_schedule: '',
+        website_url: location.website_url || '',
+        phone: location.phone || '',
+        notes: location.notes || '',
+        reason: '',
+        user_name: '',
+        user_email: '',
+        honeypot: '',
+        location_id: location.id
+      });
+    } else {
+      setSuggestionForm({
+        name: '',
+        street: '',
+        city: '',
+        state: '',
+        zip_code: '',
+        country: 'USA',
+        affiliation: 'Diocesan',
+        rite: 'Latin',
+        mass_schedule: '',
+        website_url: '',
+        phone: '',
+        notes: '',
+        reason: '',
+        user_name: '',
+        user_email: '',
+        honeypot: ''
+      });
+    }
+    setShowSuggestionModal(true);
+  };
+
+  const handleSuggestionChange = (e) => {
+    const { name, value } = e.target;
+    setSuggestionForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const submitSuggestion = async (e) => {
+    e.preventDefault();
+    setSuggestionSubmitting(true);
+    setSuggestionError('');
+
+    try {
+      const payload = {
+        suggestion_type: suggestionType,
+        location_id: suggestionForm.location_id || null,
+        user_email: suggestionForm.user_email,
+        user_name: suggestionForm.user_name,
+        name: suggestionForm.name,
+        street: suggestionForm.street,
+        city: suggestionForm.city,
+        state: suggestionForm.state,
+        zip_code: suggestionForm.zip_code,
+        country: suggestionForm.country,
+        affiliation: suggestionForm.affiliation,
+        rite: suggestionForm.rite,
+        mass_schedule: suggestionForm.mass_schedule,
+        website_url: suggestionForm.website_url,
+        phone: suggestionForm.phone,
+        notes: suggestionForm.notes,
+        reason: suggestionForm.reason,
+        honeypot: suggestionForm.honeypot
+      };
+
+      const response = await fetch(`${API}/suggestions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        setSuggestionSuccess(true);
+      } else {
+        const data = await response.json();
+        setSuggestionError(data.detail || 'Failed to submit suggestion');
+      }
+    } catch (error) {
+      setSuggestionError('An error occurred. Please try again.');
+    } finally {
+      setSuggestionSubmitting(false);
+    }
+  };
+
+  const closeSuggestionModal = () => {
+    setShowSuggestionModal(false);
+    setSuggestionSuccess(false);
+    setSuggestionError('');
+  };
+
   // Filter locations based on favorites if enabled
   const displayedLocations = useMemo(() => {
     if (showFavoritesOnly) {
