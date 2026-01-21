@@ -87,8 +87,12 @@ const MassMap = () => {
   }, []);
 
   useEffect(() => {
-    fetchLocations();
-  }, [activeAffiliation, activeRite, activeState, searchQuery]);
+    if (nearbyMode && userLocation) {
+      fetchNearbyLocations();
+    } else {
+      fetchLocations();
+    }
+  }, [activeAffiliation, activeRite, activeState, searchQuery, nearbyMode, userLocation, nearbyRadius]);
 
   const fetchFilters = async () => {
     try {
