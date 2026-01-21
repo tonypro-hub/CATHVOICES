@@ -28,29 +28,35 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
   - `POST /api/saints/refresh` - Manual trigger
 
 ### 2. Mass Map ✅ COMPLETE (January 21, 2026)
-- **266 total locations** across 49 US states
+- **309 total locations** across 49+ US states
 - Interactive Leaflet map with OpenStreetMap tiles
-- **NEW: "Find Nearby" Geolocation Feature** - Uses browser GPS to find masses near user
+- **"Find Nearby" Geolocation Feature** - Uses browser GPS to find masses near user
   - Adjustable radius (10, 25, 50, 100, 200 miles)
   - Shows distance in miles for each location
   - User location marker on map
+- **Favorites Feature** - Save preferred locations to localStorage (no login required)
+  - Heart icon toggle on cards, popups, and detail view
+  - "My Favorites" filter shows saved locations
+  - Persists across browser sessions
 - Filter by affiliation:
   - SSPX: 119 locations
   - Eastern Catholic: 104 locations
   - Ordinariate: 39 locations
-  - FSSP: 2 locations
-  - ICKSP: 1 location
+  - ICKSP: 27 locations (from web scraper)
+  - FSSP: 19 locations (from web scraper)
   - Diocesan: 1 location
 - Filter by state (49 states covered)
 - Search by city, state, or parish name
 - Location detail view with address, website link, directions
 - Excludes sedevacantist groups (CMRI, SSPV, etc.)
+- **Web Scraper** - Manual script to fetch locations from ICKSP and FSSP websites
 - API Endpoints:
   - `GET /api/mass-locations` - All locations with filters
   - `GET /api/mass-locations/stats` - Statistics
   - `GET /api/mass-locations/filters` - Available filter options
   - `GET /api/mass-locations/search` - Search endpoint (supports lat/lng/radius)
   - `GET /api/mass-locations/{id}` - Location detail
+  - `POST /api/mass-locations/scrape` - Trigger web scraper (manual)
 
 ### 3. Prayers Page ✅ COMPLETE
 - Categorized prayer content
