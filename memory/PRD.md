@@ -81,13 +81,14 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 
 ### 5. Prayers Page ✅ REBUILT (January 21, 2026)
 - **Complete Prayer Library Architecture**:
-  - `/prayers` - Main hub with featured Fulton Sheen card and category navigation
-  - `/prayers/rosary` - Rosaries grouped by mystery type (Joyful, Sorrowful, Glorious, Luminous)
-  - `/prayers/novenas` - Novenas grouped by saint/devotion with day indicators
-  - `/prayers/devotions` - Chaplets, Litanies, Stations, Daily Prayers
-  - `/prayers/fulton-sheen` - Featured Bishop Sheen section with intro and rosaries
+  - `/prayers` - Main hub with featured Fulton Sheen banner and category navigation
+  - `/prayers/saints` - Lives of the Saints videos
+  - `/prayers/teachings` - Catholic Teachings videos
+  - `/prayers/devotions` - Prayers & Devotions videos
+  - `/prayers/fulton-sheen` - Featured Bishop Sheen section
   - `/prayers/video/:id` - Individual prayer video page with YouTube embed
-- **YouTube Integration**: Videos pulled from YouTube with title, description, thumbnail, duration
+- **YouTube Integration**: Connected to "Catholic Voices & Prayers" channel (UCRRPmmYLLHxRJlsKjJER1Ig), 200+ videos categorized
+- **Featured Banner**: Bishop Fulton J. Sheen banner with full-bleed image and floating text overlay ✅ (January 21, 2026)
 - **Design**: Reverent, PelicanPlus-style with calm typography and devotional spacing
 
 ### 6. Store Page ✅ COMPLETE
