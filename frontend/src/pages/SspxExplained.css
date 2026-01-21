@@ -173,6 +173,98 @@
   margin-bottom: 0;
 }
 
+/* Info box highlight variant */
+.info-box-highlight {
+  background-color: rgba(128, 0, 32, 0.08);
+  border-left-color: var(--color-accent-primary);
+}
+
+/* FAQ Section */
+.faq-section {
+  margin: var(--space-6) 0;
+}
+
+.faq-item {
+  background-color: var(--color-bg-secondary);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  border-left: 3px solid var(--color-accent-primary);
+}
+
+.faq-item h3 {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.faq-item p {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: 0;
+  line-height: var(--leading-relaxed);
+}
+
+/* Quotes Grid */
+.quotes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  margin: var(--space-6) 0;
+}
+
+.quote-card {
+  background-color: var(--color-bg-secondary);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid var(--color-accent-gold);
+}
+
+.quote-card blockquote {
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  line-height: var(--leading-relaxed);
+}
+
+.quote-card cite {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-style: normal;
+  font-weight: var(--font-semibold);
+}
+
+/* Summary Box */
+.summary-box {
+  background: linear-gradient(135deg, rgba(128, 0, 32, 0.08) 0%, rgba(128, 0, 32, 0.04) 100%);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  margin: var(--space-10) 0;
+  border: 1px solid rgba(128, 0, 32, 0.2);
+}
+
+.summary-box h2 {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+  color: var(--color-accent-primary);
+}
+
+.summary-box .bullet-list li::before {
+  color: var(--color-accent-primary);
+}
+
+.summary-closing {
+  font-size: var(--text-lg);
+  color: var(--color-accent-primary);
+  text-align: center;
+  margin-top: var(--space-6);
+  margin-bottom: 0;
+}
+
 /* CTA */
 .sspx-cta {
   background-color: var(--color-bg-secondary);
