@@ -68,11 +68,18 @@ function AppContent() {
             <main className="main-content">
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/prayers" element={<Prayers />} />
-                <Route path="/prayers/:id" element={<PrayerDetail />} />
+                {/* Prayer Library Routes */}
+                <Route path="/prayers" element={<PrayersHome />} />
+                <Route path="/prayers/rosary" element={<RosaryPage />} />
+                <Route path="/prayers/novenas" element={<NovenasPage />} />
+                <Route path="/prayers/devotions" element={<DevotionsPage />} />
+                <Route path="/prayers/fulton-sheen" element={<FultonSheenPage />} />
+                <Route path="/prayers/video/:videoId" element={<PrayerVideoPage />} />
+                {/* Daily Saints */}
                 <Route path="/daily-saint" element={<DailySaint />} />
                 <Route path="/saints-archive" element={<SaintsArchive />} />
                 <Route path="/saints/:id" element={<DailySaint />} />
+                {/* Other Pages */}
                 <Route path="/mass-map" element={<MassMap />} />
                 <Route path="/sspx-explained" element={<SspxExplained />} />
                 <Route path="/store" element={<Store />} />
