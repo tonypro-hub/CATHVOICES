@@ -653,6 +653,8 @@ PRAYER_PLAYLISTS = {
     "devotions": os.environ.get("DEVOTIONS_PLAYLIST_ID", ""),
     "fulton_sheen": os.environ.get("FULTON_SHEEN_PLAYLIST_ID", "PLSFbA-IaB3xo_0Ww_CToOktS5Z88eiPfC"),
     "saints": os.environ.get("SAINTS_PLAYLIST_ID", "PLSFbA-IaB3xprRODsXjEiXMV6QF9iGXol"),
+    "devotions_playlist_1": "PLSFbA-IaB3xqHzE_18bvjvs0qfExCYQy-",
+    "devotions_playlist_2": "PLSFbA-IaB3xo2jQbdr--2z4RUuz_Xi8xu",
 }
 
 def format_duration(duration_str: str) -> str:
