@@ -1223,6 +1223,379 @@ async def get_scraper_status():
         "sources": await db.mass_locations.distinct("source")
     }
 
+# ===================================
+# ADMIN AUTHENTICATION ENDPOINTS
+# ===================================
+
+@api_router.post("/admin/login")
+async def admin_login(credentials: AdminLogin):
+    """Admin login endpoint"""
+    # Check username
+    if credentials.username != ADMIN_USERNAME:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Check password
+    if not ADMIN_PASSWORD_HASH:
+        # If no password hash set, reject all logins
+        raise HTTPException(status_code=401, detail="Admin not configured")
+    
+    if not verify_password(credentials.password, ADMIN_PASSWORD_HASH):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Generate token
+    token = create_jwt_token(credentials.username)
+    
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_in": JWT_EXPIRATION_HOURS * 3600
+    }
+
+@api_router.get("/admin/me")
+async def get_admin_info(admin: dict = Depends(get_current_admin)):
+    """Get current admin info (verify token)"""
+    return {"username": admin["username"], "authenticated": True}
+
+@api_router.post("/admin/setup")
+async def setup_admin(password: str):
+    """
+    One-time admin setup - generates password hash.
+    This endpoint should be disabled in production after setup.
+    """
+    if ADMIN_PASSWORD_HASH:
+        raise HTTPException(status_code=400, detail="Admin already configured")
+    
+    hashed = hash_password(password)
+    return {
+        "message": "Add this to your .env file",
+        "ADMIN_PASSWORD_HASH": hashed,
+        "note": "Then restart the backend"
+    }
+
+# ===================================
+# ADMIN LOCATION MANAGEMENT
+# ===================================
+
+@api_router.get("/admin/locations")
+async def admin_get_locations(
+    admin: dict = Depends(get_current_admin),
+    page: int = 1,
+    limit: int = 50,
+    search: str = "",
+    affiliation: str = ""
+):
+    """Get all locations for admin (paginated)"""
+    query = {"exclude_flag": {"$ne": True}}
+    
+    if search:
+        query["$or"] = [
+            {"name": {"$regex": search, "$options": "i"}},
+            {"city": {"$regex": search, "$options": "i"}},
+            {"state": {"$regex": search, "$options": "i"}}
+        ]
+    
+    if affiliation:
+        query["affiliation"] = affiliation
+    
+    skip = (page - 1) * limit
+    
+    total = await db.mass_locations.count_documents(query)
+    locations = await db.mass_locations.find(query).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "locations": [mass_location_helper(loc) for loc in locations],
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit
+    }
+
+@api_router.get("/admin/locations/{location_id}")
+async def admin_get_location(location_id: str, admin: dict = Depends(get_current_admin)):
+    """Get a single location for editing"""
+    location = await db.mass_locations.find_one({
+        "$or": [
+            {"id": location_id},
+            {"location_id": location_id}
+        ]
+    })
+    
+    if not location:
+        raise HTTPException(status_code=404, detail="Location not found")
+    
+    # Return full document including all fields
+    result = mass_location_helper(location)
+    result["diocese_or_archdiocese"] = location.get("diocese_or_archdiocese", "")
+    result["mass_schedule"] = location.get("mass_schedule", "")
+    result["public_access"] = location.get("public_access", True)
+    result["source"] = location.get("source", "")
+    result["verification_status"] = location.get("verification_status", "")
+    result["created_at"] = location.get("created_at", "")
+    result["updated_at"] = location.get("updated_at", "")
+    
+    return result
+
+@api_router.put("/admin/locations/{location_id}")
+async def admin_update_location(
+    location_id: str,
+    update: AdminLocationUpdate,
+    admin: dict = Depends(get_current_admin)
+):
+    """Update a location"""
+    location = await db.mass_locations.find_one({
+        "$or": [
+            {"id": location_id},
+            {"location_id": location_id}
+        ]
+    })
+    
+    if not location:
+        raise HTTPException(status_code=404, detail="Location not found")
+    
+    # Build update document
+    update_data = {k: v for k, v in update.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = admin["username"]
+    
+    await db.mass_locations.update_one(
+        {"_id": location["_id"]},
+        {"$set": update_data}
+    )
+    
+    logger.info(f"Admin {admin['username']} updated location: {location_id}")
+    
+    return {"message": "Location updated successfully", "id": location_id}
+
+@api_router.delete("/admin/locations/{location_id}")
+async def admin_delete_location(location_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete (soft delete) a location"""
+    result = await db.mass_locations.update_one(
+        {"$or": [{"id": location_id}, {"location_id": location_id}]},
+        {"$set": {
+            "exclude_flag": True,
+            "deleted_at": datetime.now(timezone.utc).isoformat(),
+            "deleted_by": admin["username"]
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Location not found")
+    
+    logger.info(f"Admin {admin['username']} deleted location: {location_id}")
+    
+    return {"message": "Location deleted successfully"}
+
+@api_router.post("/admin/locations")
+async def admin_create_location(
+    location: MassLocationCreate,
+    admin: dict = Depends(get_current_admin)
+):
+    """Create a new location"""
+    new_location = {
+        "id": str(uuid.uuid4()),
+        "location_id": str(uuid.uuid4()),
+        **location.dict(),
+        "exclude_flag": False,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": admin["username"],
+        "source": "admin",
+        "verification_status": "Verified"
+    }
+    
+    await db.mass_locations.insert_one(new_location)
+    
+    logger.info(f"Admin {admin['username']} created location: {new_location['id']}")
+    
+    return {"message": "Location created successfully", "id": new_location["id"]}
+
+# ===================================
+# USER SUGGESTION ENDPOINTS
+# ===================================
+
+@api_router.post("/suggestions")
+async def submit_suggestion(suggestion: LocationSuggestion, background_tasks: BackgroundTasks):
+    """Submit a location suggestion (new or edit)"""
+    
+    # Anti-spam: honeypot check
+    if suggestion.honeypot:
+        # Bot detected - silently accept but don't save
+        return {"message": "Thank you for your suggestion!", "id": "spam-detected"}
+    
+    # Create suggestion document
+    suggestion_doc = {
+        "id": str(uuid.uuid4()),
+        "suggestion_type": suggestion.suggestion_type,
+        "location_id": suggestion.location_id,
+        "user_email": suggestion.user_email,
+        "user_name": suggestion.user_name,
+        "name": suggestion.name,
+        "street": suggestion.street,
+        "city": suggestion.city,
+        "state": suggestion.state,
+        "zip_code": suggestion.zip_code,
+        "country": suggestion.country,
+        "affiliation": suggestion.affiliation,
+        "rite": suggestion.rite,
+        "mass_schedule": suggestion.mass_schedule,
+        "website_url": suggestion.website_url,
+        "phone": suggestion.phone,
+        "notes": suggestion.notes,
+        "reason": suggestion.reason,
+        "status": "pending",  # pending, approved, rejected
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.location_suggestions.insert_one(suggestion_doc)
+    
+    logger.info(f"New suggestion submitted: {suggestion_doc['id']} from {suggestion.user_email}")
+    
+    # Send email notification in background
+    background_tasks.add_task(send_suggestion_notification, suggestion_doc)
+    
+    return {
+        "message": "Thank you for your suggestion! We'll review it soon.",
+        "id": suggestion_doc["id"]
+    }
+
+@api_router.get("/admin/suggestions")
+async def admin_get_suggestions(
+    admin: dict = Depends(get_current_admin),
+    status: str = "",
+    page: int = 1,
+    limit: int = 20
+):
+    """Get all suggestions for admin review"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    skip = (page - 1) * limit
+    
+    total = await db.location_suggestions.count_documents(query)
+    suggestions = await db.location_suggestions.find(query).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Remove MongoDB _id
+    for s in suggestions:
+        s.pop("_id", None)
+    
+    return {
+        "suggestions": suggestions,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit
+    }
+
+@api_router.get("/admin/suggestions/{suggestion_id}")
+async def admin_get_suggestion(suggestion_id: str, admin: dict = Depends(get_current_admin)):
+    """Get a single suggestion"""
+    suggestion = await db.location_suggestions.find_one({"id": suggestion_id})
+    
+    if not suggestion:
+        raise HTTPException(status_code=404, detail="Suggestion not found")
+    
+    suggestion.pop("_id", None)
+    
+    # If it's an edit, also get the original location
+    if suggestion.get("location_id"):
+        original = await db.mass_locations.find_one({
+            "$or": [
+                {"id": suggestion["location_id"]},
+                {"location_id": suggestion["location_id"]}
+            ]
+        })
+        if original:
+            suggestion["original_location"] = mass_location_helper(original)
+    
+    return suggestion
+
+@api_router.put("/admin/suggestions/{suggestion_id}")
+async def admin_update_suggestion(
+    suggestion_id: str,
+    action: str,  # "approve" or "reject"
+    admin: dict = Depends(get_current_admin)
+):
+    """Approve or reject a suggestion"""
+    suggestion = await db.location_suggestions.find_one({"id": suggestion_id})
+    
+    if not suggestion:
+        raise HTTPException(status_code=404, detail="Suggestion not found")
+    
+    if action == "approve":
+        # Apply the suggestion
+        if suggestion["suggestion_type"] == "new":
+            # Create new location
+            new_location = {
+                "id": str(uuid.uuid4()),
+                "location_id": str(uuid.uuid4()),
+                "name": suggestion.get("name"),
+                "street": suggestion.get("street", ""),
+                "city": suggestion.get("city"),
+                "state": suggestion.get("state"),
+                "zip_code": suggestion.get("zip_code", ""),
+                "country": suggestion.get("country", "USA"),
+                "affiliation": suggestion.get("affiliation", "Diocesan"),
+                "rite": suggestion.get("rite", "Latin"),
+                "mass_schedule": suggestion.get("mass_schedule"),
+                "website_url": suggestion.get("website_url"),
+                "phone": suggestion.get("phone"),
+                "notes": suggestion.get("notes"),
+                "entity_type": "Parish",
+                "latitude": 0,  # Will need geocoding
+                "longitude": 0,
+                "exclude_flag": False,
+                "source": "user_suggestion",
+                "verification_status": "User Submitted",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "approved_by": admin["username"]
+            }
+            await db.mass_locations.insert_one(new_location)
+            logger.info(f"Created new location from suggestion: {new_location['id']}")
+        else:
+            # Update existing location
+            update_data = {}
+            for field in ["name", "street", "city", "state", "zip_code", "country", 
+                         "affiliation", "rite", "mass_schedule", "website_url", "phone", "notes"]:
+                if suggestion.get(field):
+                    update_data[field] = suggestion[field]
+            
+            if update_data:
+                update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+                update_data["updated_by"] = f"suggestion:{admin['username']}"
+                
+                await db.mass_locations.update_one(
+                    {"$or": [
+                        {"id": suggestion["location_id"]},
+                        {"location_id": suggestion["location_id"]}
+                    ]},
+                    {"$set": update_data}
+                )
+                logger.info(f"Updated location from suggestion: {suggestion['location_id']}")
+        
+        status = "approved"
+    else:
+        status = "rejected"
+    
+    # Update suggestion status
+    await db.location_suggestions.update_one(
+        {"id": suggestion_id},
+        {"$set": {
+            "status": status,
+            "reviewed_at": datetime.now(timezone.utc).isoformat(),
+            "reviewed_by": admin["username"]
+        }}
+    )
+    
+    return {"message": f"Suggestion {status}", "id": suggestion_id}
+
+@api_router.delete("/admin/suggestions/{suggestion_id}")
+async def admin_delete_suggestion(suggestion_id: str, admin: dict = Depends(get_current_admin)):
+    """Delete a suggestion"""
+    result = await db.location_suggestions.delete_one({"id": suggestion_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Suggestion not found")
+    
+    return {"message": "Suggestion deleted"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
