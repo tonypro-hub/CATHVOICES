@@ -939,7 +939,9 @@ async def get_devotion_prayers():
         "litanies": {"name": "Litanies", "videos": []},
         "stations": {"name": "Stations of the Cross", "videos": []},
         "daily": {"name": "Daily Prayers", "videos": []},
-        "other": {"name": "Other Devotions", "videos": []}
+        "consecrations": {"name": "Consecrations & Devotions", "videos": []},
+        "petitions": {"name": "Petitions & Intentions", "videos": []},
+        "other": {"name": "Other Prayers", "videos": []}
     }
     
     all_videos = []
@@ -948,19 +950,27 @@ async def get_devotion_prayers():
         duration = video.get("duration", "PT0S")
         if is_youtube_short(duration):
             continue
+        
+        # Skip rosary videos - they belong on the rosary page
+        title_lower = video.get("title", "").lower()
+        if 'rosary' in title_lower and 'chaplet' not in title_lower:
+            continue
             
         formatted = prayer_video_helper(video)
         formatted["category"] = "devotions"
-        title_lower = video.get("title", "").lower()
         
-        if 'chaplet' in title_lower or 'divine mercy' in title_lower:
+        if 'chaplet' in title_lower or 'divine mercy chaplet' in title_lower or 'coronilla' in title_lower:
             devotion_types["chaplets"]["videos"].append(formatted)
-        elif 'litany' in title_lower:
+        elif 'litany' in title_lower or 'litanies' in title_lower:
             devotion_types["litanies"]["videos"].append(formatted)
         elif 'station' in title_lower:
             devotion_types["stations"]["videos"].append(formatted)
-        elif any(kw in title_lower for kw in ['morning', 'night', 'evening', 'angelus']):
+        elif any(kw in title_lower for kw in ['morning prayer', 'night prayer', 'evening prayer', 'angelus', 'daily prayer']):
             devotion_types["daily"]["videos"].append(formatted)
+        elif any(kw in title_lower for kw in ['consecration', 'act of']):
+            devotion_types["consecrations"]["videos"].append(formatted)
+        elif any(kw in title_lower for kw in ['petition', 'prayer to st', 'prayer for', 'help', 'protection', 'deliverance', 'urgent']):
+            devotion_types["petitions"]["videos"].append(formatted)
         else:
             devotion_types["other"]["videos"].append(formatted)
         
