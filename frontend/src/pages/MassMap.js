@@ -829,6 +829,19 @@ const MassMap = () => {
                   </div>
 
                   <div className="detail-info">
+                    {selectedLocation.mass_schedule && (
+                      <div className="info-row info-mass-times">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 6v6l4 2" />
+                        </svg>
+                        <div>
+                          <p className="info-label">Mass Times</p>
+                          <p className="info-mass-schedule">{selectedLocation.mass_schedule}</p>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="info-row">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
