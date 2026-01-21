@@ -936,27 +936,65 @@ async def get_devotion_prayers():
 
 @api_router.get("/prayer-library/fulton-sheen")
 async def get_fulton_sheen_prayers():
-    """Get all prayers featuring Bishop Fulton J. Sheen"""
+    """Get all prayers from Bishop Fulton J. Sheen playlist, organized into Rosaries and Novenas & Devotions"""
+    
+    # First try to get from database (cached from playlist)
     videos = await db.prayer_videos.find({
-        "$or": [
-            {"category": "fulton-sheen"},
-            {"title": {"$regex": "fulton sheen|bishop sheen|archbishop sheen", "$options": "i"}},
-            {"description": {"$regex": "fulton sheen|bishop sheen", "$options": "i"}}
-        ]
+        "source_playlist": "fulton-sheen"
     }).sort("publishedAt", -1).to_list(100)
+    
+    # If no cached videos, fetch directly from playlist
+    if not videos and YOUTUBE_API_KEY:
+        playlist_id = PRAYER_PLAYLISTS.get("fulton_sheen", "PLSFbA-IaB3xo_0Ww_CToOktS5Z88eiPfC")
+        if playlist_id:
+            try:
+                playlist_videos = fetch_playlist_videos(playlist_id, max_results=100)
+                for video in playlist_videos:
+                    video_doc = {
+                        "videoId": video.get("videoId"),
+                        "title": video.get("title", ""),
+                        "description": video.get("description", ""),
+                        "thumbnail": video.get("thumbnail", ""),
+                        "duration": video.get("duration", ""),
+                        "publishedAt": video.get("publishedAt"),
+                        "category": "fulton-sheen",
+                        "source_playlist": "fulton-sheen",
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    # Upsert to avoid duplicates
+                    await db.prayer_videos.update_one(
+                        {"videoId": video_doc["videoId"]},
+                        {"$set": video_doc},
+                        upsert=True
+                    )
+                # Re-fetch from database
+                videos = await db.prayer_videos.find({
+                    "source_playlist": "fulton-sheen"
+                }).sort("publishedAt", -1).to_list(100)
+            except Exception as e:
+                logger.error(f"Error fetching Fulton Sheen playlist: {str(e)}")
     
     all_videos = [prayer_video_helper(v) for v in videos]
     
-    # Categorize Sheen content
-    rosaries = [v for v in all_videos if 'rosary' in v.get('title', '').lower()]
-    reflections = [v for v in all_videos if v not in rosaries]
+    # Categorize into Rosaries and Novenas & Devotions
+    rosaries = []
+    novenas_devotions = []
+    
+    for v in all_videos:
+        title_lower = v.get('title', '').lower()
+        # Check if it's a rosary
+        if any(kw in title_lower for kw in ['rosary', 'mysteries', 'sorrowful', 'joyful', 'glorious', 'luminous']):
+            rosaries.append(v)
+        else:
+            # Everything else goes to Novenas & Devotions
+            novenas_devotions.append(v)
     
     return {
-        "title": "Praying with Bishop Fulton J. Sheen",
+        "title": "Pray with Bishop Fulton J. Sheen",
         "description": "Experience the profound spiritual guidance of the Venerable Archbishop Fulton J. Sheen through these guided prayers and reflections.",
         "featured": True,
         "rosaries": rosaries,
-        "reflections": reflections,
+        "novenas_devotions": novenas_devotions,
         "videos": all_videos,
         "count": len(all_videos)
     }
