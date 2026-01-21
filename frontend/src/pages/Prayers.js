@@ -36,6 +36,11 @@ const Prayers = () => {
 
   return (
     <div className="prayers-page" data-testid="prayers-page">
+      <SEO 
+        title="Prayers & Devotions"
+        description="A collection of traditional Catholic prayers including the Rosary, Divine Office, Novenas, and daily devotions to guide your spiritual journey."
+        keywords="Catholic prayers, Rosary, Divine Office, Novenas, traditional prayers, Catholic devotions, daily prayers"
+      />
       {/* Hero */}
       <section className="prayers-hero">
         <div className="container">
