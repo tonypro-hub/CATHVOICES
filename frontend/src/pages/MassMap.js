@@ -948,13 +948,21 @@ const MassMap = () => {
                                 <span className="card-distance"> • {loc.distance_miles} mi</span>
                               )}
                             </p>
-                            {loc.mass_schedule && (
+                            {loc.mass_schedule ? (
                               <p className="card-mass-times">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <circle cx="12" cy="12" r="10" />
                                   <path d="M12 6v6l4 2" />
                                 </svg>
                                 {loc.mass_schedule}
+                              </p>
+                            ) : (
+                              <p className="card-mass-unknown">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <circle cx="12" cy="12" r="10" />
+                                  <path d="M12 6v6l4 2" />
+                                </svg>
+                                Times not available
                               </p>
                             )}
                             <div className="card-tags">
