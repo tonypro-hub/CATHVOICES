@@ -465,6 +465,9 @@ def mass_location_helper(loc) -> dict:
 
 # Sedevacantist groups to exclude (non-negotiable)
 EXCLUDED_GROUPS = [
+    'cmri', 'sspv', 'sspx-mc', 'sspx marian corps',
+    'sedevacantist', 'vacantist', 'non una cum'
+]
 
 # ===================================
 # AUTHENTICATION HELPERS
