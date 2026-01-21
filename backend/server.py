@@ -938,21 +938,38 @@ async def get_devotion_prayers():
     
     all_videos = []
     for video in videos:
-        formatted = prayer_video_helper(video)
-        formatted["category"] = "devotions"
         title_lower = video.get("title", "").lower()
         description_lower = video.get("description", "").lower()
         combined = title_lower + " " + description_lower
         
-        # Categorize based on title/description keywords
-        if 'mother teresa' in combined or 'mother theresa' in combined or 'teresa of calcutta' in combined or 'saint teresa of calcutta' in combined:
+        # Skip "Best of Catholic Teachings" video
+        if 'best of catholic teachings' in title_lower:
+            continue
+        
+        formatted = prayer_video_helper(video)
+        formatted["category"] = "devotions"
+        
+        # Check if it's a rosary video
+        is_rosary = 'rosary' in title_lower or 'mysteries' in title_lower
+        
+        # Check person associations
+        is_mother_theresa = 'mother teresa' in combined or 'mother theresa' in combined or 'teresa of calcutta' in combined or 'saint teresa of calcutta' in combined
+        is_fulton_sheen = 'fulton sheen' in combined or 'bishop sheen' in combined or 'archbishop sheen' in combined
+        
+        # Add to Rosary section if it's a rosary (including Fulton Sheen and Mother Theresa rosaries)
+        if is_rosary:
+            categories["rosary"]["videos"].append(formatted)
+        
+        # Categorize into person-specific sections (rosaries will appear in both places)
+        if is_mother_theresa:
             categories["mother_theresa"]["videos"].append(formatted)
-        elif 'fulton sheen' in combined or 'bishop sheen' in combined or 'archbishop sheen' in combined:
+        elif is_fulton_sheen:
             categories["fulton_sheen"]["videos"].append(formatted)
         elif 'sleep' in title_lower or 'rest' in title_lower or 'night' in title_lower or 'calming' in title_lower or 'peaceful' in title_lower:
             categories["sleep"]["videos"].append(formatted)
-        elif 'rosary' in title_lower or 'mysteries' in title_lower:
-            categories["rosary"]["videos"].append(formatted)
+        elif is_rosary:
+            # Already added to rosary, don't add to other categories
+            pass
         elif 'novena' in title_lower or 'day 1' in title_lower or 'day 2' in title_lower or '30 day' in title_lower:
             categories["novenas"]["videos"].append(formatted)
         elif 'chaplet' in title_lower or 'coronilla' in title_lower or 'divine mercy' in title_lower:
