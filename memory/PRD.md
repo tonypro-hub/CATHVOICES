@@ -28,7 +28,7 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
   - `POST /api/saints/refresh` - Manual trigger
 
 ### 2. Mass Map ✅ COMPLETE (January 21, 2026)
-- **309 total locations** across 49+ US states
+- **413 total locations** across US and Canada
 - Interactive Leaflet map with OpenStreetMap tiles
 - **"Find Nearby" Geolocation Feature** - Uses browser GPS to find masses near user
   - Adjustable radius (10, 25, 50, 100, 200 miles)
@@ -40,15 +40,19 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
   - Persists across browser sessions
 - Filter by affiliation:
   - SSPX: 119 locations
+  - Diocesan: 105 locations (Latin Masses - newly ingested)
   - Eastern Catholic: 104 locations
   - Ordinariate: 39 locations
-  - ICKSP: 27 locations (from web scraper)
-  - FSSP: 19 locations (from web scraper)
-  - Diocesan: 1 location
-- Filter by state (49 states covered)
+  - ICKSP: 27 locations
+  - FSSP: 19 locations
+- Filter by state/province (50+ regions covered)
 - Search by city, state, or parish name
-- Location detail view with address, website link, directions
+- Location detail view with address, website link, directions, mass schedule
 - Excludes sedevacantist groups (CMRI, SSPV, etc.)
+- **Diocesan Data Ingestion** - Authoritative Latin Mass data from diocesan sources
+  - Includes Ordinary Form Latin, Extraordinary Form, Dominican Rite, Carmelite Rite
+  - Monasteries, cathedrals, university chapels, shrines
+  - US and Canada coverage
 - **Web Scraper** - Manual script to fetch locations from ICKSP and FSSP websites
 - API Endpoints:
   - `GET /api/mass-locations` - All locations with filters
