@@ -1,9 +1,15 @@
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import './SspxExplained.css';
 
 const SspxExplained = () => {
   return (
     <div className="sspx-page" data-testid="sspx-page">
+      <SEO 
+        title="SSPX Explained - Sunday Obligation"
+        description="A balanced explanation of the Society of St. Pius X (SSPX) and its canonical status. Learn about attending Traditional Latin Mass at SSPX chapels."
+        keywords="SSPX, Society of St Pius X, Traditional Latin Mass, canonical status, Sunday obligation, Archbishop Lefebvre"
+      />
       {/* Hero */}
       <section className="sspx-hero">
         <div className="container">

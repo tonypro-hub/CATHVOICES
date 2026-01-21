@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import './Store.css';
 
 const SAMPLE_PRODUCTS = [
