@@ -86,48 +86,29 @@
 /* Fulton Sheen Featured with Image */
 .featured-sheen {
   padding: 0;
-  background: transparent;
+  background-size: cover;
+  background-position: left center;
   overflow: hidden;
   position: relative;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  transition: background-size var(--transition-base);
 }
 
 .featured-sheen::before {
   display: none;
 }
 
-.featured-image-full {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: #0a0a0a;
-}
-
-.featured-image-full img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 25% center;
-  transition: transform var(--transition-base);
-}
-
-.featured-sheen:hover .featured-image-full img {
-  transform: scale(1.03);
-}
-
-.featured-overlay {
-  position: relative;
-  z-index: 2;
-  min-height: 320px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
+.featured-sheen:hover {
+  background-size: 103%;
 }
 
 .featured-content-overlay {
-  grid-column: 2;
   text-align: right;
   padding: var(--space-10) var(--space-12);
-  max-width: 100%;
+  max-width: 450px;
 }
 
 .featured-content-overlay .featured-label {
