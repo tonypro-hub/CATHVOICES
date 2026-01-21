@@ -588,6 +588,19 @@ const MassMap = () => {
               Favorites {favorites.length > 0 && <span className="favorites-count">({favorites.length})</span>}
             </button>
 
+            {/* Suggest Location Button */}
+            <button 
+              className="suggest-location-btn"
+              onClick={() => openSuggestionModal('new')}
+              data-testid="suggest-location-btn"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v8M8 12h8" />
+              </svg>
+              Suggest a Location
+            </button>
+
             {(activeAffiliation || activeRite || activeState || searchQuery || nearbyMode || showFavoritesOnly) && (
               <button className="clear-filters" onClick={clearFilters}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
