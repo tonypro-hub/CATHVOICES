@@ -8,11 +8,14 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - Prayers page with categorized content
 - Affiliate store for Catholic products
 - Custom branding with user-provided logos
+- **Admin Management**: Protected admin area to manage mass locations
+- **User Suggestions**: Public form for users to suggest new locations or edits
 
 ## Tech Stack
-- **Frontend**: React (CRA), React Router, Leaflet.js
-- **Backend**: FastAPI, Motor (async MongoDB), APScheduler
+- **Frontend**: React (CRA), React Router, Leaflet.js, react-helmet-async
+- **Backend**: FastAPI, Motor (async MongoDB), APScheduler, JWT (python-jose), bcrypt (passlib)
 - **Database**: MongoDB
+- **Email**: Resend API (for suggestion notifications)
 - **Design**: Desktop-first, responsive, PelicanPlus-inspired
 
 ## Core Features
@@ -22,68 +25,92 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - APScheduler job runs daily at 3:15 PM CST
 - Automatically fetches YouTube Shorts (≤ 3 min) published after 3:00 PM CST
 - Archives all saints for browsing
-- API Endpoints:
-  - `GET /api/saints/today` - Current saint of the day
-  - `GET /api/saints/archive` - All past saints
-  - `POST /api/saints/refresh` - Manual trigger
+- Social sharing buttons (Facebook, X/Twitter, Copy link)
 
-### 2. Mass Map ✅ COMPLETE (January 21, 2026)
+### 2. Mass Map ✅ COMPLETE
 - **413 total locations** across US and Canada
 - Interactive Leaflet map with OpenStreetMap tiles
 - **"Find Nearby" Geolocation Feature** - Uses browser GPS to find masses near user
-  - Adjustable radius (10, 25, 50, 100, 200 miles)
-  - Shows distance in miles for each location
-  - User location marker on map
-- **Favorites Feature** - Save preferred locations to localStorage (no login required)
-  - Heart icon toggle on cards, popups, and detail view
-  - "My Favorites" filter shows saved locations
-  - Persists across browser sessions
-- Filter by affiliation:
-  - SSPX: 119 locations
-  - Diocesan: 105 locations (Latin Masses - newly ingested)
-  - Eastern Catholic: 104 locations
-  - Ordinariate: 39 locations
-  - ICKSP: 27 locations
-  - FSSP: 19 locations
-- Filter by state/province (50+ regions covered)
+- **Favorites Feature** - Save preferred locations to localStorage
+- Filter by affiliation (SSPX, Diocesan, Eastern Catholic, Ordinariate, ICKSP, FSSP)
+- Filter by state/province
 - Search by city, state, or parish name
-- Location detail view with address, website link, directions, mass schedule
-- Excludes sedevacantist groups (CMRI, SSPV, etc.)
-- **Diocesan Data Ingestion** - Authoritative Latin Mass data from diocesan sources
-  - Includes Ordinary Form Latin, Extraordinary Form, Dominican Rite, Carmelite Rite
-  - Monasteries, cathedrals, university chapels, shrines
-  - US and Canada coverage
-- **Web Scraper** - Manual script to fetch locations from ICKSP and FSSP websites
-- API Endpoints:
-  - `GET /api/mass-locations` - All locations with filters
-  - `GET /api/mass-locations/stats` - Statistics
-  - `GET /api/mass-locations/filters` - Available filter options
-  - `GET /api/mass-locations/search` - Search endpoint (supports lat/lng/radius)
-  - `GET /api/mass-locations/{id}` - Location detail
-  - `POST /api/mass-locations/scrape` - Trigger web scraper (manual)
+- Location detail view with address, website link, directions
 
-### 3. Prayers Page ✅ COMPLETE
+### 3. Admin Management ✅ COMPLETE (January 21, 2026)
+- **JWT Authentication** - Secure admin login with token-based auth
+  - Username: `admin` / Password: `changeme`
+- **Admin Dashboard** - Overview with stats and quick actions
+  - Total locations count
+  - Pending suggestions count
+  - Affiliation breakdown
+- **Location Management** - Full CRUD operations
+  - Paginated list with search/filter
+  - Edit location details
+  - Create new locations
+  - Soft delete locations
+- **Suggestion Review** - Review and act on user submissions
+  - Pending/Approved/Rejected tabs
+  - Approve to apply changes or create location
+  - Reject to dismiss
+  - View submission details
+- **Protected Routes** - AuthContext with token verification
+  - `/admin/login` - Login page
+  - `/admin/dashboard` - Dashboard (protected)
+  - `/admin/locations` - Location management (protected)
+  - `/admin/locations/:id` - Edit location (protected)
+  - `/admin/locations/new` - Add location (protected)
+  - `/admin/suggestions` - Review suggestions (protected)
+
+### 4. User Suggestion System ✅ COMPLETE (January 21, 2026)
+- **Public Suggestion Form** - Modal on Mass Map page
+  - "Suggest a Location" button in filters section
+  - "Suggest Edit" button in location detail view
+- **Submission Fields**:
+  - User info: Name, Email (required)
+  - Location: Name, Affiliation, Rite, Address, City, State
+  - Mass info: Times, Website, Phone, Notes
+  - Reason for suggestion
+- **Anti-spam** - Honeypot field
+- **Email Notifications** - Sends notification to admin when new suggestion submitted
+  - Requires Resend API key configuration (currently empty)
+
+### 5. Prayers Page ✅ COMPLETE
 - Categorized prayer content
-- API Endpoints:
-  - `GET /api/prayers` - All prayers
-  - `POST /api/prayers` - Create prayer
-  - `GET /api/prayers/{id}` - Get specific prayer
+- Video integration
 
-### 4. Store Page ✅ COMPLETE
+### 6. Store Page ✅ COMPLETE
 - Affiliate product listings
 - Categories for Catholic products
-- API Endpoints:
-  - `GET /api/store/products` - All products
 
-### 5. Static Pages ✅ COMPLETE
+### 7. Static Pages ✅ COMPLETE
 - Home page with hero section
 - About page
-- SSPX Explained page
+- SSPX Explained page (expanded with Q&A and quotes)
 
-## Branding ✅ COMPLETE
-- Custom dark red logo in header
-- Custom white logo in footer
-- "Made with Emergent" badge removed
+## API Endpoints
+
+### Public Endpoints
+- `GET /api/saints/today` - Current saint of the day
+- `GET /api/saints/archive` - All past saints
+- `GET /api/mass-locations` - All locations with filters
+- `GET /api/mass-locations/stats` - Statistics
+- `GET /api/mass-locations/filters` - Available filter options
+- `GET /api/mass-locations/search` - Search (supports lat/lng/radius)
+- `POST /api/suggestions` - Submit suggestion
+
+### Admin Endpoints (Protected)
+- `POST /api/admin/login` - Login and get JWT token
+- `GET /api/admin/me` - Verify token
+- `GET /api/admin/locations` - Paginated location list with search/filter
+- `GET /api/admin/locations/:id` - Get location for editing
+- `POST /api/admin/locations` - Create location
+- `PUT /api/admin/locations/:id` - Update location
+- `DELETE /api/admin/locations/:id` - Soft delete location
+- `GET /api/admin/suggestions` - List suggestions with status filter
+- `GET /api/admin/suggestions/:id` - Get suggestion details
+- `PUT /api/admin/suggestions/:id?action=approve|reject` - Act on suggestion
+- `DELETE /api/admin/suggestions/:id` - Delete suggestion
 
 ## Database Schema
 
@@ -106,6 +133,7 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 ```json
 {
   "id": "uuid",
+  "location_id": "uuid",
   "name": "string",
   "entity_type": "Parish|Chapel|Community|Cathedral",
   "affiliation": "SSPX|Eastern Catholic|Ordinariate|FSSP|ICKSP|Diocesan",
@@ -115,13 +143,43 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
   "city": "string",
   "state": "string (2-letter)",
   "zip_code": "string",
-  "country": "USA",
+  "country": "USA|Canada",
   "latitude": "float",
   "longitude": "float",
   "website_url": "url (optional)",
   "notes": "string (optional)",
   "exclude_flag": "boolean",
-  "created_at": "ISO datetime"
+  "created_at": "ISO datetime",
+  "updated_at": "ISO datetime",
+  "updated_by": "string"
+}
+```
+
+### `location_suggestions`
+```json
+{
+  "id": "uuid",
+  "suggestion_type": "new|edit",
+  "location_id": "uuid (for edits)",
+  "user_email": "email",
+  "user_name": "string",
+  "name": "string",
+  "street": "string",
+  "city": "string",
+  "state": "string",
+  "zip_code": "string",
+  "country": "string",
+  "affiliation": "string",
+  "rite": "string",
+  "mass_schedule": "string",
+  "website_url": "string",
+  "phone": "string",
+  "notes": "string",
+  "reason": "string",
+  "status": "pending|approved|rejected",
+  "created_at": "ISO datetime",
+  "reviewed_at": "ISO datetime",
+  "reviewed_by": "string"
 }
 ```
 
@@ -135,44 +193,61 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - [x] Custom logo integration
 - [x] Mass Map with 413 locations (US + Canada)
 - [x] All affiliate types covered (SSPX, Diocesan, Eastern Catholic, Ordinariate, ICKSP, FSSP)
-- [x] Testing completed (18+ tests passing)
-- [x] **"Find Nearby" geolocation feature** - GPS-based mass finder
-- [x] **Favorites feature** - localStorage-based saved locations
-- [x] **Dynamic SEO** - Page-specific meta tags with react-helmet-async
-- [x] **Social sharing buttons** - Facebook, X/Twitter, Copy link on Daily Saint
-- [x] **Web Scraper** - ICKSP and FSSP location scraper (manual trigger)
-- [x] **Diocesan Data Ingestion** - 105 Latin Mass locations from authoritative diocesan sources
+- [x] "Find Nearby" geolocation feature
+- [x] Favorites feature (localStorage)
+- [x] Dynamic SEO with react-helmet-async
+- [x] Social sharing buttons on Daily Saint
+- [x] Web Scraper (ICKSP and FSSP)
+- [x] Diocesan Data Ingestion (105 Latin Mass locations)
+- [x] **Admin Login with JWT authentication** (January 21, 2026)
+- [x] **Admin Dashboard with stats and quick actions** (January 21, 2026)
+- [x] **Admin Location Management (CRUD)** (January 21, 2026)
+- [x] **Admin Suggestion Review (approve/reject)** (January 21, 2026)
+- [x] **User Suggestion Form on Mass Map** (January 21, 2026)
+- [x] **Protected Routes with AuthContext** (January 21, 2026)
 
 ## Future Tasks (Backlog)
-1. **P2**: Server-side rendering (SSR) for full SEO meta tag support (OG tags for social previews)
-2. **P3**: User authentication for cloud-synced favorites
-3. **P3**: Email notifications for daily saints
-4. **P3**: Mass times data integration
-5. **P3**: Expand web scraper to Latin Mass Directory (requires headless browser)
+1. **P2**: Mass times data integration (API or manual entry)
+2. **P2**: Configure Resend API for email notifications (requires API key)
+3. **P3**: User authentication for cloud-synced favorites
+4. **P3**: Email notifications for daily saints
+5. **P3**: Server-side rendering (SSR) for full SEO meta tag support
 
 ## 3rd Party Integrations
-- **YouTube Data API v3**: Daily Saints feature (API key in backend/.env)
-- **OpenStreetMap/Leaflet**: Mass Map tiles (no API key required)
+- **YouTube Data API v3**: Daily Saints feature
+- **OpenStreetMap/Leaflet**: Mass Map tiles
+- **Resend**: Email notifications (NOT configured - requires API key)
+
+## Admin Credentials
+- **Username**: `admin`
+- **Password**: `changeme`
+- **Access**: `/admin/login`
+
+## Test Reports
+- `/app/test_reports/iteration_1.json` - Initial testing
+- `/app/test_reports/iteration_2.json` - Mass Map testing
+- `/app/test_reports/iteration_3.json` - Web scraping feature
+- `/app/test_reports/iteration_4.json` - Admin & Suggestions testing (96% backend, 100% frontend)
 
 ## File Structure
 ```
 /app/
 ├── backend/
 │   ├── server.py          # Main FastAPI application
-│   ├── .env               # Environment variables (MONGO_URL, YOUTUBE_API_KEY)
+│   ├── .env               # Environment variables
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── components/    # Header, Footer, etc.
-│   │   ├── pages/         # Home, DailySaint, MassMap, etc.
+│   │   ├── components/    # Header, Footer, SEO
+│   │   ├── context/       # AuthContext.js
+│   │   ├── pages/         # Public pages
+│   │   │   └── admin/     # Admin pages (Login, Dashboard, Locations, Suggestions)
 │   │   └── styles/        # CSS files
 │   └── .env               # REACT_APP_BACKEND_URL
 ├── scripts/
-│   └── add_locations.py   # Location import script
+│   ├── add_locations.py
+│   ├── scrape_locations.py
+│   └── ingest_diocesan_data.py
 └── tests/
-    └── test_mass_locations.py  # Backend API tests
+    └── test_admin_features.py
 ```
-
-## Test Reports
-- `/app/test_reports/iteration_1.json` - Initial testing
-- `/app/test_reports/iteration_2.json` - Mass Map testing (26 tests passed)
