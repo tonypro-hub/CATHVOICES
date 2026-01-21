@@ -30,6 +30,10 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 ### 2. Mass Map ✅ COMPLETE (January 21, 2026)
 - **266 total locations** across 49 US states
 - Interactive Leaflet map with OpenStreetMap tiles
+- **NEW: "Find Nearby" Geolocation Feature** - Uses browser GPS to find masses near user
+  - Adjustable radius (10, 25, 50, 100, 200 miles)
+  - Shows distance in miles for each location
+  - User location marker on map
 - Filter by affiliation:
   - SSPX: 119 locations
   - Eastern Catholic: 104 locations
@@ -45,7 +49,7 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
   - `GET /api/mass-locations` - All locations with filters
   - `GET /api/mass-locations/stats` - Statistics
   - `GET /api/mass-locations/filters` - Available filter options
-  - `GET /api/mass-locations/search` - Search endpoint
+  - `GET /api/mass-locations/search` - Search endpoint (supports lat/lng/radius)
   - `GET /api/mass-locations/{id}` - Location detail
 
 ### 3. Prayers Page ✅ COMPLETE
