@@ -984,16 +984,16 @@
   transform: translateY(-1px);
 }
 
-.action-suggest {
+.detail-actions .action-suggest {
   background: #ffffff;
   border: 1px solid #d1d5db;
   color: #6b7280;
-  font-size: 14px;
+  font-size: 13px;
   border-radius: 9999px;
-  padding: 12px 20px;
+  padding: 10px 16px;
 }
 
-.action-suggest:hover {
+.detail-actions .action-suggest:hover {
   background: #f3f4f6;
   color: #722f37;
   border-color: #722f37;
