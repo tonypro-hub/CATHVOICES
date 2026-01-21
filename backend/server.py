@@ -360,6 +360,53 @@ class MassLocationCreate(BaseModel):
     phone: Optional[str] = None
     notes: Optional[str] = None
 
+# Admin Models
+class AdminLogin(BaseModel):
+    username: str
+    password: str
+
+class AdminLocationUpdate(BaseModel):
+    name: Optional[str] = None
+    entity_type: Optional[str] = None
+    affiliation: Optional[str] = None
+    rite: Optional[str] = None
+    use_or_liturgy: Optional[str] = None
+    street: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    country: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    mass_schedule: Optional[str] = None
+    website_url: Optional[str] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+    diocese_or_archdiocese: Optional[str] = None
+    public_access: Optional[str] = None
+
+# User Suggestion Models
+class LocationSuggestion(BaseModel):
+    suggestion_type: str  # "edit" or "new"
+    location_id: Optional[str] = None  # Only for edits
+    user_email: EmailStr
+    user_name: Optional[str] = None
+    # Location fields (for new or suggested changes)
+    name: Optional[str] = None
+    street: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    country: Optional[str] = "USA"
+    affiliation: Optional[str] = None
+    rite: Optional[str] = None
+    mass_schedule: Optional[str] = None
+    website_url: Optional[str] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+    reason: Optional[str] = None  # Why they're suggesting the change
+    honeypot: Optional[str] = None  # Anti-spam field (should be empty)
+
 # ===================================
 # HELPER FUNCTIONS
 # ===================================
