@@ -545,11 +545,6 @@ async def send_suggestion_notification(suggestion: dict):
     except Exception as e:
         logger.error(f"Failed to send notification email: {str(e)}")
 
-# Sedevacantist groups to exclude (original)
-    'cmri', 'sspv', 'sspx-mc', 'sspx marian corps',
-    'sedevacantist', 'vacantist', 'non una cum'
-]
-
 def check_exclusion(name: str, affiliation: str, notes: str = "") -> tuple:
     """Check if location should be excluded based on sedevacantist affiliation"""
     combined_text = f"{name} {affiliation} {notes}".lower()
