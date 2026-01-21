@@ -62,6 +62,11 @@ const SAMPLE_PRODUCTS = [
 const Store = () => {
   return (
     <div className="store-page" data-testid="store-page">
+      <SEO 
+        title="Catholic Store - Sacred Items"
+        description="Shop carefully curated Catholic items including missals, rosaries, scapulars, and sacred art to support your prayer life and spiritual journey."
+        keywords="Catholic store, rosary, missal, scapular, Catholic gifts, religious items, Traditional Latin Mass missal"
+      />
       {/* Hero */}
       <section className="store-hero">
         <div className="container">
