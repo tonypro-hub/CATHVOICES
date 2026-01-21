@@ -418,6 +418,74 @@ const MassMap = () => {
     setSuggestionError('');
   };
 
+  // Quick report handlers
+  const openReportModal = (location) => {
+    setReportLocation(location);
+    setReportSuccess(false);
+    setReportError('');
+    setReportForm({
+      issue_type: 'incorrect_info',
+      description: '',
+      user_email: ''
+    });
+    setShowReportModal(true);
+  };
+
+  const handleReportChange = (e) => {
+    const { name, value } = e.target;
+    setReportForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const submitReport = async (e) => {
+    e.preventDefault();
+    setReportSubmitting(true);
+    setReportError('');
+
+    try {
+      const issueLabels = {
+        'incorrect_info': 'Incorrect Information',
+        'closed': 'Location Closed/No Longer Exists',
+        'wrong_times': 'Wrong Mass Times',
+        'wrong_address': 'Wrong Address',
+        'other': 'Other Issue'
+      };
+
+      const payload = {
+        suggestion_type: 'edit',
+        location_id: reportLocation.id,
+        user_email: reportForm.user_email,
+        name: reportLocation.name,
+        city: reportLocation.city,
+        state: reportLocation.state,
+        country: reportLocation.country || 'USA',
+        reason: `[${issueLabels[reportForm.issue_type]}] ${reportForm.description}`
+      };
+
+      const response = await fetch(`${API}/suggestions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        setReportSuccess(true);
+      } else {
+        const data = await response.json();
+        setReportError(data.detail || 'Failed to submit report');
+      }
+    } catch (error) {
+      setReportError('An error occurred. Please try again.');
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
+
+  const closeReportModal = () => {
+    setShowReportModal(false);
+    setReportSuccess(false);
+    setReportError('');
+  };
+
   // Filter locations based on favorites if enabled
   const displayedLocations = useMemo(() => {
     if (showFavoritesOnly) {
