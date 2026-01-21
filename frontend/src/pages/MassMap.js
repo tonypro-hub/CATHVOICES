@@ -434,6 +434,22 @@ const MassMap = () => {
                 />
                 <MapController center={mapCenter} zoom={mapZoom} />
                 
+                {/* User location marker */}
+                {userLocation && (
+                  <Marker
+                    position={[userLocation.lat, userLocation.lng]}
+                    icon={createUserLocationIcon()}
+                    zIndexOffset={1000}
+                  >
+                    <Popup>
+                      <div className="marker-popup user-location-popup">
+                        <h4>Your Location</h4>
+                        <p className="popup-location">Showing masses within {nearbyRadius} miles</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                )}
+                
                 {locations.map((loc) => (
                   <Marker
                     key={loc.id}
@@ -448,6 +464,9 @@ const MassMap = () => {
                         <p className="popup-affiliation" style={{ color: getMarkerColor(loc.affiliation) }}>
                           {loc.affiliation} • {loc.rite}
                         </p>
+                        {loc.distance_miles && (
+                          <p className="popup-distance">{loc.distance_miles} miles away</p>
+                        )}
                         <button className="popup-details-btn" onClick={() => selectLocation(loc)}>View Details →</button>
                       </div>
                     </Popup>
