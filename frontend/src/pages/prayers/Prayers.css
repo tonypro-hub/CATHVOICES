@@ -1,0 +1,604 @@
+/* PRAYERS SECTION STYLES */
+
+/* ===== Common Styles ===== */
+.prayers-page {
+  min-height: 100vh;
+  background: var(--color-bg-primary);
+}
+
+/* Hero */
+.prayers-hero {
+  background: linear-gradient(135deg, var(--color-bg-dark) 0%, #1a1a2e 100%);
+  color: var(--color-white);
+  padding: var(--space-20) 0 var(--space-16);
+  text-align: center;
+}
+
+.prayers-title {
+  font-size: var(--text-5xl);
+  font-weight: var(--font-bold);
+  color: var(--color-white);
+  margin-bottom: var(--space-4);
+  letter-spacing: -0.02em;
+}
+
+.prayers-subtitle {
+  font-size: var(--text-lg);
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 500px;
+  margin: 0 auto;
+  font-style: italic;
+}
+
+/* Back Link */
+.prayers-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-6);
+  transition: color var(--transition-fast);
+}
+
+.prayers-back:hover {
+  color: var(--color-white);
+}
+
+/* ===== Featured Section (Fulton Sheen) ===== */
+.prayers-featured {
+  padding: var(--space-12) 0;
+  margin-top: calc(-1 * var(--space-10));
+  position: relative;
+  z-index: 10;
+}
+
+.featured-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #722f37 0%, #8b3a44 50%, #a04450 100%);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-10) var(--space-12);
+  color: white;
+  text-decoration: none;
+  box-shadow: 0 20px 60px rgba(114, 47, 55, 0.3);
+  transition: all var(--transition-base);
+  overflow: hidden;
+  position: relative;
+}
+
+.featured-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 100%;
+  background: radial-gradient(ellipse at right, rgba(255,255,255,0.1) 0%, transparent 70%);
+}
+
+.featured-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 70px rgba(114, 47, 55, 0.4);
+}
+
+.featured-content {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.featured-label {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-4);
+}
+
+.featured-title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-3);
+  line-height: 1.2;
+}
+
+.featured-description {
+  font-size: var(--text-base);
+  opacity: 0.9;
+  max-width: 500px;
+  line-height: 1.6;
+  margin-bottom: var(--space-6);
+}
+
+.featured-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+}
+
+.featured-cta svg {
+  transition: transform var(--transition-fast);
+}
+
+.featured-card:hover .featured-cta svg {
+  transform: translateX(4px);
+}
+
+.featured-icon {
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: var(--space-8);
+}
+
+.featured-icon svg {
+  width: 60px;
+  height: 60px;
+  color: white;
+}
+
+/* ===== Categories Section ===== */
+.prayers-categories {
+  padding: var(--space-12) 0;
+}
+
+.section-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-8);
+}
+
+.categories-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-8);
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.category-card:hover {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  transform: translateX(4px);
+}
+
+.category-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.category-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.rosary-icon {
+  background: linear-gradient(135deg, #722f37 0%, #a04450 100%);
+  color: white;
+}
+
+.novenas-icon {
+  background: linear-gradient(135deg, #2d5a7b 0%, #4a8ab0 100%);
+  color: white;
+}
+
+.devotions-icon {
+  background: linear-gradient(135deg, #4a5568 0%, #718096 100%);
+  color: white;
+}
+
+.fulton-sheen-icon {
+  background: linear-gradient(135deg, #8b6914 0%, #c49b26 100%);
+  color: white;
+}
+
+.category-content {
+  flex: 1;
+}
+
+.category-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.category-description {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.category-count {
+  font-size: var(--text-xs);
+  color: var(--color-accent-primary);
+  font-weight: var(--font-medium);
+}
+
+.category-arrow {
+  color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+}
+
+.category-card:hover .category-arrow {
+  color: var(--color-accent-primary);
+  transform: translateX(4px);
+}
+
+/* ===== Daily Prayer Section ===== */
+.prayers-daily {
+  padding: var(--space-12) 0;
+}
+
+.daily-card {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10);
+  text-align: center;
+}
+
+.daily-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.daily-text {
+  font-size: var(--text-lg);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  max-width: 600px;
+  margin: 0 auto var(--space-3);
+  line-height: 1.7;
+}
+
+.daily-attribution {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ===== Subscribe Section ===== */
+.prayers-subscribe {
+  padding: var(--space-16) 0;
+  background: var(--color-bg-secondary);
+}
+
+.subscribe-content {
+  text-align: center;
+}
+
+.subscribe-content h3 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.subscribe-content p {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.subscribe-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: #ff0000;
+  color: white;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-semibold);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.subscribe-btn:hover {
+  background: #cc0000;
+  transform: translateY(-2px);
+}
+
+/* ===== Video Grid ===== */
+.prayer-videos-section {
+  padding: var(--space-12) 0;
+}
+
+.mystery-section,
+.novena-section,
+.devotion-section {
+  margin-bottom: var(--space-12);
+}
+
+.mystery-title,
+.novena-title,
+.devotion-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.videos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+.video-card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-decoration: none;
+  transition: all var(--transition-base);
+  border: 1px solid var(--color-border);
+}
+
+.video-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-accent-primary);
+}
+
+.video-thumbnail {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+
+.video-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-base);
+}
+
+.video-card:hover .video-thumbnail img {
+  transform: scale(1.05);
+}
+
+.video-duration {
+  position: absolute;
+  bottom: var(--space-2);
+  right: var(--space-2);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+}
+
+.video-play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.video-card:hover .video-play-overlay {
+  opacity: 1;
+}
+
+.video-play-btn {
+  width: 56px;
+  height: 56px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-primary);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.video-info {
+  padding: var(--space-4);
+}
+
+.video-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+  line-height: 1.4;
+}
+
+.video-meta {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.video-badge {
+  display: inline-block;
+  background: var(--color-accent-primary);
+  color: white;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  margin-top: var(--space-2);
+}
+
+/* ===== Fulton Sheen Specific ===== */
+.fulton-sheen-intro {
+  padding: var(--space-12) 0;
+  background: var(--color-bg-secondary);
+}
+
+.intro-content {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.intro-content h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.intro-content p {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center;
+  padding: var(--space-16) 0;
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.empty-state h3 {
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state p {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+/* ===== Loading State ===== */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) 0;
+  gap: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .videos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .featured-card {
+    padding: var(--space-8);
+  }
+  
+  .featured-title {
+    font-size: var(--text-2xl);
+  }
+  
+  .featured-icon {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .featured-icon svg {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .prayers-hero {
+    padding: var(--space-14) 0 var(--space-12);
+  }
+  
+  .prayers-title {
+    font-size: var(--text-3xl);
+  }
+  
+  .featured-card {
+    flex-direction: column;
+    text-align: center;
+    padding: var(--space-8) var(--space-6);
+  }
+  
+  .featured-content {
+    order: 2;
+  }
+  
+  .featured-icon {
+    order: 1;
+    margin: 0 0 var(--space-6) 0;
+  }
+  
+  .featured-description {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .videos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+  
+  .category-card {
+    padding: var(--space-4) var(--space-5);
+  }
+  
+  .category-icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .category-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .videos-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .featured-title {
+    font-size: var(--text-xl);
+  }
+}
