@@ -102,6 +102,31 @@ const MassMap = () => {
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError] = useState(null);
   const [nearbyRadius, setNearbyRadius] = useState(50);
+  
+  // Suggestion modal state
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+  const [suggestionType, setSuggestionType] = useState('new');
+  const [suggestionSubmitting, setSuggestionSubmitting] = useState(false);
+  const [suggestionSuccess, setSuggestionSuccess] = useState(false);
+  const [suggestionError, setSuggestionError] = useState('');
+  const [suggestionForm, setSuggestionForm] = useState({
+    name: '',
+    street: '',
+    city: '',
+    state: '',
+    zip_code: '',
+    country: 'USA',
+    affiliation: 'Diocesan',
+    rite: 'Latin',
+    mass_schedule: '',
+    website_url: '',
+    phone: '',
+    notes: '',
+    reason: '',
+    user_name: '',
+    user_email: '',
+    honeypot: ''
+  });
 
   useEffect(() => {
     fetchFilters();
