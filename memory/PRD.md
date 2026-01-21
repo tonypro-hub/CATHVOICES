@@ -133,14 +133,15 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - [x] Frontend React app with all pages
 - [x] PelicanPlus design implementation
 - [x] Custom logo integration
-- [x] Mass Map with 309 locations
-- [x] All affiliate types covered (SSPX, Eastern Catholic, Ordinariate, ICKSP, FSSP)
+- [x] Mass Map with 413 locations (US + Canada)
+- [x] All affiliate types covered (SSPX, Diocesan, Eastern Catholic, Ordinariate, ICKSP, FSSP)
 - [x] Testing completed (18+ tests passing)
 - [x] **"Find Nearby" geolocation feature** - GPS-based mass finder
 - [x] **Favorites feature** - localStorage-based saved locations
 - [x] **Dynamic SEO** - Page-specific meta tags with react-helmet-async
 - [x] **Social sharing buttons** - Facebook, X/Twitter, Copy link on Daily Saint
 - [x] **Web Scraper** - ICKSP and FSSP location scraper (manual trigger)
+- [x] **Diocesan Data Ingestion** - 105 Latin Mass locations from authoritative diocesan sources
 
 ## Future Tasks (Backlog)
 1. **P2**: Server-side rendering (SSR) for full SEO meta tag support (OG tags for social previews)
