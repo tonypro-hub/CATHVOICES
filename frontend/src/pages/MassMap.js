@@ -307,7 +307,8 @@ const MassMap = () => {
     setSelectedLocation(location);
     setMapCenter([location.latitude, location.longitude]);
     setMapZoom(13);
-    setShowMobileList(false);
+    // Keep panel visible on mobile when selecting a location to show details
+    setShowMobileList(true);
   };
 
   const getMarkerColor = (affiliation) => AFFILIATION_COLORS[affiliation] || '#6b7280';
