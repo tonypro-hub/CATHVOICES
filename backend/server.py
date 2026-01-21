@@ -34,6 +34,25 @@ YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
 DAILY_SAINTS_PLAYLIST_ID = 'PLSFbA-IaB3xprRODsXjEiXMV6QF9iGXol'
 YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3'
 
+# Admin/Auth configuration
+JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
+JWT_ALGORITHM = 'HS256'
+JWT_EXPIRATION_HOURS = 24
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', '')
+
+# Email configuration (Resend)
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')
+
+# Initialize Resend
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
+
+# Security
+security = HTTPBearer()
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
