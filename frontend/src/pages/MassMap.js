@@ -127,6 +127,18 @@ const MassMap = () => {
     user_email: '',
     honeypot: ''
   });
+  
+  // Quick report modal state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportLocation, setReportLocation] = useState(null);
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportSuccess, setReportSuccess] = useState(false);
+  const [reportError, setReportError] = useState('');
+  const [reportForm, setReportForm] = useState({
+    issue_type: 'incorrect_info',
+    description: '',
+    user_email: ''
+  });
 
   useEffect(() => {
     fetchFilters();
