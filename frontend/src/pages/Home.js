@@ -45,6 +45,11 @@ const Home = () => {
 
   return (
     <div className="home" data-testid="home-page">
+      <SEO 
+        title="Catholic Voices & Prayers"
+        description="A digital home for traditional Catholic prayer, devotion, and spiritual formation. Find Traditional Latin Masses, daily saints, prayers, and reverent liturgies."
+        keywords="Traditional Latin Mass, Catholic prayers, daily saints, Eastern Catholic, SSPX, FSSP, ICKSP, Ordinariate, mass finder"
+      />
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-background">
