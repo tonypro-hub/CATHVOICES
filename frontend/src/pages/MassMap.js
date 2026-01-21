@@ -615,8 +615,8 @@ const MassMap = () => {
               ) : (
                 <div className="locations-list">
                   <div className="list-header">
-                    <h3>{nearbyMode ? 'Nearby Masses' : 'Locations'}</h3>
-                    <span className="list-count">{locations.length} found</span>
+                    <h3>{showFavoritesOnly ? 'My Favorites' : nearbyMode ? 'Nearby Masses' : 'Locations'}</h3>
+                    <span className="list-count">{displayedLocations.length} found</span>
                   </div>
                   
                   {loading ? (
