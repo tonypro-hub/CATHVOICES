@@ -988,19 +988,21 @@
   transform: translateY(-1px);
 }
 
-.detail-actions .action-suggest {
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  color: #6b7280;
-  font-size: 13px;
-  border-radius: 9999px;
-  padding: 10px 16px;
+.location-detail .detail-actions .action-suggest {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #6b7280 !important;
+  font-size: 13px !important;
+  border-radius: 9999px !important;
+  padding: 10px 16px !important;
+  width: auto !important;
+  height: auto !important;
 }
 
-.detail-actions .action-suggest:hover {
-  background: #f3f4f6;
-  color: #722f37;
-  border-color: #722f37;
+.location-detail .detail-actions .action-suggest:hover {
+  background: #f3f4f6 !important;
+  color: #722f37 !important;
+  border-color: #722f37 !important;
 }
 
 /* Suggestion Modal */
