@@ -771,8 +771,10 @@ async def get_prayer_library():
     categories = {
         "rosary": {"name": "Rosaries", "description": "Pray the Holy Rosary", "videos": [], "count": 0},
         "novenas": {"name": "Novenas", "description": "Nine-day devotional prayers", "videos": [], "count": 0},
-        "devotions": {"name": "Other Prayers", "description": "Chaplets, Litanies & Traditional Prayers", "videos": [], "count": 0},
-        "fulton-sheen": {"name": "Praying with Bishop Fulton J. Sheen", "description": "Guided prayers with the Venerable Archbishop", "videos": [], "count": 0}
+        "devotions": {"name": "Prayers & Devotions", "description": "Chaplets, Litanies & Traditional Prayers", "videos": [], "count": 0},
+        "saints": {"name": "Lives of the Saints", "description": "Daily saints and feast day reflections", "videos": [], "count": 0},
+        "teachings": {"name": "Catholic Teachings", "description": "Faith formation and spiritual guidance", "videos": [], "count": 0},
+        "fulton-sheen": {"name": "Bishop Fulton J. Sheen", "description": "Wisdom from the Venerable Archbishop", "videos": [], "count": 0}
     }
     
     for video in videos:
@@ -781,15 +783,19 @@ async def get_prayer_library():
         if cat in categories:
             categories[cat]["videos"].append(formatted)
             categories[cat]["count"] += 1
+        else:
+            # Default to teachings if category not found
+            categories["teachings"]["videos"].append(formatted)
+            categories["teachings"]["count"] += 1
         
         # Also add Fulton Sheen videos to their special category
         if formatted["isFultonSheen"] and cat != "fulton-sheen":
             categories["fulton-sheen"]["videos"].append(formatted)
             categories["fulton-sheen"]["count"] += 1
     
-    # Sort videos in each category
+    # Sort videos in each category and limit for overview
     for cat in categories.values():
-        cat["videos"] = cat["videos"][:6]  # Limit to 6 for overview
+        cat["videos"] = cat["videos"][:6]
     
     return {
         "categories": categories,
