@@ -72,14 +72,21 @@ const SspxExplained = () => {
 
             <h2>The Sunday Obligation</h2>
             <p>
-              The question many Catholics ask is: "Can I fulfill my Sunday obligation at an SSPX Mass?"
+              <strong>Yes.</strong> The Catholic Church has confirmed that attending a Mass offered by the 
+              Society of St. Pius X (SSPX) can fulfill the Sunday obligation—as long as it's done without 
+              rejecting the Pope or Church authority.
             </p>
-            <p>
-              The Church has not issued a definitive statement prohibiting attendance at SSPX Masses. 
-              The Mass itself is valid, and there is no sin in attending a valid Mass. Many faithful 
-              Catholics attend SSPX chapels, particularly in areas where no other Traditional Latin 
-              Mass is available.
-            </p>
+            
+            <div className="info-box info-box-highlight">
+              <h3>Canon Law</h3>
+              <p>
+                <strong>Canon 1248</strong> states that the Sunday obligation is fulfilled by attending any Mass 
+                celebrated "in a Catholic rite." SSPX priests use the 1962 Roman Missal—a valid Catholic 
+                liturgy—and are validly ordained. The Pontifical Commission Ecclesia Dei (PCED) clarified 
+                multiple times that SSPX Masses are valid, and that attendance "in the strict sense" 
+                satisfies the obligation.
+              </p>
+            </div>
             
             <div className="quote-box">
               <blockquote>
@@ -88,6 +95,29 @@ const SspxExplained = () => {
               </blockquote>
               <cite>— Cardinal Castrillón Hoyos, then-President of the Pontifical Commission Ecclesia Dei (2003)</cite>
             </div>
+
+            <h2>The SSPX's Current Status</h2>
+            <p>
+              The SSPX is <strong>not in schism</strong>, though it lacks official canonical status. Its priests 
+              are suspended and operate without full faculties—but their sacraments are valid, including the Eucharist.
+            </p>
+            <ul className="bullet-list">
+              <li>
+                <strong>2009:</strong> Pope Benedict XVI lifted the excommunications of SSPX bishops
+              </li>
+              <li>
+                <strong>2015–2017:</strong> Pope Francis granted SSPX priests the faculties to validly and 
+                licitly hear confessions and witness marriages, highlighting pastoral concern and recognition
+              </li>
+            </ul>
+
+            <h2>What About Obedience to the Bishop?</h2>
+            <p>
+              Bishops may discourage attending SSPX chapels, but they cannot override canon law, which permits 
+              fulfilling the Sunday obligation at any valid Catholic Mass. Obedience is important—but attending 
+              SSPX Mass out of sincere devotion is not rebellion if one remains united in heart and mind with 
+              the Church.
+            </p>
 
             <h2>Ongoing Reconciliation Efforts</h2>
             <p>
