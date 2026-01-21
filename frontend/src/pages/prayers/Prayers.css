@@ -133,7 +133,8 @@
 
 .featured-content-overlay {
   text-align: right;
-  max-width: 400px;
+  max-width: 350px;
+  padding-left: var(--space-8);
 }
 
 .featured-content-overlay .featured-label {
@@ -142,18 +143,20 @@
 }
 
 .featured-content-overlay .featured-title {
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
   font-size: var(--text-3xl);
+  letter-spacing: -0.01em;
 }
 
 .featured-content-overlay .featured-description {
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.8);
   opacity: 0.9;
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
+  line-height: 1.6;
 }
 
 .featured-content-overlay .featured-cta {
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
 }
 
 .featured-content {
