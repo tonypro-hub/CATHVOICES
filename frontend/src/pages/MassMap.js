@@ -290,6 +290,7 @@ const MassMap = () => {
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="search-input"
                 data-testid="map-search-input"
+                disabled={nearbyMode}
               />
               {searchInput && (
                 <button type="button" className="clear-search" onClick={() => { setSearchInput(''); setSearchQuery(''); }}>
@@ -299,8 +300,76 @@ const MassMap = () => {
                 </button>
               )}
             </div>
-            <button type="submit" className="search-btn">Search</button>
+            <button type="submit" className="search-btn" disabled={nearbyMode}>Search</button>
+            
+            {!nearbyMode ? (
+              <button 
+                type="button" 
+                className="nearby-btn"
+                onClick={findNearbyMasses}
+                disabled={geoLoading}
+                data-testid="find-nearby-btn"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+                </svg>
+                {geoLoading ? 'Finding...' : 'Find Nearby'}
+              </button>
+            ) : (
+              <button 
+                type="button" 
+                className="nearby-btn nearby-btn-active"
+                onClick={clearNearbyMode}
+                data-testid="clear-nearby-btn"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+                Exit Nearby
+              </button>
+            )}
           </form>
+          
+          {/* Nearby Mode Controls */}
+          {nearbyMode && (
+            <div className="nearby-controls" data-testid="nearby-controls">
+              <div className="nearby-info">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <span>Showing masses within <strong>{nearbyRadius} miles</strong> of your location</span>
+              </div>
+              <div className="radius-selector">
+                <label>Radius:</label>
+                <select 
+                  value={nearbyRadius} 
+                  onChange={(e) => setNearbyRadius(Number(e.target.value))}
+                  className="radius-select"
+                  data-testid="radius-select"
+                >
+                  <option value={10}>10 miles</option>
+                  <option value={25}>25 miles</option>
+                  <option value={50}>50 miles</option>
+                  <option value={100}>100 miles</option>
+                  <option value={200}>200 miles</option>
+                </select>
+              </div>
+            </div>
+          )}
+          
+          {/* Geolocation Error */}
+          {geoError && (
+            <div className="geo-error" data-testid="geo-error">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v4M12 16h.01" />
+              </svg>
+              <span>{geoError}</span>
+            </div>
+          )}
 
           <button className="mobile-filter-toggle" onClick={() => setShowMobileFilters(!showMobileFilters)}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
