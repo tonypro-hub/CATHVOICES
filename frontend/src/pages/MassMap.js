@@ -88,6 +88,13 @@ const MassMap = () => {
   const [showMobileList, setShowMobileList] = useState(false);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   
+  // Favorites state
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem('massMapFavorites');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  
   // Geolocation state
   const [userLocation, setUserLocation] = useState(null);
   const [nearbyMode, setNearbyMode] = useState(false);
