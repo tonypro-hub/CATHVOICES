@@ -27,7 +27,7 @@ const Header = () => {
     { path: '/prayers', label: 'Prayers' },
     { path: '/daily-saint', label: 'Saint of the Day' },
     { path: '/mass-map', label: 'Mass Map' },
-    { path: '/store', label: 'Store' },
+    // { path: '/store', label: 'Store' }, // Hidden for now
     { path: '/about', label: 'About' },
   ];
 
