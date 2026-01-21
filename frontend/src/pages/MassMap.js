@@ -624,13 +624,20 @@ const MassMap = () => {
                       <div className="loading-spinner" />
                       <span>Loading locations...</span>
                     </div>
-                  ) : locations.length > 0 ? (
+                  ) : displayedLocations.length > 0 ? (
                     <div className="list-scroll">
-                      {locations.map((loc) => (
+                      {displayedLocations.map((loc) => (
                         <button key={loc.id} className="location-card" onClick={() => selectLocation(loc)}>
                           <div className="card-indicator" style={{ backgroundColor: getMarkerColor(loc.affiliation) }} />
                           <div className="card-content">
-                            <h4 className="card-name">{loc.name}</h4>
+                            <div className="card-header">
+                              <h4 className="card-name">{loc.name}</h4>
+                              {isFavorite(loc.id) && (
+                                <svg className="card-favorite-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2">
+                                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                </svg>
+                              )}
+                            </div>
                             <p className="card-location">
                               {loc.city}, {loc.state}
                               {loc.distance_miles && (
@@ -650,10 +657,10 @@ const MassMap = () => {
                     </div>
                   ) : (
                     <div className="empty-state">
-                      <p>No locations found</p>
-                      <span>Try adjusting your filters</span>
+                      <p>{showFavoritesOnly ? 'No favorites saved yet' : 'No locations found'}</p>
+                      <span>{showFavoritesOnly ? 'Click the heart icon on any location to save it' : 'Try adjusting your filters'}</span>
                     </div>
-                  )}
+                  )}}
                 </div>
               )}
             </div>
