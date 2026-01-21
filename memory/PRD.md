@@ -213,6 +213,7 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - [x] **Quick Report Issue button on map popup and detail view** (January 21, 2026)
 - [x] **Mass Times display in location cards, popups, and detail view** (January 21, 2026)
 - [x] **"Mass Times Unknown" indicator with "Submit Times" CTA button** (January 21, 2026)
+- [x] **Admin Bulk Upload for Mass Times (CSV import)** (January 21, 2026)
 
 ## Future Tasks (Backlog)
 1. **P2**: Mass times data integration (API or manual entry)
