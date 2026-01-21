@@ -646,6 +646,369 @@ async def refresh_daily_saint(background_tasks: BackgroundTasks):
 # API ROUTES - CONTENT & PRAYERS
 # ===================================
 
+# Prayer playlist IDs (Catholic Voices and Prayers YouTube channel)
+PRAYER_PLAYLISTS = {
+    "rosary": os.environ.get("ROSARY_PLAYLIST_ID", ""),
+    "novenas": os.environ.get("NOVENAS_PLAYLIST_ID", ""),
+    "devotions": os.environ.get("DEVOTIONS_PLAYLIST_ID", ""),
+    "fulton_sheen": os.environ.get("FULTON_SHEEN_PLAYLIST_ID", ""),
+}
+
+def format_duration(duration_str: str) -> str:
+    """Format YouTube duration (PT1H30M45S) to human readable"""
+    seconds = parse_duration_to_seconds(duration_str)
+    if seconds < 60:
+        return f"{seconds}s"
+    elif seconds < 3600:
+        mins = seconds // 60
+        secs = seconds % 60
+        return f"{mins}:{secs:02d}"
+    else:
+        hours = seconds // 3600
+        mins = (seconds % 3600) // 60
+        secs = seconds % 60
+        return f"{hours}:{mins:02d}:{secs:02d}"
+
+def detect_prayer_category(title: str, description: str) -> str:
+    """Detect prayer category from title and description"""
+    title_lower = title.lower()
+    desc_lower = description.lower()
+    combined = title_lower + " " + desc_lower
+    
+    # Fulton Sheen detection (highest priority)
+    if any(kw in combined for kw in ['fulton sheen', 'bishop sheen', 'archbishop sheen']):
+        return 'fulton-sheen'
+    
+    # Rosary detection
+    if any(kw in title_lower for kw in ['rosary', 'mysteries', 'decade', 'hail mary']):
+        if 'sorrowful' in combined:
+            return 'rosary'
+        if 'joyful' in combined:
+            return 'rosary'
+        if 'glorious' in combined:
+            return 'rosary'
+        if 'luminous' in combined:
+            return 'rosary'
+        return 'rosary'
+    
+    # Novena detection
+    if any(kw in title_lower for kw in ['novena', '9 day', 'nine day', 'day 1', 'day 2', 'day 3', 'day 4', 'day 5', 'day 6', 'day 7', 'day 8', 'day 9']):
+        return 'novenas'
+    
+    # Devotions detection
+    if any(kw in title_lower for kw in ['chaplet', 'divine mercy', 'litany', 'stations', 'angelus', 'regina caeli', 'morning prayer', 'night prayer', 'evening prayer']):
+        return 'devotions'
+    
+    return 'devotions'
+
+def detect_rosary_mystery(title: str, description: str) -> str:
+    """Detect which Rosary mystery type"""
+    combined = (title + " " + description).lower()
+    if 'sorrowful' in combined:
+        return 'Sorrowful Mysteries'
+    if 'joyful' in combined:
+        return 'Joyful Mysteries'
+    if 'glorious' in combined:
+        return 'Glorious Mysteries'
+    if 'luminous' in combined:
+        return 'Luminous Mysteries'
+    if 'scriptural' in combined:
+        return 'Scriptural Rosary'
+    return 'Holy Rosary'
+
+def detect_novena_day(title: str) -> Optional[int]:
+    """Extract novena day number from title"""
+    import re
+    match = re.search(r'day\s*(\d+)', title.lower())
+    if match:
+        return int(match.group(1))
+    return None
+
+def prayer_video_helper(video: dict) -> dict:
+    """Convert video document to prayer video response"""
+    category = video.get('category', detect_prayer_category(video.get('title', ''), video.get('description', '')))
+    
+    result = {
+        "id": video.get("id", str(video.get("_id", ""))),
+        "videoId": video["videoId"],
+        "title": video["title"],
+        "description": video.get("description", ""),
+        "thumbnail": video.get("thumbnail", ""),
+        "duration": video.get("duration", ""),
+        "durationFormatted": format_duration(video.get("duration", "PT0S")),
+        "publishedAt": video.get("publishedAt", ""),
+        "category": category,
+        "isFultonSheen": 'fulton sheen' in (video.get('title', '') + video.get('description', '')).lower()
+    }
+    
+    # Add rosary-specific fields
+    if category == 'rosary':
+        result["mysteryType"] = detect_rosary_mystery(video.get("title", ""), video.get("description", ""))
+    
+    # Add novena-specific fields
+    if category == 'novenas':
+        result["novenaDay"] = detect_novena_day(video.get("title", ""))
+    
+    return result
+
+@api_router.get("/prayer-library")
+async def get_prayer_library():
+    """Get overview of entire prayer library with categories"""
+    # Get all prayer videos
+    videos = await db.prayer_videos.find({}).to_list(500)
+    
+    # Categorize videos
+    categories = {
+        "rosary": {"name": "Rosaries", "description": "Pray the Holy Rosary", "videos": [], "count": 0},
+        "novenas": {"name": "Novenas", "description": "Nine-day devotional prayers", "videos": [], "count": 0},
+        "devotions": {"name": "Other Prayers", "description": "Chaplets, Litanies & Traditional Prayers", "videos": [], "count": 0},
+        "fulton-sheen": {"name": "Praying with Bishop Fulton J. Sheen", "description": "Guided prayers with the Venerable Archbishop", "videos": [], "count": 0}
+    }
+    
+    for video in videos:
+        formatted = prayer_video_helper(video)
+        cat = formatted["category"]
+        if cat in categories:
+            categories[cat]["videos"].append(formatted)
+            categories[cat]["count"] += 1
+        
+        # Also add Fulton Sheen videos to their special category
+        if formatted["isFultonSheen"] and cat != "fulton-sheen":
+            categories["fulton-sheen"]["videos"].append(formatted)
+            categories["fulton-sheen"]["count"] += 1
+    
+    # Sort videos in each category
+    for cat in categories.values():
+        cat["videos"] = cat["videos"][:6]  # Limit to 6 for overview
+    
+    return {
+        "categories": categories,
+        "totalVideos": len(videos)
+    }
+
+@api_router.get("/prayer-library/rosary")
+async def get_rosary_prayers():
+    """Get all Rosary videos"""
+    videos = await db.prayer_videos.find({
+        "$or": [
+            {"category": "rosary"},
+            {"title": {"$regex": "rosary|mysteries", "$options": "i"}}
+        ]
+    }).sort("publishedAt", -1).to_list(100)
+    
+    # Group by mystery type
+    by_mystery = {}
+    all_videos = []
+    
+    for video in videos:
+        formatted = prayer_video_helper(video)
+        formatted["category"] = "rosary"
+        mystery = formatted.get("mysteryType", "Holy Rosary")
+        
+        if mystery not in by_mystery:
+            by_mystery[mystery] = []
+        by_mystery[mystery].append(formatted)
+        all_videos.append(formatted)
+    
+    return {
+        "title": "The Holy Rosary",
+        "description": "Pray the sacred mysteries of the Rosary with guided video meditations",
+        "byMystery": by_mystery,
+        "videos": all_videos,
+        "count": len(all_videos)
+    }
+
+@api_router.get("/prayer-library/novenas")
+async def get_novena_prayers():
+    """Get all Novena videos"""
+    videos = await db.prayer_videos.find({
+        "$or": [
+            {"category": "novenas"},
+            {"title": {"$regex": "novena|day \\d", "$options": "i"}}
+        ]
+    }).sort("publishedAt", -1).to_list(200)
+    
+    # Group novenas by saint/devotion
+    novena_groups = {}
+    all_videos = []
+    
+    for video in videos:
+        formatted = prayer_video_helper(video)
+        formatted["category"] = "novenas"
+        
+        # Try to extract novena name
+        title = video.get("title", "")
+        novena_name = "Other Novenas"
+        
+        # Common novena patterns
+        import re
+        match = re.search(r'novena to (st\.?\s*\w+|our lady|sacred heart|divine mercy|holy spirit)', title, re.IGNORECASE)
+        if match:
+            novena_name = f"Novena to {match.group(1).title()}"
+        elif 'st.' in title.lower() or 'saint' in title.lower():
+            saint_match = re.search(r'(st\.?\s*\w+|saint\s+\w+)', title, re.IGNORECASE)
+            if saint_match:
+                novena_name = f"Novena to {saint_match.group(1).title()}"
+        
+        if novena_name not in novena_groups:
+            novena_groups[novena_name] = {"name": novena_name, "days": []}
+        
+        novena_groups[novena_name]["days"].append(formatted)
+        all_videos.append(formatted)
+    
+    # Sort days within each novena
+    for group in novena_groups.values():
+        group["days"].sort(key=lambda x: x.get("novenaDay") or 99)
+    
+    return {
+        "title": "Novenas",
+        "description": "Nine-day prayers of devotion to saints and sacred mysteries",
+        "novenas": list(novena_groups.values()),
+        "videos": all_videos,
+        "count": len(all_videos)
+    }
+
+@api_router.get("/prayer-library/devotions")
+async def get_devotion_prayers():
+    """Get other prayers and devotions"""
+    videos = await db.prayer_videos.find({
+        "$or": [
+            {"category": "devotions"},
+            {"title": {"$regex": "chaplet|litany|stations|angelus|prayer|divine mercy", "$options": "i"}}
+        ],
+        "title": {"$not": {"$regex": "rosary|novena", "$options": "i"}}
+    }).sort("publishedAt", -1).to_list(100)
+    
+    # Group by devotion type
+    devotion_types = {
+        "chaplets": {"name": "Chaplets", "videos": []},
+        "litanies": {"name": "Litanies", "videos": []},
+        "stations": {"name": "Stations of the Cross", "videos": []},
+        "daily": {"name": "Daily Prayers", "videos": []},
+        "other": {"name": "Other Devotions", "videos": []}
+    }
+    
+    all_videos = []
+    for video in videos:
+        formatted = prayer_video_helper(video)
+        formatted["category"] = "devotions"
+        title_lower = video.get("title", "").lower()
+        
+        if 'chaplet' in title_lower or 'divine mercy' in title_lower:
+            devotion_types["chaplets"]["videos"].append(formatted)
+        elif 'litany' in title_lower:
+            devotion_types["litanies"]["videos"].append(formatted)
+        elif 'station' in title_lower:
+            devotion_types["stations"]["videos"].append(formatted)
+        elif any(kw in title_lower for kw in ['morning', 'night', 'evening', 'angelus']):
+            devotion_types["daily"]["videos"].append(formatted)
+        else:
+            devotion_types["other"]["videos"].append(formatted)
+        
+        all_videos.append(formatted)
+    
+    # Filter out empty categories
+    devotions = [d for d in devotion_types.values() if d["videos"]]
+    
+    return {
+        "title": "Prayers & Devotions",
+        "description": "Traditional Catholic prayers, chaplets, litanies, and daily devotions",
+        "devotions": devotions,
+        "videos": all_videos,
+        "count": len(all_videos)
+    }
+
+@api_router.get("/prayer-library/fulton-sheen")
+async def get_fulton_sheen_prayers():
+    """Get all prayers featuring Bishop Fulton J. Sheen"""
+    videos = await db.prayer_videos.find({
+        "$or": [
+            {"category": "fulton-sheen"},
+            {"title": {"$regex": "fulton sheen|bishop sheen|archbishop sheen", "$options": "i"}},
+            {"description": {"$regex": "fulton sheen|bishop sheen", "$options": "i"}}
+        ]
+    }).sort("publishedAt", -1).to_list(100)
+    
+    all_videos = [prayer_video_helper(v) for v in videos]
+    
+    # Categorize Sheen content
+    rosaries = [v for v in all_videos if 'rosary' in v.get('title', '').lower()]
+    reflections = [v for v in all_videos if v not in rosaries]
+    
+    return {
+        "title": "Praying with Bishop Fulton J. Sheen",
+        "description": "Experience the profound spiritual guidance of the Venerable Archbishop Fulton J. Sheen through these guided prayers and reflections.",
+        "featured": True,
+        "rosaries": rosaries,
+        "reflections": reflections,
+        "videos": all_videos,
+        "count": len(all_videos)
+    }
+
+@api_router.get("/prayer-library/video/{video_id}")
+async def get_prayer_video(video_id: str):
+    """Get a specific prayer video"""
+    video = await db.prayer_videos.find_one({
+        "$or": [
+            {"videoId": video_id},
+            {"id": video_id}
+        ]
+    })
+    
+    if not video:
+        raise HTTPException(status_code=404, detail="Prayer video not found")
+    
+    result = prayer_video_helper(video)
+    
+    # Get related videos (same category)
+    category = result.get("category", "devotions")
+    related = await db.prayer_videos.find({
+        "category": category,
+        "videoId": {"$ne": video_id}
+    }).limit(4).to_list(4)
+    
+    result["related"] = [prayer_video_helper(v) for v in related]
+    
+    return result
+
+@api_router.post("/prayer-library/refresh")
+async def refresh_prayer_library(background_tasks: BackgroundTasks):
+    """Refresh prayer library from YouTube playlists"""
+    
+    async def fetch_and_store_prayers():
+        logger.info("Refreshing prayer library from YouTube...")
+        all_videos = []
+        
+        # Fetch from channel uploads or specific playlists
+        # Using the channel uploads playlist (UU + channel_id[2:])
+        channel_id = os.environ.get("YOUTUBE_CHANNEL_ID", "UCQfLhz9_2IFyM5X_bBqFGqA")
+        uploads_playlist = f"UU{channel_id[2:]}" if channel_id.startswith("UC") else channel_id
+        
+        try:
+            videos = fetch_playlist_videos(uploads_playlist, max_results=200)
+            
+            for video in videos:
+                category = detect_prayer_category(video.get('title', ''), video.get('description', ''))
+                video['category'] = category
+                video['id'] = str(uuid.uuid4())
+                video['refreshedAt'] = datetime.utcnow().isoformat()
+                all_videos.append(video)
+            
+            if all_videos:
+                # Clear old data
+                await db.prayer_videos.delete_many({})
+                # Insert new data
+                await db.prayer_videos.insert_many(all_videos)
+                logger.info(f"Prayer library refreshed: {len(all_videos)} videos")
+            
+        except Exception as e:
+            logger.error(f"Failed to refresh prayer library: {str(e)}")
+    
+    background_tasks.add_task(fetch_and_store_prayers)
+    
+    return {"message": "Prayer library refresh started", "status": "processing"}
+
+# Legacy content endpoints (for backward compatibility)
 @api_router.get("/content")
 async def get_content(category: Optional[str] = None):
     """Get all primary content (long-form videos)"""
@@ -675,17 +1038,13 @@ async def get_content_item(video_id: str):
 @api_router.get("/videos/refresh")
 async def refresh_videos():
     """Refresh video cache from YouTube channel"""
-    # This would typically fetch from the main channel
-    # For now, we'll use the playlist videos
     videos = fetch_playlist_videos(DAILY_SAINTS_PLAYLIST_ID, max_results=100)
     
     if videos:
-        # Clear and refresh cache
         await db.videos.delete_many({})
         
-        # Add category detection
         for video in videos:
-            video['category'] = detect_category(video['title'], video['description'])
+            video['category'] = detect_prayer_category(video['title'], video['description'])
             video['id'] = str(uuid.uuid4())
         
         await db.videos.insert_many(videos)
@@ -694,20 +1053,8 @@ async def refresh_videos():
     return {"message": "No videos fetched", "count": 0}
 
 def detect_category(title: str, description: str) -> str:
-    """Detect prayer category from title and description"""
-    title_lower = title.lower()
-    desc_lower = description.lower()
-    
-    if any(kw in title_lower for kw in ['rosary', 'mysteries', 'decade']):
-        return 'The Rosary'
-    if any(kw in title_lower for kw in ['novena', '9 day', 'nine day']):
-        return 'Novenas'
-    if any(kw in title_lower for kw in ['saint', 'st.', 'feast']):
-        return 'Saints & Feast Days'
-    if any(kw in title_lower for kw in ['chaplet', 'litany', 'divine mercy']):
-        return 'Devotions'
-    
-    return 'Prayers'
+    """Detect prayer category from title and description (legacy)"""
+    return detect_prayer_category(title, description)
 
 @api_router.get("/prayers")
 async def get_prayers(category: Optional[str] = None):
