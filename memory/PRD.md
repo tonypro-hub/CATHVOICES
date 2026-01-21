@@ -79,9 +79,16 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - **Email Notifications** - Sends notification to admin when new suggestion submitted
   - Requires Resend API key configuration (currently empty)
 
-### 5. Prayers Page ✅ COMPLETE
-- Categorized prayer content
-- Video integration
+### 5. Prayers Page ✅ REBUILT (January 21, 2026)
+- **Complete Prayer Library Architecture**:
+  - `/prayers` - Main hub with featured Fulton Sheen card and category navigation
+  - `/prayers/rosary` - Rosaries grouped by mystery type (Joyful, Sorrowful, Glorious, Luminous)
+  - `/prayers/novenas` - Novenas grouped by saint/devotion with day indicators
+  - `/prayers/devotions` - Chaplets, Litanies, Stations, Daily Prayers
+  - `/prayers/fulton-sheen` - Featured Bishop Sheen section with intro and rosaries
+  - `/prayers/video/:id` - Individual prayer video page with YouTube embed
+- **YouTube Integration**: Videos pulled from YouTube with title, description, thumbnail, duration
+- **Design**: Reverent, PelicanPlus-style with calm typography and devotional spacing
 
 ### 6. Store Page ✅ COMPLETE
 - Affiliate product listings
