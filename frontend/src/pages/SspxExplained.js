@@ -217,6 +217,27 @@ const SspxExplained = () => {
                 of Christ. Sedevacantist groups do not.
               </p>
             </div>
+
+            <div className="summary-box">
+              <h2>In Summary</h2>
+              <p>
+                You can attend an SSPX Mass in good conscience to fulfill your Sunday obligation, provided you:
+              </p>
+              <ul className="bullet-list">
+                <li>Do so out of devotion, not defiance</li>
+                <li>Remain loyal to the Pope and the Church</li>
+                <li>Avoid rejecting Vatican II or the validity of the Novus Ordo</li>
+              </ul>
+              <p>
+                Christ is truly present in the Eucharist at an SSPX Mass, and the Church has confirmed your 
+                obligation is fulfilled there. Ideally, we all hope for full reconciliation—but until then, 
+                Catholics attached to the Traditional Latin Mass may find refuge in SSPX chapels without fear 
+                of sin or schism.
+              </p>
+              <p className="summary-closing">
+                <strong>Pray for unity. Worship with reverence. Remain faithful.</strong>
+              </p>
+            </div>
           </article>
         </div>
       </section>
