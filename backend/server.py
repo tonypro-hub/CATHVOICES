@@ -1002,13 +1002,43 @@ async def get_fulton_sheen_prayers():
 
 @api_router.get("/prayer-library/saints")
 async def get_saints_videos():
-    """Get all Saints content"""
+    """Get all Saints content from the dedicated playlist"""
+    
+    # First try to get from database (cached from playlist)
     videos = await db.prayer_videos.find({
-        "$or": [
-            {"category": "saints"},
-            {"title": {"$regex": "st\\.|saint|feast|martyr|patron", "$options": "i"}}
-        ]
+        "source_playlist": "saints"
     }).sort("publishedAt", -1).to_list(200)
+    
+    # If no cached videos, fetch directly from playlist
+    if not videos and YOUTUBE_API_KEY:
+        playlist_id = PRAYER_PLAYLISTS.get("saints", "PLSFbA-IaB3xprRODsXjEiXMV6QF9iGXol")
+        if playlist_id:
+            try:
+                playlist_videos = fetch_playlist_videos(playlist_id, max_results=200)
+                for video in playlist_videos:
+                    video_doc = {
+                        "videoId": video.get("videoId"),
+                        "title": video.get("title", ""),
+                        "description": video.get("description", ""),
+                        "thumbnail": video.get("thumbnail", ""),
+                        "duration": video.get("duration", ""),
+                        "publishedAt": video.get("publishedAt"),
+                        "category": "saints",
+                        "source_playlist": "saints",
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    }
+                    # Upsert to avoid duplicates
+                    await db.prayer_videos.update_one(
+                        {"videoId": video_doc["videoId"]},
+                        {"$set": video_doc},
+                        upsert=True
+                    )
+                # Re-fetch from database
+                videos = await db.prayer_videos.find({
+                    "source_playlist": "saints"
+                }).sort("publishedAt", -1).to_list(200)
+            except Exception as e:
+                logger.error(f"Error fetching Saints playlist: {str(e)}")
     
     all_videos = [prayer_video_helper(v) for v in videos]
     
