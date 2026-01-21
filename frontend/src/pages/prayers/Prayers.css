@@ -602,3 +602,15 @@
     font-size: var(--text-xl);
   }
 }
+
+/* Saints Icon */
+.saints-icon {
+  background: linear-gradient(135deg, #8b5a2b 0%, #c49b67 100%);
+  color: white;
+}
+
+/* Teachings Icon */
+.teachings-icon {
+  background: linear-gradient(135deg, #2d5a4e 0%, #4a9b82 100%);
+  color: white;
+}
