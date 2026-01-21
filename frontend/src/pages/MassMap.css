@@ -814,6 +814,17 @@
     flex-direction: column;
   }
   
+  .nearby-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .nearby-controls {
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+  
   .map-legend {
     display: none;
   }
