@@ -942,6 +942,17 @@
   .map-legend {
     display: none;
   }
+  
+  .detail-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+  
+  .detail-actions .action-btn {
+    flex: 0 0 auto;
+    min-width: fit-content;
+  }
 }
 
 /* Suggest Location Button */
