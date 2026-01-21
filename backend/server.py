@@ -456,6 +456,7 @@ def mass_location_helper(loc) -> dict:
         "country": loc.get("country", "USA"),
         "latitude": loc["latitude"],
         "longitude": loc["longitude"],
+        "mass_schedule": loc.get("mass_schedule", ""),
         "mass_schedule_url": loc.get("mass_schedule_url"),
         "website_url": loc.get("website_url"),
         "phone": loc.get("phone"),
