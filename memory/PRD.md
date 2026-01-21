@@ -139,11 +139,11 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - [x] **Web Scraper** - ICKSP and FSSP location scraper (manual trigger)
 
 ## Future Tasks (Backlog)
-1. **P1**: Web scraper to find additional mass locations
-2. **P2**: Dynamic SEO (page-specific titles/meta descriptions)
-3. **P2**: Social sharing buttons on Daily Saint pages
-4. **P3**: User authentication for saved locations
-5. **P3**: Email notifications for daily saints
+1. **P2**: Server-side rendering (SSR) for full SEO meta tag support (OG tags for social previews)
+2. **P3**: User authentication for cloud-synced favorites
+3. **P3**: Email notifications for daily saints
+4. **P3**: Mass times data integration
+5. **P3**: Expand web scraper to Latin Mass Directory (requires headless browser)
 
 ## 3rd Party Integrations
 - **YouTube Data API v3**: Daily Saints feature (API key in backend/.env)
