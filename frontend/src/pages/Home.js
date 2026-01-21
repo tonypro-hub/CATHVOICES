@@ -71,7 +71,7 @@ const Home = () => {
                 Begin Praying
               </Link>
               <Link to="/mass-map" className="btn-outline-white" data-testid="hero-mass-btn">
-                Find a Mass
+                Find a Reverent Mass
               </Link>
             </div>
           </div>
