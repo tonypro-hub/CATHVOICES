@@ -17,6 +17,12 @@ const AdminLocations = () => {
   const [searchInput, setSearchInput] = useState('');
   const [affiliation, setAffiliation] = useState('');
   const [deleteModal, setDeleteModal] = useState(null);
+  
+  // Bulk upload state
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [bulkUploading, setBulkUploading] = useState(false);
+  const [bulkUploadResult, setBulkUploadResult] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const affiliations = ['SSPX', 'Diocesan', 'Eastern Catholic', 'Ordinariate', 'ICKSP', 'FSSP'];
 
