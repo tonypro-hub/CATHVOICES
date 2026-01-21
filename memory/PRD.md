@@ -126,6 +126,7 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - [x] Mass Map with 266 locations (populated from Excel)
 - [x] All affiliate types covered (SSPX, Eastern Catholic, Ordinariate, etc.)
 - [x] Testing completed (26 tests passing)
+- [x] **"Find Nearby" geolocation feature** - GPS-based mass finder
 
 ## Future Tasks (Backlog)
 1. **P1**: Web scraper to find additional mass locations
