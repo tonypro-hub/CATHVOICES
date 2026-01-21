@@ -650,11 +650,9 @@ async def refresh_daily_saint(background_tasks: BackgroundTasks):
 PRAYER_PLAYLISTS = {
     "rosary": os.environ.get("ROSARY_PLAYLIST_ID", ""),
     "novenas": os.environ.get("NOVENAS_PLAYLIST_ID", ""),
-    "devotions": os.environ.get("DEVOTIONS_PLAYLIST_ID", ""),
+    "devotions": os.environ.get("DEVOTIONS_PLAYLIST_ID", "PLSFbA-IaB3xod9okzmBdtK4lYH5mKQAnx"),
     "fulton_sheen": os.environ.get("FULTON_SHEEN_PLAYLIST_ID", "PLSFbA-IaB3xo_0Ww_CToOktS5Z88eiPfC"),
     "saints": os.environ.get("SAINTS_PLAYLIST_ID", "PLSFbA-IaB3xprRODsXjEiXMV6QF9iGXol"),
-    "devotions_playlist_1": "PLSFbA-IaB3xqHzE_18bvjvs0qfExCYQy-",
-    "devotions_playlist_2": "PLSFbA-IaB3xo2jQbdr--2z4RUuz_Xi8xu",
 }
 
 def format_duration(duration_str: str) -> str:
