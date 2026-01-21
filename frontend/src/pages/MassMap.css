@@ -970,6 +970,7 @@
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
+  border-radius: var(--radius-full);
 }
 
 .action-suggest:hover {
