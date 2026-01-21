@@ -294,6 +294,11 @@ const MassMap = () => {
 
   return (
     <div className="mass-map-page" data-testid="mass-map-page">
+      <SEO 
+        title="Mass Map - Find a Latin Mass Near You"
+        description="Find Traditional Latin Masses, Eastern Catholic parishes, SSPX chapels, FSSP parishes, and reverent liturgies across the United States. 266+ locations in 49 states."
+        keywords="Latin Mass finder, Traditional Latin Mass, SSPX chapel, FSSP parish, Eastern Catholic, Byzantine Catholic, mass near me, TLM finder"
+      />
       {/* Hero */}
       <section className="map-hero">
         <div className="container">
