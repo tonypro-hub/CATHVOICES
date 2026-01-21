@@ -112,7 +112,8 @@
 }
 
 .featured-content-overlay .featured-label {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
 .featured-content-overlay .featured-title {
@@ -120,17 +121,22 @@
   letter-spacing: -0.02em;
   font-weight: var(--font-bold);
   margin-bottom: var(--space-3);
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .featured-content-overlay .featured-description {
-  opacity: 0.8;
   font-size: var(--text-base);
   line-height: 1.6;
   margin-bottom: var(--space-5);
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .featured-content-overlay .featured-cta {
   font-size: var(--text-base);
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .featured-content {
