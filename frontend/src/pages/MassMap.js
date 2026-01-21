@@ -1189,6 +1189,93 @@ const MassMap = () => {
           </div>
         </div>
       )}
+
+      {/* Quick Report Issue Modal */}
+      {showReportModal && reportLocation && (
+        <div className="report-modal-overlay" onClick={closeReportModal} data-testid="report-modal">
+          <div className="report-modal" onClick={e => e.stopPropagation()}>
+            <div className="report-modal-header">
+              <h3>Report an Issue</h3>
+              <button className="report-close-btn" onClick={closeReportModal}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="report-location-info">
+              <strong>{reportLocation.name}</strong>
+              <span>{reportLocation.city}, {reportLocation.state}</span>
+            </div>
+
+            {reportSuccess ? (
+              <div className="report-success">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9 12l2 2 4-4" />
+                </svg>
+                <h4>Thank You!</h4>
+                <p>We've received your report and will review it soon.</p>
+                <button className="btn-primary" onClick={closeReportModal}>Close</button>
+              </div>
+            ) : (
+              <form onSubmit={submitReport} className="report-form">
+                {reportError && (
+                  <div className="report-error">{reportError}</div>
+                )}
+
+                <div className="report-form-group">
+                  <label>What's the issue? *</label>
+                  <select 
+                    name="issue_type" 
+                    value={reportForm.issue_type} 
+                    onChange={handleReportChange}
+                    required
+                  >
+                    <option value="incorrect_info">Incorrect Information</option>
+                    <option value="wrong_address">Wrong Address</option>
+                    <option value="wrong_times">Wrong Mass Times</option>
+                    <option value="closed">Location Closed/No Longer Exists</option>
+                    <option value="other">Other Issue</option>
+                  </select>
+                </div>
+
+                <div className="report-form-group">
+                  <label>Please describe the issue *</label>
+                  <textarea
+                    name="description"
+                    value={reportForm.description}
+                    onChange={handleReportChange}
+                    required
+                    rows="3"
+                    placeholder="What information is incorrect? What should it be changed to?"
+                  />
+                </div>
+
+                <div className="report-form-group">
+                  <label>Your Email (optional)</label>
+                  <input
+                    type="email"
+                    name="user_email"
+                    value={reportForm.user_email}
+                    onChange={handleReportChange}
+                    placeholder="In case we need to follow up"
+                  />
+                </div>
+
+                <div className="report-form-actions">
+                  <button type="button" className="btn-secondary" onClick={closeReportModal}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary" disabled={reportSubmitting}>
+                    {reportSubmitting ? 'Submitting...' : 'Submit Report'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
