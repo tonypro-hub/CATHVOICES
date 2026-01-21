@@ -679,27 +679,37 @@ def detect_prayer_category(title: str, description: str) -> str:
     if any(kw in combined for kw in ['fulton sheen', 'bishop sheen', 'archbishop sheen']):
         return 'fulton-sheen'
     
-    # Rosary detection
-    if any(kw in title_lower for kw in ['rosary', 'mysteries', 'decade', 'hail mary']):
-        if 'sorrowful' in combined:
-            return 'rosary'
-        if 'joyful' in combined:
-            return 'rosary'
-        if 'glorious' in combined:
-            return 'rosary'
-        if 'luminous' in combined:
-            return 'rosary'
+    # Rosary detection (actual rosary prayers, not just mentions)
+    rosary_prayer_keywords = ['pray the rosary', 'praying the rosary', 'full rosary', 
+                              'sorrowful mysteries', 'joyful mysteries', 'glorious mysteries', 
+                              'luminous mysteries', 'scriptural rosary', 'rosary meditation']
+    if any(kw in combined for kw in rosary_prayer_keywords):
         return 'rosary'
     
-    # Novena detection
-    if any(kw in title_lower for kw in ['novena', '9 day', 'nine day', 'day 1', 'day 2', 'day 3', 'day 4', 'day 5', 'day 6', 'day 7', 'day 8', 'day 9']):
+    # Novena detection (actual novena prayers)
+    if any(kw in title_lower for kw in ['novena day', 'day 1', 'day 2', 'day 3', 'day 4', 
+                                         'day 5', 'day 6', 'day 7', 'day 8', 'day 9']):
         return 'novenas'
     
-    # Devotions detection
-    if any(kw in title_lower for kw in ['chaplet', 'divine mercy', 'litany', 'stations', 'angelus', 'regina caeli', 'morning prayer', 'night prayer', 'evening prayer']):
+    # Prayer/Devotion detection
+    prayer_keywords = ['chaplet', 'divine mercy chaplet', 'litany of', 'stations of the cross',
+                       'angelus', 'regina caeli', 'morning prayer', 'night prayer', 
+                       'evening prayer', 'pray with', 'prayer to', 'act of contrition']
+    if any(kw in combined for kw in prayer_keywords):
         return 'devotions'
     
-    return 'devotions'
+    # Saints content
+    saint_patterns = ['st.', 'saint', '| st ', 'feast day', 'martyred', 'patron saint']
+    if any(kw in title_lower for kw in saint_patterns):
+        return 'saints'
+    
+    # Teachings/Educational
+    teaching_keywords = ['why do', 'what is', 'how to', 'explained', 'the truth about',
+                         'mother angelica', 'fr.', 'father', 'bishop', 'pope']
+    if any(kw in title_lower for kw in teaching_keywords):
+        return 'teachings'
+    
+    return 'teachings'
 
 def detect_rosary_mystery(title: str, description: str) -> str:
     """Detect which Rosary mystery type"""
