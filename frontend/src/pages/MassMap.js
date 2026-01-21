@@ -232,6 +232,19 @@ const MassMap = () => {
     fetchLocations();
   };
 
+  // Favorites functions
+  const toggleFavorite = (locationId) => {
+    setFavorites(prev => {
+      const newFavorites = prev.includes(locationId)
+        ? prev.filter(id => id !== locationId)
+        : [...prev, locationId];
+      localStorage.setItem('massMapFavorites', JSON.stringify(newFavorites));
+      return newFavorites;
+    });
+  };
+
+  const isFavorite = (locationId) => favorites.includes(locationId);
+
   const handleSearch = useCallback((e) => {
     e.preventDefault();
     setSearchQuery(searchInput);
@@ -247,6 +260,7 @@ const MassMap = () => {
     setNearbyMode(false);
     setUserLocation(null);
     setGeoError(null);
+    setShowFavoritesOnly(false);
     setMapCenter([39.8283, -98.5795]);
     setMapZoom(4);
   };
