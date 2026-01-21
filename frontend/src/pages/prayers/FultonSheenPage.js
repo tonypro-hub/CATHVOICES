@@ -75,10 +75,10 @@ const FultonSheenPage = () => {
             </div>
           ) : data?.videos?.length > 0 ? (
             <>
-              {/* Rosaries with Bishop Sheen */}
+              {/* Rosaries */}
               {data.rosaries?.length > 0 && (
                 <div className="mystery-section">
-                  <h2 className="mystery-title">Rosaries with Bishop Sheen</h2>
+                  <h2 className="mystery-title">Rosaries</h2>
                   <div className="videos-grid">
                     {data.rosaries.map(video => (
                       <Link 
@@ -100,9 +100,6 @@ const FultonSheenPage = () => {
                         </div>
                         <div className="video-info">
                           <h3 className="video-title">{video.title}</h3>
-                          {video.mysteryType && (
-                            <span className="video-meta">{video.mysteryType}</span>
-                          )}
                         </div>
                       </Link>
                     ))}
@@ -110,17 +107,17 @@ const FultonSheenPage = () => {
                 </div>
               )}
 
-              {/* Reflections and Other Prayers */}
-              {data.reflections?.length > 0 && (
+              {/* Novenas & Devotions */}
+              {data.novenas_devotions?.length > 0 && (
                 <div className="mystery-section">
-                  <h2 className="mystery-title">Reflections & Prayers</h2>
+                  <h2 className="mystery-title">Novenas & Devotions</h2>
                   <div className="videos-grid">
-                    {data.reflections.map(video => (
+                    {data.novenas_devotions.map(video => (
                       <Link 
                         to={`/prayers/video/${video.videoId}`} 
                         key={video.videoId}
                         className="video-card"
-                        data-testid={`sheen-reflection-${video.videoId}`}
+                        data-testid={`sheen-devotion-${video.videoId}`}
                       >
                         <div className="video-thumbnail">
                           <img src={video.thumbnail} alt={video.title} />
@@ -142,8 +139,8 @@ const FultonSheenPage = () => {
                 </div>
               )}
 
-              {/* All Videos (fallback if no rosaries/reflections categorized) */}
-              {(!data.rosaries?.length && !data.reflections?.length) && (
+              {/* All Videos (fallback if no categorized content) */}
+              {(!data.rosaries?.length && !data.novenas_devotions?.length) && (
                 <div className="videos-grid">
                   {data.videos.map(video => (
                     <Link 
