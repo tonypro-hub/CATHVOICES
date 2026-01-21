@@ -135,6 +135,81 @@ const MassMap = () => {
     }
   };
 
+  const fetchNearbyLocations = async () => {
+    if (!userLocation) return;
+    
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      params.append('lat', userLocation.lat);
+      params.append('lng', userLocation.lng);
+      params.append('radius_miles', nearbyRadius);
+      
+      if (activeAffiliation) params.append('affiliation', activeAffiliation);
+      if (activeRite) params.append('rite', activeRite);
+      
+      const response = await fetch(`${API}/mass-locations/search?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setLocations(data);
+      }
+    } catch (error) {
+      console.error('Error fetching nearby locations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const findNearbyMasses = () => {
+    if (!navigator.geolocation) {
+      setGeoError('Geolocation is not supported by your browser');
+      return;
+    }
+    
+    setGeoLoading(true);
+    setGeoError(null);
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        setMapCenter([latitude, longitude]);
+        setMapZoom(9);
+        setNearbyMode(true);
+        setGeoLoading(false);
+        setActiveState(''); // Clear state filter when using nearby
+        setSearchQuery('');
+        setSearchInput('');
+      },
+      (error) => {
+        setGeoLoading(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setGeoError('Location access denied. Please enable location services.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setGeoError('Location information unavailable.');
+            break;
+          case error.TIMEOUT:
+            setGeoError('Location request timed out.');
+            break;
+          default:
+            setGeoError('An error occurred getting your location.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+  };
+
+  const clearNearbyMode = () => {
+    setNearbyMode(false);
+    setUserLocation(null);
+    setGeoError(null);
+    setMapCenter([39.8283, -98.5795]);
+    setMapZoom(4);
+    fetchLocations();
+  };
+
   const handleSearch = useCallback((e) => {
     e.preventDefault();
     setSearchQuery(searchInput);
