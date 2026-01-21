@@ -119,6 +119,57 @@ const SspxExplained = () => {
               the Church.
             </p>
 
+            <h2>Common Concerns Answered</h2>
+            <div className="faq-section">
+              <div className="faq-item">
+                <h3>Is it a sin to attend?</h3>
+                <p>
+                  Not if your intention is love of the traditional Mass, not rejection of Church authority.
+                </p>
+              </div>
+              <div className="faq-item">
+                <h3>Is the Mass valid?</h3>
+                <p>
+                  Yes. SSPX priests are validly ordained, and the Eucharist confected at their Masses is truly 
+                  the Body and Blood of Christ.
+                </p>
+              </div>
+              <div className="faq-item">
+                <h3>What about confession and marriage?</h3>
+                <p>
+                  These are now fully recognized if done by SSPX clergy under Pope Francis's guidelines 
+                  (confessions since 2015, marriages since 2017).
+                </p>
+              </div>
+              <div className="faq-item">
+                <h3>Am I supporting disobedience?</h3>
+                <p>
+                  Not necessarily. Supporting a valid Mass and praying for unity isn't disobedience—as long 
+                  as your heart stays with the Church.
+                </p>
+              </div>
+            </div>
+
+            <h2>What Canonists and Bishops Say</h2>
+            <div className="quotes-grid">
+              <div className="quote-card">
+                <blockquote>"Yes, you could fulfill your obligation at a Mass by a priest of the SSPX."</blockquote>
+                <cite>— Fr. John Zuhlsdorf</cite>
+              </div>
+              <div className="quote-card">
+                <blockquote>"You're not sinning if you attend because you love the Latin liturgy."</blockquote>
+                <cite>— Tim Staples, Catholic Answers</cite>
+              </div>
+              <div className="quote-card">
+                <blockquote>"The SSPX is not in schism. Their Masses can fulfill Catholics' Sunday obligation."</blockquote>
+                <cite>— Fr. Gerald Murray, Canonist</cite>
+              </div>
+              <div className="quote-card">
+                <blockquote>"There's no reason to be concerned about putting yourself outside the Church by attending SSPX Masses."</blockquote>
+                <cite>— Bishop Athanasius Schneider</cite>
+              </div>
+            </div>
+
             <h2>Ongoing Reconciliation Efforts</h2>
             <p>
               The Holy See and the SSPX have been in ongoing discussions aimed at full canonical 
