@@ -500,7 +500,17 @@ const MassMap = () => {
                   >
                     <Popup>
                       <div className="marker-popup">
-                        <h4>{loc.name}</h4>
+                        <div className="popup-header">
+                          <h4>{loc.name}</h4>
+                          <button 
+                            className={`popup-favorite-btn ${isFavorite(loc.id) ? 'is-favorite' : ''}`}
+                            onClick={(e) => { e.stopPropagation(); toggleFavorite(loc.id); }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill={isFavorite(loc.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                          </button>
+                        </div>
                         <p className="popup-location">{loc.city}, {loc.state}</p>
                         <p className="popup-affiliation" style={{ color: getMarkerColor(loc.affiliation) }}>
                           {loc.affiliation} • {loc.rite}
@@ -516,8 +526,8 @@ const MassMap = () => {
               </MapContainer>
 
               <div className="map-stats-badge">
-                <span className="stats-count">{locations.length}</span>
-                <span className="stats-label">locations</span>
+                <span className="stats-count">{displayedLocations.length}</span>
+                <span className="stats-label">{showFavoritesOnly ? 'favorites' : 'locations'}</span>
               </div>
 
               <div className="map-legend">
