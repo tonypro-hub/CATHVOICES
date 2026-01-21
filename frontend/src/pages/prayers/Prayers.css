@@ -518,25 +518,36 @@
 /* ===== Fulton Sheen Specific ===== */
 .fulton-sheen-intro {
   padding: var(--space-12) 0;
-  background: var(--color-bg-secondary);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1f21 50%, #1a1a1a 100%);
+  position: relative;
+}
+
+.fulton-sheen-intro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(114, 47, 55, 0.3) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 .intro-content {
   max-width: 700px;
   margin: 0 auto;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .intro-content h2 {
   font-size: var(--text-2xl);
   font-weight: var(--font-bold);
-  color: var(--color-text-primary);
+  color: var(--color-white);
   margin-bottom: var(--space-4);
 }
 
 .intro-content p {
   font-size: var(--text-base);
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.8);
   line-height: 1.8;
 }
 
