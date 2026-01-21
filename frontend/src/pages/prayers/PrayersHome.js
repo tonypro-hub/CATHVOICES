@@ -105,9 +105,9 @@ const PrayersHome = () => {
       {/* Hero */}
       <section className="prayers-hero">
         <div className="container">
-          <h1 className="prayers-title">Prayers</h1>
+          <h1 className="prayers-title">Catholic Voices & Prayers</h1>
           <p className="prayers-subtitle">
-            Timeless Catholic prayers, guided by sacred tradition.
+            Timeless Catholic content, guided by sacred tradition.
           </p>
         </div>
       </section>
@@ -118,49 +118,49 @@ const PrayersHome = () => {
           <Link to="/prayers/fulton-sheen" className="featured-card" data-testid="fulton-sheen-featured">
             <div className="featured-content">
               <span className="featured-label">Featured</span>
-              <h2 className="featured-title">Praying with Bishop Fulton J. Sheen</h2>
+              <h2 className="featured-title">Bishop Fulton J. Sheen</h2>
               <p className="featured-description">
-                Experience the profound spiritual guidance of the Venerable Archbishop Fulton J. Sheen 
-                through these guided prayers and reflections.
+                Experience the profound spiritual wisdom of the Venerable Archbishop Fulton J. Sheen 
+                through his timeless teachings and reflections.
               </p>
               <span className="featured-cta">
-                Explore Prayers
+                Explore Content
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </span>
             </div>
             <div className="featured-icon">
-              {categoryIcons['fulton-sheen']}
+              {categoryConfig['fulton-sheen'].icon}
             </div>
           </Link>
         </div>
       </section>
 
-      {/* Prayer Categories */}
+      {/* Content Categories */}
       <section className="prayers-categories">
         <div className="container">
-          <h2 className="section-title">Prayer Library</h2>
+          <h2 className="section-title">Content Library</h2>
           
           {loading ? (
             <div className="loading-state">
               <div className="loading-spinner" />
-              <span>Loading prayers...</span>
+              <span>Loading content...</span>
             </div>
           ) : (
             <div className="categories-grid">
-              {/* Rosary */}
-              <Link to="/prayers/rosary" className="category-card" data-testid="category-rosary">
-                <div className="category-icon rosary-icon">
-                  {categoryIcons.rosary}
+              {/* Lives of the Saints */}
+              <Link to="/prayers/saints" className="category-card" data-testid="category-saints">
+                <div className="category-icon saints-icon">
+                  {categoryConfig.saints.icon}
                 </div>
                 <div className="category-content">
-                  <h3 className="category-title">Rosaries</h3>
+                  <h3 className="category-title">Lives of the Saints</h3>
                   <p className="category-description">
-                    Holy Rosary, Sorrowful, Joyful, Glorious, and Luminous Mysteries
+                    Daily saint reflections and feast day celebrations
                   </p>
                   <span className="category-count">
-                    {library?.categories?.rosary?.count || 0} prayers
+                    {library?.categories?.saints?.count || 0} videos
                   </span>
                 </div>
                 <svg className="category-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -168,18 +168,18 @@ const PrayersHome = () => {
                 </svg>
               </Link>
 
-              {/* Novenas */}
-              <Link to="/prayers/novenas" className="category-card" data-testid="category-novenas">
-                <div className="category-icon novenas-icon">
-                  {categoryIcons.novenas}
+              {/* Catholic Teachings */}
+              <Link to="/prayers/teachings" className="category-card" data-testid="category-teachings">
+                <div className="category-icon teachings-icon">
+                  {categoryConfig.teachings.icon}
                 </div>
                 <div className="category-content">
-                  <h3 className="category-title">Novenas</h3>
+                  <h3 className="category-title">Catholic Teachings</h3>
                   <p className="category-description">
-                    Nine-day prayers to saints and sacred devotions
+                    Faith formation, doctrine, and spiritual guidance
                   </p>
                   <span className="category-count">
-                    {library?.categories?.novenas?.count || 0} prayers
+                    {library?.categories?.teachings?.count || 0} videos
                   </span>
                 </div>
                 <svg className="category-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -187,17 +187,24 @@ const PrayersHome = () => {
                 </svg>
               </Link>
 
-              {/* Other Prayers */}
+              {/* Prayers & Devotions */}
               <Link to="/prayers/devotions" className="category-card" data-testid="category-devotions">
                 <div className="category-icon devotions-icon">
-                  {categoryIcons.devotions}
+                  {categoryConfig.devotions.icon}
                 </div>
                 <div className="category-content">
-                  <h3 className="category-title">Other Prayers</h3>
+                  <h3 className="category-title">Prayers & Devotions</h3>
                   <p className="category-description">
-                    Divine Mercy Chaplet, Litanies, Stations of the Cross, and more
+                    Chaplets, litanies, and traditional Catholic prayers
                   </p>
                   <span className="category-count">
+                    {library?.categories?.devotions?.count || 0} videos
+                  </span>
+                </div>
+                <svg className="category-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </Link>
                     {library?.categories?.devotions?.count || 0} prayers
                   </span>
                 </div>
