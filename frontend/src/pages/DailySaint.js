@@ -83,6 +83,13 @@ const DailySaint = () => {
 
   return (
     <div className="daily-saint-page" data-testid="daily-saint-page">
+      <SEO 
+        title={saint?.saintName ? `${saint.saintName} - Saint of the Day` : 'Saint of the Day'}
+        description={saint?.description || `Learn about today's saint and watch the daily video on the life of ${saint?.saintName || 'the saint'}.`}
+        keywords={`${saint?.saintName || 'saint'}, saint of the day, Catholic saints, daily saints, lives of the saints`}
+        image={saint?.thumbnail}
+        type="article"
+      />
       {/* Hero Section */}
       <section className="saint-hero">
         <div className="saint-hero-background"></div>
