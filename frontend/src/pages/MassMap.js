@@ -745,6 +745,15 @@ const MassMap = () => {
                         <p className="popup-affiliation" style={{ color: getMarkerColor(loc.affiliation) }}>
                           {loc.affiliation} • {loc.rite}
                         </p>
+                        {loc.mass_schedule && (
+                          <div className="popup-mass-times">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M12 6v6l4 2" />
+                            </svg>
+                            <span>{loc.mass_schedule}</span>
+                          </div>
+                        )}
                         {loc.distance_miles && (
                           <p className="popup-distance">{loc.distance_miles} miles away</p>
                         )}
