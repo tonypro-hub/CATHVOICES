@@ -568,6 +568,19 @@
     padding: var(--space-8);
   }
   
+  .featured-sheen {
+    padding: 0;
+  }
+  
+  .featured-image {
+    flex: 0 0 45%;
+    height: 280px;
+  }
+  
+  .featured-content-right {
+    padding: var(--space-8);
+  }
+  
   .featured-title {
     font-size: var(--text-2xl);
   }
@@ -598,6 +611,21 @@
     padding: var(--space-8) var(--space-6);
   }
   
+  .featured-sheen {
+    padding: 0;
+  }
+  
+  .featured-sheen .featured-image {
+    flex: none;
+    width: 100%;
+    height: 200px;
+  }
+  
+  .featured-content-right {
+    text-align: center;
+    align-items: center;
+    padding: var(--space-6);
+  }
   .featured-content {
     order: 2;
   }
