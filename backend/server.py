@@ -887,14 +887,14 @@ async def get_novena_prayers():
 
 @api_router.get("/prayer-library/devotions")
 async def get_devotion_prayers():
-    """Get other prayers and devotions"""
+    """Get other prayers and devotions - only long-form videos (no Shorts)"""
     videos = await db.prayer_videos.find({
         "$or": [
             {"category": "devotions"},
             {"title": {"$regex": "chaplet|litany|stations|angelus|prayer|divine mercy", "$options": "i"}}
         ],
         "title": {"$not": {"$regex": "rosary|novena", "$options": "i"}}
-    }).sort("publishedAt", -1).to_list(100)
+    }).sort("publishedAt", -1).to_list(200)
     
     # Group by devotion type
     devotion_types = {
@@ -907,6 +907,11 @@ async def get_devotion_prayers():
     
     all_videos = []
     for video in videos:
+        # Skip YouTube Shorts (videos under 3 minutes)
+        duration = video.get("duration", "PT0S")
+        if is_youtube_short(duration):
+            continue
+            
         formatted = prayer_video_helper(video)
         formatted["category"] = "devotions"
         title_lower = video.get("title", "").lower()
