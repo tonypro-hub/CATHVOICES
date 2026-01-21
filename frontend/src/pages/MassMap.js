@@ -222,6 +222,9 @@ const MassMap = () => {
     setSearchQuery('');
     setSearchInput('');
     setSelectedLocation(null);
+    setNearbyMode(false);
+    setUserLocation(null);
+    setGeoError(null);
     setMapCenter([39.8283, -98.5795]);
     setMapZoom(4);
   };
