@@ -660,7 +660,7 @@
   font-style: italic;
 }
 
-.detail-actions {
+.location-detail .detail-actions {
   padding: 20px;
   border-top: 1px solid #e5e7eb;
   display: flex;
@@ -669,38 +669,40 @@
   overflow: visible;
 }
 
-.detail-actions .action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border-radius: 9999px;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: #f3f4f6;
-  color: #1f2937;
-  border: 1px solid #d1d5db;
-  white-space: nowrap;
-  flex-shrink: 0;
-  box-sizing: border-box;
+.location-detail .detail-actions .action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 10px 16px !important;
+  border-radius: 9999px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  background: #f3f4f6 !important;
+  color: #1f2937 !important;
+  border: 1px solid #d1d5db !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+  height: auto !important;
 }
 
-.detail-actions .action-btn:hover {
-  background: #e5e7eb;
+.location-detail .detail-actions .action-btn:hover {
+  background: #e5e7eb !important;
 }
 
-.detail-actions .action-primary {
-  background: #722f37;
-  color: white;
-  border-color: #722f37;
+.location-detail .detail-actions .action-primary {
+  background: #722f37 !important;
+  color: white !important;
+  border-color: #722f37 !important;
 }
 
-.detail-actions .action-primary:hover {
-  background: #5a252c;
+.location-detail .detail-actions .action-primary:hover {
+  background: #5a252c !important;
 }
 
 /* Locations List */
