@@ -210,6 +210,8 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - [x] **User Suggestion Form on Mass Map** (January 21, 2026)
 - [x] **Protected Routes with AuthContext** (January 21, 2026)
 
+- [x] **Quick Report Issue button on map popup and detail view** (January 21, 2026)
+
 ## Future Tasks (Backlog)
 1. **P2**: Mass times data integration (API or manual entry)
 2. **P2**: Configure Resend API for email notifications (requires API key)
