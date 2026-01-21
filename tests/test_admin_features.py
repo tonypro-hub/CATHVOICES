@@ -9,7 +9,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://catholic-voices-4.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://faith-finder-16.preview.emergentagent.com')
 
 # Admin credentials
 ADMIN_USERNAME = "admin"
