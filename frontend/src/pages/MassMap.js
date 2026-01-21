@@ -747,6 +747,13 @@ const MassMap = () => {
                     >
                       Get Directions
                     </a>
+                    <button 
+                      className="action-btn action-suggest"
+                      onClick={() => openSuggestionModal('edit', selectedLocation)}
+                      data-testid="suggest-edit-btn"
+                    >
+                      Suggest Edit
+                    </button>
                   </div>
                 </div>
               ) : (
