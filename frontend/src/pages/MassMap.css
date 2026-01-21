@@ -665,17 +665,17 @@
   border-top: 1px solid #e5e7eb;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
-.action-btn {
+.detail-actions .action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: 6px;
+  padding: 10px 16px;
   border-radius: 9999px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -684,19 +684,20 @@
   color: #1f2937;
   border: 1px solid #d1d5db;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.action-btn:hover {
+.detail-actions .action-btn:hover {
   background: #e5e7eb;
 }
 
-.action-primary {
+.detail-actions .action-primary {
   background: #722f37;
   color: white;
   border-color: #722f37;
 }
 
-.action-primary:hover {
+.detail-actions .action-primary:hover {
   background: #5a252c;
 }
 
