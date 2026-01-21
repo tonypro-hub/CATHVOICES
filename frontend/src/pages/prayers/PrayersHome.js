@@ -115,8 +115,14 @@ const PrayersHome = () => {
       {/* Featured: Bishop Fulton J. Sheen */}
       <section className="prayers-featured">
         <div className="container">
-          <Link to="/prayers/fulton-sheen" className="featured-card" data-testid="fulton-sheen-featured">
-            <div className="featured-content">
+          <Link to="/prayers/fulton-sheen" className="featured-card featured-sheen" data-testid="fulton-sheen-featured">
+            <div className="featured-image">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_catholic-voices-4/artifacts/h4sernpl_Yousuf-Karsh-Archbishop-Fulton-Sheen-1952_color_16x9.jpg" 
+                alt="Archbishop Fulton J. Sheen"
+              />
+            </div>
+            <div className="featured-content featured-content-right">
               <span className="featured-label">Featured</span>
               <h2 className="featured-title">Bishop Fulton J. Sheen</h2>
               <p className="featured-description">
@@ -129,9 +135,6 @@ const PrayersHome = () => {
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </span>
-            </div>
-            <div className="featured-icon">
-              {categoryConfig['fulton-sheen'].icon}
             </div>
           </Link>
         </div>
