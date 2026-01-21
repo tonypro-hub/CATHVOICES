@@ -300,6 +300,137 @@ const AdminLocations = () => {
           </div>
         </div>
       )}
+
+      {/* Bulk Upload Modal */}
+      {showBulkUpload && (
+        <div className="modal-overlay" onClick={closeBulkUpload}>
+          <div className="modal-content bulk-upload-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Import Mass Times</h3>
+              <button className="modal-close" onClick={closeBulkUpload}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {bulkUploadResult ? (
+              <div className="upload-result">
+                {bulkUploadResult.success ? (
+                  <>
+                    <div className="result-icon success">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M9 12l2 2 4-4" />
+                      </svg>
+                    </div>
+                    <h4>Upload Complete!</h4>
+                    <div className="result-summary">
+                      <div className="summary-item">
+                        <span className="summary-value success">{bulkUploadResult.summary?.updated || 0}</span>
+                        <span className="summary-label">Updated</span>
+                      </div>
+                      <div className="summary-item">
+                        <span className="summary-value warning">{bulkUploadResult.summary?.not_found || 0}</span>
+                        <span className="summary-label">Not Found</span>
+                      </div>
+                      <div className="summary-item">
+                        <span className="summary-value">{bulkUploadResult.summary?.skipped || 0}</span>
+                        <span className="summary-label">Skipped</span>
+                      </div>
+                    </div>
+                    {bulkUploadResult.details && bulkUploadResult.details.length > 0 && (
+                      <div className="result-details">
+                        <h5>Details:</h5>
+                        <ul>
+                          {bulkUploadResult.details.slice(0, 10).map((detail, i) => (
+                            <li key={i}>{detail}</li>
+                          ))}
+                          {bulkUploadResult.details.length > 10 && (
+                            <li className="more-items">... and {bulkUploadResult.details.length - 10} more</li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                    <button className="admin-btn admin-btn-primary" onClick={closeBulkUpload}>
+                      Done
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="result-icon error">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M15 9l-6 6M9 9l6 6" />
+                      </svg>
+                    </div>
+                    <h4>Upload Failed</h4>
+                    <p className="error-message">{bulkUploadResult.error}</p>
+                    <button className="admin-btn admin-btn-secondary" onClick={() => setBulkUploadResult(null)}>
+                      Try Again
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <form onSubmit={handleBulkUpload} className="upload-form">
+                <div className="upload-instructions">
+                  <h4>CSV Format Requirements:</h4>
+                  <p>Upload a CSV file with the following columns:</p>
+                  <code>name,mass_schedule</code>
+                  <ul>
+                    <li><strong>name:</strong> Parish/Chapel name (will be matched to existing locations)</li>
+                    <li><strong>mass_schedule:</strong> Mass times (e.g., "Sun: 10 AM, Mon-Sat: 7 AM")</li>
+                  </ul>
+                </div>
+
+                <div className="file-upload-area">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    id="csv-file"
+                    onChange={(e) => setSelectedFile(e.target.files[0])}
+                    className="file-input"
+                  />
+                  <label htmlFor="csv-file" className="file-label">
+                    {selectedFile ? (
+                      <>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        <span>{selectedFile.name}</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        <span>Click to select CSV file</span>
+                      </>
+                    )}
+                  </label>
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" onClick={closeBulkUpload} className="admin-btn admin-btn-secondary">
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="admin-btn admin-btn-primary"
+                    disabled={!selectedFile || bulkUploading}
+                  >
+                    {bulkUploading ? 'Uploading...' : 'Upload & Process'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
