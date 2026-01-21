@@ -125,7 +125,7 @@ const PrayersHome = () => {
           >
             <div className="featured-content-overlay">
               <span className="featured-label">Featured</span>
-              <h2 className="featured-title">Bishop Fulton J. Sheen</h2>
+              <h2 className="featured-title">Pray with Bishop Fulton J. Sheen</h2>
               <p className="featured-description">
                 Experience the profound spiritual wisdom of the Venerable Archbishop
               </p>
