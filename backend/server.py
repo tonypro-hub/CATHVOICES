@@ -1406,6 +1406,115 @@ async def admin_create_location(
     
     return {"message": "Location created successfully", "id": new_location["id"]}
 
+
+@api_router.post("/admin/bulk-upload-mass-times")
+async def admin_bulk_upload_mass_times(
+    file: UploadFile = File(...),
+    admin: dict = Depends(get_current_admin)
+):
+    """
+    Bulk upload mass times from CSV file.
+    Expected CSV format: name,mass_schedule
+    - name: Parish/Chapel name (will be matched using fuzzy search)
+    - mass_schedule: Mass times text (e.g., "Sun: 10 AM, Mon-Sat: 7 AM")
+    """
+    import csv
+    import io
+    
+    # Validate file type
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="File must be a CSV file")
+    
+    # Read CSV content
+    try:
+        content = await file.read()
+        text_content = content.decode('utf-8-sig')  # Handle BOM
+        reader = csv.DictReader(io.StringIO(text_content))
+        
+        # Validate headers
+        required_headers = {'name', 'mass_schedule'}
+        if not required_headers.issubset(set(reader.fieldnames or [])):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"CSV must have headers: {', '.join(required_headers)}. Found: {reader.fieldnames}"
+            )
+        
+        results = {
+            "updated": 0,
+            "not_found": 0,
+            "skipped": 0,
+            "errors": [],
+            "details": []
+        }
+        
+        for row_num, row in enumerate(reader, start=2):
+            name = row.get('name', '').strip()
+            mass_schedule = row.get('mass_schedule', '').strip()
+            
+            if not name:
+                results["skipped"] += 1
+                continue
+            
+            if not mass_schedule:
+                results["skipped"] += 1
+                results["details"].append(f"Row {row_num}: Skipped '{name}' - no mass schedule provided")
+                continue
+            
+            # Try to find matching location(s)
+            # First try exact match, then partial match
+            query = {"exclude_flag": {"$ne": True}}
+            
+            # Try exact match first
+            location = await db.mass_locations.find_one({
+                **query,
+                "name": {"$regex": f"^{re.escape(name)}$", "$options": "i"}
+            })
+            
+            # If no exact match, try partial match
+            if not location:
+                location = await db.mass_locations.find_one({
+                    **query,
+                    "name": {"$regex": re.escape(name), "$options": "i"}
+                })
+            
+            if location:
+                # Update the location
+                await db.mass_locations.update_one(
+                    {"_id": location["_id"]},
+                    {
+                        "$set": {
+                            "mass_schedule": mass_schedule,
+                            "updated_at": datetime.now(timezone.utc).isoformat(),
+                            "updated_by": f"bulk_upload:{admin['username']}"
+                        }
+                    }
+                )
+                results["updated"] += 1
+                results["details"].append(f"Row {row_num}: Updated '{location['name']}' ({location['city']}, {location['state']})")
+            else:
+                results["not_found"] += 1
+                results["details"].append(f"Row {row_num}: No match found for '{name}'")
+        
+        logger.info(f"Admin {admin['username']} bulk uploaded mass times: {results['updated']} updated, {results['not_found']} not found")
+        
+        return {
+            "message": f"Bulk upload complete. {results['updated']} locations updated.",
+            "summary": {
+                "updated": results["updated"],
+                "not_found": results["not_found"],
+                "skipped": results["skipped"]
+            },
+            "details": results["details"][:50]  # Limit details to prevent huge response
+        }
+        
+    except csv.Error as e:
+        raise HTTPException(status_code=400, detail=f"CSV parsing error: {str(e)}")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="File encoding error. Please use UTF-8 encoded CSV.")
+    except Exception as e:
+        logger.error(f"Bulk upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
 # ===================================
 # USER SUGGESTION ENDPOINTS
 # ===================================
