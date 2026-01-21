@@ -3,8 +3,6 @@ import { HelmetProvider } from 'react-helmet-async';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import Prayers from './pages/Prayers';
-import PrayerDetail from './pages/PrayerDetail';
 import DailySaint from './pages/DailySaint';
 import SaintsArchive from './pages/SaintsArchive';
 import MassMap from './pages/MassMap';
@@ -17,6 +15,15 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLocations from './pages/admin/AdminLocations';
 import AdminLocationEdit from './pages/admin/AdminLocationEdit';
 import AdminSuggestions from './pages/admin/AdminSuggestions';
+// New Prayer Pages
+import { 
+  PrayersHome, 
+  RosaryPage, 
+  NovenasPage, 
+  DevotionsPage, 
+  FultonSheenPage, 
+  PrayerVideoPage 
+} from './pages/prayers';
 import './styles/variables.css';
 import './styles/global.css';
 
