@@ -76,6 +76,8 @@ function AppContent() {
                 <Route path="/prayers/novenas" element={<NovenasPage />} />
                 <Route path="/prayers/devotions" element={<DevotionsPage />} />
                 <Route path="/prayers/fulton-sheen" element={<FultonSheenPage />} />
+                <Route path="/prayers/saints" element={<SaintsPage />} />
+                <Route path="/prayers/teachings" element={<TeachingsPage />} />
                 <Route path="/prayers/video/:videoId" element={<PrayerVideoPage />} />
                 {/* Daily Saints */}
                 <Route path="/daily-saint" element={<DailySaint />} />
