@@ -21,7 +21,9 @@ import {
   RosaryPage, 
   NovenasPage, 
   DevotionsPage, 
-  FultonSheenPage, 
+  FultonSheenPage,
+  SaintsPage,
+  TeachingsPage, 
   PrayerVideoPage 
 } from './pages/prayers';
 import './styles/variables.css';
