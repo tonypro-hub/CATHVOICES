@@ -1019,6 +1019,62 @@ async def seed_mass_locations():
     
     return {"message": f"Seeded {inserted_count} locations", "inserted": inserted_count}
 
+@api_router.post("/mass-locations/scrape")
+async def scrape_mass_locations(background_tasks: BackgroundTasks):
+    """
+    Trigger web scraper to fetch additional mass locations from:
+    - ICKSP (Institute of Christ the King)
+    - FSSP (Fraternity of St. Peter)
+    - Latin Mass Directory
+    
+    This runs as a background task and may take several minutes.
+    """
+    import subprocess
+    import sys
+    
+    async def run_scraper():
+        try:
+            logger.info("Starting mass location scraper...")
+            result = subprocess.run(
+                [sys.executable, "/app/scripts/scrape_locations.py"],
+                capture_output=True,
+                text=True,
+                timeout=300  # 5 minute timeout
+            )
+            logger.info(f"Scraper completed. Output: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Scraper errors: {result.stderr}")
+        except Exception as e:
+            logger.error(f"Scraper failed: {str(e)}")
+    
+    background_tasks.add_task(run_scraper)
+    
+    return {
+        "message": "Scraper started in background. Check logs for progress.",
+        "status": "running",
+        "note": "This may take several minutes. Check /api/mass-locations/stats for updated counts."
+    }
+
+@api_router.get("/mass-locations/scraper-status")
+async def get_scraper_status():
+    """Check the current status and last run of the scraper"""
+    # Get count of scraped locations
+    scraped_count = await db.mass_locations.count_documents({
+        "source": {"$exists": True}
+    })
+    
+    # Get latest scraped entry
+    latest = await db.mass_locations.find_one(
+        {"source": {"$exists": True}},
+        sort=[("created_at", -1)]
+    )
+    
+    return {
+        "scraped_locations": scraped_count,
+        "last_scrape": latest.get("created_at") if latest else None,
+        "sources": await db.mass_locations.distinct("source")
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
