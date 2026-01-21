@@ -868,6 +868,224 @@ const MassMap = () => {
           </div>
         </div>
       </section>
+
+      {/* Suggestion Modal */}
+      {showSuggestionModal && (
+        <div className="suggestion-modal-overlay" onClick={closeSuggestionModal} data-testid="suggestion-modal">
+          <div className="suggestion-modal" onClick={e => e.stopPropagation()}>
+            <div className="suggestion-modal-header">
+              <h3>{suggestionType === 'new' ? 'Suggest a New Location' : 'Suggest an Edit'}</h3>
+              <button className="suggestion-close-btn" onClick={closeSuggestionModal}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {suggestionSuccess ? (
+              <div className="suggestion-success">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9 12l2 2 4-4" />
+                </svg>
+                <h4>Thank You!</h4>
+                <p>Your suggestion has been submitted. We'll review it soon.</p>
+                <button className="btn-primary" onClick={closeSuggestionModal}>Close</button>
+              </div>
+            ) : (
+              <form onSubmit={submitSuggestion} className="suggestion-form">
+                {suggestionError && (
+                  <div className="suggestion-error">{suggestionError}</div>
+                )}
+
+                <div className="suggestion-form-section">
+                  <h4>Your Information</h4>
+                  <div className="suggestion-form-row">
+                    <div className="suggestion-form-group">
+                      <label>Your Name</label>
+                      <input
+                        type="text"
+                        name="user_name"
+                        value={suggestionForm.user_name}
+                        onChange={handleSuggestionChange}
+                        placeholder="John Smith"
+                      />
+                    </div>
+                    <div className="suggestion-form-group">
+                      <label>Email *</label>
+                      <input
+                        type="email"
+                        name="user_email"
+                        value={suggestionForm.user_email}
+                        onChange={handleSuggestionChange}
+                        required
+                        placeholder="john@example.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="suggestion-form-section">
+                  <h4>Location Details</h4>
+                  <div className="suggestion-form-group">
+                    <label>Parish/Chapel Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={suggestionForm.name}
+                      onChange={handleSuggestionChange}
+                      required
+                      placeholder="St. Mary's Church"
+                    />
+                  </div>
+
+                  <div className="suggestion-form-row">
+                    <div className="suggestion-form-group">
+                      <label>Affiliation *</label>
+                      <select name="affiliation" value={suggestionForm.affiliation} onChange={handleSuggestionChange}>
+                        <option value="Diocesan">Diocesan</option>
+                        <option value="FSSP">FSSP</option>
+                        <option value="ICKSP">ICKSP</option>
+                        <option value="SSPX">SSPX</option>
+                        <option value="Ordinariate">Ordinariate</option>
+                        <option value="Eastern Catholic">Eastern Catholic</option>
+                      </select>
+                    </div>
+                    <div className="suggestion-form-group">
+                      <label>Rite</label>
+                      <select name="rite" value={suggestionForm.rite} onChange={handleSuggestionChange}>
+                        <option value="Latin">Latin</option>
+                        <option value="Byzantine">Byzantine</option>
+                        <option value="Ukrainian">Ukrainian</option>
+                        <option value="Maronite">Maronite</option>
+                        <option value="Melkite">Melkite</option>
+                        <option value="Chaldean">Chaldean</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="suggestion-form-group">
+                    <label>Street Address</label>
+                    <input
+                      type="text"
+                      name="street"
+                      value={suggestionForm.street}
+                      onChange={handleSuggestionChange}
+                      placeholder="123 Main Street"
+                    />
+                  </div>
+
+                  <div className="suggestion-form-row">
+                    <div className="suggestion-form-group">
+                      <label>City *</label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={suggestionForm.city}
+                        onChange={handleSuggestionChange}
+                        required
+                        placeholder="City"
+                      />
+                    </div>
+                    <div className="suggestion-form-group">
+                      <label>State *</label>
+                      <input
+                        type="text"
+                        name="state"
+                        value={suggestionForm.state}
+                        onChange={handleSuggestionChange}
+                        required
+                        placeholder="CA"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="suggestion-form-section">
+                  <h4>Mass Information</h4>
+                  <div className="suggestion-form-group">
+                    <label>Mass Times</label>
+                    <textarea
+                      name="mass_schedule"
+                      value={suggestionForm.mass_schedule}
+                      onChange={handleSuggestionChange}
+                      rows="2"
+                      placeholder="Sunday: 10 AM High Mass, 12 PM Low Mass"
+                    />
+                  </div>
+
+                  <div className="suggestion-form-row">
+                    <div className="suggestion-form-group">
+                      <label>Website</label>
+                      <input
+                        type="url"
+                        name="website_url"
+                        value={suggestionForm.website_url}
+                        onChange={handleSuggestionChange}
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="suggestion-form-group">
+                      <label>Phone</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={suggestionForm.phone}
+                        onChange={handleSuggestionChange}
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="suggestion-form-group">
+                    <label>Additional Notes</label>
+                    <textarea
+                      name="notes"
+                      value={suggestionForm.notes}
+                      onChange={handleSuggestionChange}
+                      rows="2"
+                      placeholder="Any other helpful information..."
+                    />
+                  </div>
+                </div>
+
+                <div className="suggestion-form-section">
+                  <div className="suggestion-form-group">
+                    <label>{suggestionType === 'new' ? 'Why should this location be added?' : 'What needs to be changed?'}</label>
+                    <textarea
+                      name="reason"
+                      value={suggestionForm.reason}
+                      onChange={handleSuggestionChange}
+                      rows="2"
+                      placeholder={suggestionType === 'new' ? 'e.g., Recently opened Latin Mass community...' : 'e.g., Address is incorrect, new Mass times...'}
+                    />
+                  </div>
+                </div>
+
+                {/* Honeypot field - hidden from users */}
+                <input
+                  type="text"
+                  name="honeypot"
+                  value={suggestionForm.honeypot}
+                  onChange={handleSuggestionChange}
+                  style={{ display: 'none' }}
+                  tabIndex="-1"
+                  autoComplete="off"
+                />
+
+                <div className="suggestion-form-actions">
+                  <button type="button" className="btn-secondary" onClick={closeSuggestionModal}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary" disabled={suggestionSubmitting}>
+                    {suggestionSubmitting ? 'Submitting...' : 'Submit Suggestion'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
