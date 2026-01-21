@@ -552,7 +552,7 @@ const MassMap = () => {
               ) : (
                 <div className="locations-list">
                   <div className="list-header">
-                    <h3>Locations</h3>
+                    <h3>{nearbyMode ? 'Nearby Masses' : 'Locations'}</h3>
                     <span className="list-count">{locations.length} found</span>
                   </div>
                   
@@ -568,7 +568,12 @@ const MassMap = () => {
                           <div className="card-indicator" style={{ backgroundColor: getMarkerColor(loc.affiliation) }} />
                           <div className="card-content">
                             <h4 className="card-name">{loc.name}</h4>
-                            <p className="card-location">{loc.city}, {loc.state}</p>
+                            <p className="card-location">
+                              {loc.city}, {loc.state}
+                              {loc.distance_miles && (
+                                <span className="card-distance"> • {loc.distance_miles} mi</span>
+                              )}
+                            </p>
                             <div className="card-tags">
                               <span className="card-tag">{loc.affiliation}</span>
                               <span className="card-tag">{loc.rite}</span>
