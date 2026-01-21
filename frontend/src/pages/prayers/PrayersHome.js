@@ -115,27 +115,26 @@ const PrayersHome = () => {
       {/* Featured: Bishop Fulton J. Sheen */}
       <section className="prayers-featured">
         <div className="container">
-          <Link to="/prayers/fulton-sheen" className="featured-card featured-sheen" data-testid="fulton-sheen-featured">
-            <div className="featured-image-full">
-              <img 
-                src="https://customer-assets.emergentagent.com/job_catholic-voices-4/artifacts/h4sernpl_Yousuf-Karsh-Archbishop-Fulton-Sheen-1952_color_16x9.jpg" 
-                alt="Archbishop Fulton J. Sheen"
-              />
-            </div>
-            <div className="featured-overlay">
-              <div className="featured-content-overlay">
-                <span className="featured-label">Featured</span>
-                <h2 className="featured-title">Bishop Fulton J. Sheen</h2>
-                <p className="featured-description">
-                  Experience the profound spiritual wisdom of the Venerable Archbishop
-                </p>
-                <span className="featured-cta">
-                  Explore Content
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
+          <Link 
+            to="/prayers/fulton-sheen" 
+            className="featured-card featured-sheen" 
+            data-testid="fulton-sheen-featured"
+            style={{
+              backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.85) 100%), url('https://customer-assets.emergentagent.com/job_catholic-voices-4/artifacts/h4sernpl_Yousuf-Karsh-Archbishop-Fulton-Sheen-1952_color_16x9.jpg')`
+            }}
+          >
+            <div className="featured-content-overlay">
+              <span className="featured-label">Featured</span>
+              <h2 className="featured-title">Bishop Fulton J. Sheen</h2>
+              <p className="featured-description">
+                Experience the profound spiritual wisdom of the Venerable Archbishop
+              </p>
+              <span className="featured-cta">
+                Explore Content
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </span>
             </div>
           </Link>
         </div>
