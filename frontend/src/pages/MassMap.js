@@ -558,9 +558,21 @@ const MassMap = () => {
                   </button>
 
                   <div className="detail-header">
-                    <span className="detail-badge" style={{ backgroundColor: getMarkerColor(selectedLocation.affiliation) }}>
-                      {selectedLocation.affiliation}
-                    </span>
+                    <div className="detail-header-top">
+                      <span className="detail-badge" style={{ backgroundColor: getMarkerColor(selectedLocation.affiliation) }}>
+                        {selectedLocation.affiliation}
+                      </span>
+                      <button 
+                        className={`detail-favorite-btn ${isFavorite(selectedLocation.id) ? 'is-favorite' : ''}`}
+                        onClick={() => toggleFavorite(selectedLocation.id)}
+                        data-testid="detail-favorite-btn"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorite(selectedLocation.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                        {isFavorite(selectedLocation.id) ? 'Saved' : 'Save'}
+                      </button>
+                    </div>
                     <h2 className="detail-name">{selectedLocation.name}</h2>
                     <p className="detail-type">{selectedLocation.entity_type} • {selectedLocation.rite} Rite</p>
                   </div>
