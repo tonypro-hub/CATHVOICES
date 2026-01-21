@@ -66,6 +66,10 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - **Public Suggestion Form** - Modal on Mass Map page
   - "Suggest a Location" button in filters section
   - "Suggest Edit" button in location detail view
+- **Quick Report Issue** - Simplified form for reporting problems
+  - "Report Issue" button in map popup and detail view
+  - Issue type dropdown (Incorrect Info, Wrong Address, Wrong Times, Location Closed, Other)
+  - Description field and optional email
 - **Submission Fields**:
   - User info: Name, Email (required)
   - Location: Name, Affiliation, Rite, Address, City, State
