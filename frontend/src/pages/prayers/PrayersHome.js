@@ -116,25 +116,26 @@ const PrayersHome = () => {
       <section className="prayers-featured">
         <div className="container">
           <Link to="/prayers/fulton-sheen" className="featured-card featured-sheen" data-testid="fulton-sheen-featured">
-            <div className="featured-image">
+            <div className="featured-image-full">
               <img 
                 src="https://customer-assets.emergentagent.com/job_catholic-voices-4/artifacts/h4sernpl_Yousuf-Karsh-Archbishop-Fulton-Sheen-1952_color_16x9.jpg" 
                 alt="Archbishop Fulton J. Sheen"
               />
             </div>
-            <div className="featured-content featured-content-right">
-              <span className="featured-label">Featured</span>
-              <h2 className="featured-title">Bishop Fulton J. Sheen</h2>
-              <p className="featured-description">
-                Experience the profound spiritual wisdom of the Venerable Archbishop Fulton J. Sheen 
-                through his timeless teachings and reflections.
-              </p>
-              <span className="featured-cta">
-                Explore Content
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </span>
+            <div className="featured-overlay">
+              <div className="featured-content-overlay">
+                <span className="featured-label">Featured</span>
+                <h2 className="featured-title">Bishop Fulton J. Sheen</h2>
+                <p className="featured-description">
+                  Experience the profound spiritual wisdom of the Venerable Archbishop
+                </p>
+                <span className="featured-cta">
+                  Explore Content
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
             </div>
           </Link>
         </div>
