@@ -666,7 +666,7 @@ const MassMap = () => {
                       <p>{showFavoritesOnly ? 'No favorites saved yet' : 'No locations found'}</p>
                       <span>{showFavoritesOnly ? 'Click the heart icon on any location to save it' : 'Try adjusting your filters'}</span>
                     </div>
-                  )}}
+                  )}
                 </div>
               )}
             </div>
