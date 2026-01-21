@@ -274,14 +274,22 @@ const MassMap = () => {
 
   const getMarkerColor = (affiliation) => AFFILIATION_COLORS[affiliation] || '#6b7280';
 
+  // Filter locations based on favorites if enabled
+  const displayedLocations = useMemo(() => {
+    if (showFavoritesOnly) {
+      return locations.filter(loc => favorites.includes(loc.id));
+    }
+    return locations;
+  }, [locations, showFavoritesOnly, favorites]);
+
   const filterCounts = useMemo(() => {
     const counts = {};
-    locations.forEach(loc => {
+    displayedLocations.forEach(loc => {
       counts[loc.affiliation] = (counts[loc.affiliation] || 0) + 1;
       counts[loc.state] = (counts[loc.state] || 0) + 1;
     });
     return counts;
-  }, [locations]);
+  }, [displayedLocations]);
 
   return (
     <div className="mass-map-page" data-testid="mass-map-page">
