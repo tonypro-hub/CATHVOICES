@@ -748,7 +748,19 @@ const MassMap = () => {
                         {loc.distance_miles && (
                           <p className="popup-distance">{loc.distance_miles} miles away</p>
                         )}
-                        <button className="popup-details-btn" onClick={() => selectLocation(loc)}>View Details →</button>
+                        <div className="popup-actions">
+                          <button className="popup-details-btn" onClick={() => selectLocation(loc)}>View Details →</button>
+                          <button 
+                            className="popup-report-btn" 
+                            onClick={(e) => { e.stopPropagation(); openReportModal(loc); }}
+                            title="Report an issue"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M12 8v4M12 16h.01" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </Popup>
                   </Marker>
