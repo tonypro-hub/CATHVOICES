@@ -1,9 +1,15 @@
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import './About.css';
 
 const About = () => {
   return (
     <div className="about-page" data-testid="about-page">
+      <SEO 
+        title="About Us"
+        description="Learn about Catholic Voices & Prayers - a digital sanctuary for the faithful, dedicated to preserving and sharing the richness of Catholic tradition."
+        keywords="Catholic voices, Catholic prayers, traditional Catholic, about us, mission"
+      />
       {/* Hero */}
       <section className="about-hero">
         <div className="container">

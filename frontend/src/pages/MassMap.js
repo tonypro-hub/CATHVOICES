@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import SEO from '../components/SEO';
 import './MassMap.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
