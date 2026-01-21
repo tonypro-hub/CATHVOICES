@@ -661,11 +661,12 @@
 }
 
 .detail-actions {
-  padding: 24px;
+  padding: 20px;
   border-top: 1px solid #e5e7eb;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  overflow: visible;
 }
 
 .detail-actions .action-btn {
@@ -685,6 +686,7 @@
   border: 1px solid #d1d5db;
   white-space: nowrap;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .detail-actions .action-btn:hover {
