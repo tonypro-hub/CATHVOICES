@@ -83,6 +83,50 @@ const AdminLocations = () => {
     }
   };
 
+  const handleBulkUpload = async (e) => {
+    e.preventDefault();
+    if (!selectedFile) return;
+
+    setBulkUploading(true);
+    setBulkUploadResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const response = await fetch(`${API}/api/admin/bulk-upload-mass-times`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+
+      if (response.status === 401) {
+        logout();
+        navigate('/admin/login');
+        return;
+      }
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        setBulkUploadResult({ success: true, ...result });
+        fetchLocations(); // Refresh the list
+      } else {
+        setBulkUploadResult({ success: false, error: result.detail });
+      }
+    } catch (error) {
+      setBulkUploadResult({ success: false, error: 'Upload failed. Please try again.' });
+    } finally {
+      setBulkUploading(false);
+    }
+  };
+
+  const closeBulkUpload = () => {
+    setShowBulkUpload(false);
+    setBulkUploadResult(null);
+    setSelectedFile(null);
+  };
+
   return (
     <div className="admin-page">
       <header className="admin-header">
