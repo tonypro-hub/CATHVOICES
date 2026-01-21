@@ -961,6 +961,44 @@ async def get_fulton_sheen_prayers():
         "count": len(all_videos)
     }
 
+@api_router.get("/prayer-library/saints")
+async def get_saints_videos():
+    """Get all Saints content"""
+    videos = await db.prayer_videos.find({
+        "$or": [
+            {"category": "saints"},
+            {"title": {"$regex": "st\\.|saint|feast|martyr|patron", "$options": "i"}}
+        ]
+    }).sort("publishedAt", -1).to_list(200)
+    
+    all_videos = [prayer_video_helper(v) for v in videos]
+    
+    return {
+        "title": "Lives of the Saints",
+        "description": "Daily saint reflections and feast day celebrations",
+        "videos": all_videos,
+        "count": len(all_videos)
+    }
+
+@api_router.get("/prayer-library/teachings")
+async def get_teachings_videos():
+    """Get all Catholic teachings content"""
+    videos = await db.prayer_videos.find({
+        "$or": [
+            {"category": "teachings"},
+            {"title": {"$regex": "why|what|how|explained|truth", "$options": "i"}}
+        ]
+    }).sort("publishedAt", -1).to_list(200)
+    
+    all_videos = [prayer_video_helper(v) for v in videos]
+    
+    return {
+        "title": "Catholic Teachings",
+        "description": "Faith formation, doctrine, and spiritual guidance",
+        "videos": all_videos,
+        "count": len(all_videos)
+    }
+
 @api_router.get("/prayer-library/video/{video_id}")
 async def get_prayer_video(video_id: str):
     """Get a specific prayer video"""
