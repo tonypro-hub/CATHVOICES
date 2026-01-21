@@ -46,6 +46,21 @@ const createMarkerIcon = (color, isSelected = false) => {
   });
 };
 
+const createUserLocationIcon = () => {
+  const svgIcon = `
+    <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="8" fill="#3b82f6" stroke="white" stroke-width="3"/>
+      <circle cx="12" cy="12" r="3" fill="white"/>
+    </svg>
+  `;
+  return L.divIcon({
+    html: svgIcon,
+    className: 'user-location-marker',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+};
+
 const MapController = ({ center, zoom }) => {
   const map = useMap();
   useEffect(() => {
