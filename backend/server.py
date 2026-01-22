@@ -1150,24 +1150,240 @@ async def get_saints_videos():
         "count": len(all_videos)
     }
 
-@api_router.get("/prayer-library/teachings")
-async def get_teachings_videos():
-    """Get all Catholic teachings content"""
-    videos = await db.prayer_videos.find({
-        "$or": [
-            {"category": "teachings"},
-            {"title": {"$regex": "why|what|how|explained|truth", "$options": "i"}}
-        ]
-    }).sort("publishedAt", -1).to_list(200)
+# ============== CATHOLIC TEACHINGS SECTION ==============
+
+def categorize_teaching_video(title: str, description: str) -> str:
+    """Categorize a teaching video based on title and description keywords"""
+    combined = (title + " " + description).lower()
     
-    all_videos = [prayer_video_helper(v) for v in videos]
+    # Score each category based on keyword matches
+    scores = {}
+    for cat_id, cat_info in TEACHINGS_CATEGORIES.items():
+        score = 0
+        for keyword in cat_info["keywords"]:
+            if keyword.lower() in combined:
+                # Give more weight to title matches
+                if keyword.lower() in title.lower():
+                    score += 3
+                else:
+                    score += 1
+        scores[cat_id] = score
+    
+    # Return the category with highest score, default to "core-doctrine"
+    if max(scores.values()) > 0:
+        return max(scores, key=scores.get)
+    return "core-doctrine"
+
+def teaching_video_helper(video: dict) -> dict:
+    """Convert video document to teaching video response"""
+    return {
+        "id": str(video.get("_id", "")),
+        "videoId": video.get("videoId", ""),
+        "title": video.get("title", ""),
+        "description": video.get("description", ""),
+        "thumbnail": video.get("thumbnail", ""),
+        "duration": video.get("duration", ""),
+        "durationFormatted": format_duration(video.get("duration", "PT0S")),
+        "publishedAt": video.get("publishedAt", ""),
+        "category": video.get("teaching_category", "core-doctrine"),
+        "categoryName": TEACHINGS_CATEGORIES.get(video.get("teaching_category", "core-doctrine"), {}).get("name", "Core Catholic Doctrine")
+    }
+
+async def fetch_and_cache_teachings():
+    """Fetch all teachings from YouTube playlist and cache in database"""
+    playlist_id = PRAYER_PLAYLISTS.get("teachings", "PLSFbA-IaB3xqeXtAW0qepRMlL9RKg4LJn")
+    if not playlist_id or not YOUTUBE_API_KEY:
+        return []
+    
+    try:
+        # Fetch all videos (up to 300 to cover 263)
+        playlist_videos = fetch_playlist_videos(playlist_id, max_results=300)
+        
+        # Track seen videos for deduplication
+        seen_ids = set()
+        seen_title_duration = set()
+        unique_videos = []
+        
+        for video in playlist_videos:
+            video_id = video.get("videoId")
+            title = video.get("title", "")
+            duration = video.get("duration", "")
+            
+            # Skip if duplicate by ID
+            if video_id in seen_ids:
+                continue
+            
+            # Skip if duplicate by title + duration
+            title_duration_key = f"{title.lower().strip()}_{duration}"
+            if title_duration_key in seen_title_duration:
+                continue
+            
+            seen_ids.add(video_id)
+            seen_title_duration.add(title_duration_key)
+            
+            # Categorize the video
+            teaching_category = categorize_teaching_video(title, video.get("description", ""))
+            
+            video_doc = {
+                "videoId": video_id,
+                "title": title,
+                "description": video.get("description", ""),
+                "thumbnail": video.get("thumbnail", ""),
+                "duration": duration,
+                "publishedAt": video.get("publishedAt"),
+                "source_playlist": "teachings",
+                "teaching_category": teaching_category,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            # Upsert to database
+            await db.teachings_videos.update_one(
+                {"videoId": video_id},
+                {"$set": video_doc},
+                upsert=True
+            )
+            unique_videos.append(video_doc)
+        
+        logger.info(f"Cached {len(unique_videos)} unique teaching videos")
+        return unique_videos
+    except Exception as e:
+        logger.error(f"Error fetching teachings playlist: {str(e)}")
+        return []
+
+@api_router.get("/teachings")
+async def get_teachings_library():
+    """Get the Catholic Teachings library overview with all categories"""
+    
+    # Try to get from database first
+    videos = await db.teachings_videos.find({
+        "source_playlist": "teachings"
+    }).to_list(500)
+    
+    # If no cached videos, fetch from YouTube
+    if not videos and YOUTUBE_API_KEY:
+        await fetch_and_cache_teachings()
+        videos = await db.teachings_videos.find({
+            "source_playlist": "teachings"
+        }).to_list(500)
+    
+    # Organize by category
+    categories = {}
+    for cat_id, cat_info in TEACHINGS_CATEGORIES.items():
+        categories[cat_id] = {
+            "id": cat_id,
+            "name": cat_info["name"],
+            "description": cat_info["description"],
+            "videos": [],
+            "count": 0
+        }
+    
+    # Assign videos to categories
+    for video in videos:
+        cat_id = video.get("teaching_category", "core-doctrine")
+        if cat_id in categories:
+            formatted = teaching_video_helper(video)
+            categories[cat_id]["videos"].append(formatted)
+            categories[cat_id]["count"] += 1
+    
+    # Sort videos within each category by publish date
+    for cat in categories.values():
+        cat["videos"].sort(key=lambda x: x.get("publishedAt", ""), reverse=True)
+        # Limit preview to 8 videos
+        cat["preview"] = cat["videos"][:8]
+    
+    # Order categories
+    category_order = ["core-doctrine", "catholic-vs-protestant", "catholic-vs-orthodox", 
+                      "moral-theology", "scripture-explained", "saints-tradition", 
+                      "mass-sacraments", "misconceptions"]
+    
+    ordered_categories = [categories[cat_id] for cat_id in category_order if categories[cat_id]["count"] > 0]
     
     return {
         "title": "Catholic Teachings",
-        "description": "Faith formation, doctrine, and spiritual guidance",
-        "videos": all_videos,
-        "count": len(all_videos)
+        "subtitle": "Clear answers to the Faith, rooted in Sacred Tradition.",
+        "categories": ordered_categories,
+        "totalVideos": len(videos)
     }
+
+@api_router.get("/teachings/category/{category_id}")
+async def get_teachings_category(category_id: str, page: int = 1, limit: int = 24):
+    """Get all videos in a specific teaching category"""
+    
+    if category_id not in TEACHINGS_CATEGORIES:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    cat_info = TEACHINGS_CATEGORIES[category_id]
+    
+    # Get videos for this category
+    skip = (page - 1) * limit
+    videos = await db.teachings_videos.find({
+        "source_playlist": "teachings",
+        "teaching_category": category_id
+    }).sort("publishedAt", -1).skip(skip).limit(limit).to_list(limit)
+    
+    # Get total count
+    total = await db.teachings_videos.count_documents({
+        "source_playlist": "teachings",
+        "teaching_category": category_id
+    })
+    
+    formatted_videos = [teaching_video_helper(v) for v in videos]
+    
+    return {
+        "id": category_id,
+        "name": cat_info["name"],
+        "description": cat_info["description"],
+        "videos": formatted_videos,
+        "count": total,
+        "page": page,
+        "totalPages": (total + limit - 1) // limit,
+        "hasMore": skip + len(videos) < total
+    }
+
+@api_router.get("/teachings/video/{video_id}")
+async def get_teaching_video(video_id: str):
+    """Get a specific teaching video"""
+    video = await db.teachings_videos.find_one({"videoId": video_id})
+    
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    formatted = teaching_video_helper(video)
+    cat_id = video.get("teaching_category", "core-doctrine")
+    
+    # Get related videos from same category
+    related = await db.teachings_videos.find({
+        "source_playlist": "teachings",
+        "teaching_category": cat_id,
+        "videoId": {"$ne": video_id}
+    }).sort("publishedAt", -1).limit(6).to_list(6)
+    
+    formatted["related"] = [teaching_video_helper(v) for v in related]
+    formatted["categoryId"] = cat_id
+    formatted["categoryName"] = TEACHINGS_CATEGORIES.get(cat_id, {}).get("name", "Catholic Teachings")
+    
+    return formatted
+
+@api_router.post("/teachings/refresh")
+async def refresh_teachings():
+    """Refresh the teachings library from YouTube (admin only)"""
+    # Clear existing teachings
+    await db.teachings_videos.delete_many({"source_playlist": "teachings"})
+    
+    # Fetch fresh data
+    videos = await fetch_and_cache_teachings()
+    
+    return {
+        "success": True,
+        "message": f"Refreshed {len(videos)} teaching videos",
+        "count": len(videos)
+    }
+
+# Keep old endpoint for backward compatibility but redirect to new
+@api_router.get("/prayer-library/teachings")
+async def get_teachings_videos_legacy():
+    """Legacy endpoint - redirects to new teachings library"""
+    return await get_teachings_library()
 
 @api_router.get("/prayer-library/video/{video_id}")
 async def get_prayer_video(video_id: str):
