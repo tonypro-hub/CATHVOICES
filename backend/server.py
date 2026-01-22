@@ -625,6 +625,59 @@ async def get_saints_archive(limit: int = 24, offset: int = 0):
         "hasMore": (offset + limit) < total
     }
 
+@api_router.get("/saints/playlist")
+async def get_saints_from_playlist(limit: int = 6):
+    """Get saints videos from the Lives of the Saints playlist"""
+    # This is the same playlist used for Lives of the Saints
+    playlist_id = "PLSFbA-IaB3xprRODsXjEiXMV6QF9iGXol"
+    
+    # First try to get from cached prayer_videos (saints source_playlist)
+    videos = await db.prayer_videos.find({
+        "source_playlist": "saints"
+    }).sort("publishedAt", -1).limit(limit).to_list(limit)
+    
+    # If no cached videos, try to fetch
+    if not videos and YOUTUBE_API_KEY:
+        try:
+            playlist_videos = fetch_playlist_videos(playlist_id, max_results=limit)
+            videos = []
+            for video in playlist_videos:
+                video_doc = {
+                    "videoId": video.get("videoId"),
+                    "title": video.get("title", ""),
+                    "description": video.get("description", ""),
+                    "thumbnail": video.get("thumbnail", ""),
+                    "duration": video.get("duration", ""),
+                    "publishedAt": video.get("publishedAt"),
+                    "source_playlist": "saints"
+                }
+                videos.append(video_doc)
+        except Exception as e:
+            logger.error(f"Error fetching saints playlist: {str(e)}")
+    
+    # Format for frontend
+    formatted = []
+    for v in videos:
+        formatted.append({
+            "id": v.get("videoId", ""),
+            "videoId": v.get("videoId", ""),
+            "saintName": v.get("title", "").split("|")[0].strip() if "|" in v.get("title", "") else v.get("title", ""),
+            "title": v.get("title", ""),
+            "description": v.get("description", ""),
+            "thumbnail": v.get("thumbnail", ""),
+            "duration": v.get("duration", ""),
+            "durationFormatted": format_duration(v.get("duration", "PT0S")),
+            "publishedAt": v.get("publishedAt", ""),
+            "youtubeUrl": f"https://www.youtube.com/watch?v={v.get('videoId', '')}"
+        })
+    
+    return {
+        "saints": formatted,
+        "playlistId": playlist_id,
+        "playlistUrl": f"https://www.youtube.com/playlist?list={playlist_id}",
+        "count": len(formatted)
+    }
+
 @api_router.get("/saints/{saint_id}")
 async def get_saint_by_id(saint_id: str):
     """Get a specific saint by ID"""
