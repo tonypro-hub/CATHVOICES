@@ -223,19 +223,19 @@ const Home = () => {
               </span>
             </Link>
 
-            <Link to="/store" className="feature-card" data-testid="feature-store">
+            <Link to="/teachings" className="feature-card" data-testid="feature-teachings">
               <div className="feature-icon">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="3" y="8" width="18" height="13" rx="1"/>
-                  <path d="M12 8v13M3 12h18"/>
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                 </svg>
               </div>
-              <h3 className="feature-title">Catholic Store</h3>
+              <h3 className="feature-title">Catholic Teachings</h3>
               <p className="feature-description">
-                Carefully selected items to support your prayer life and spiritual journey.
+                Clear answers to the Faith rooted in Sacred Tradition and the Magisterium.
               </p>
               <span className="feature-link">
-                Browse Store
+                Explore Teachings
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
