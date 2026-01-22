@@ -83,6 +83,10 @@ function AppContent() {
                 <Route path="/prayers/saints" element={<SaintsPage />} />
                 <Route path="/prayers/teachings" element={<TeachingsPage />} />
                 <Route path="/prayers/video/:videoId" element={<PrayerVideoPage />} />
+                {/* Catholic Teachings Routes */}
+                <Route path="/teachings" element={<TeachingsHome />} />
+                <Route path="/teachings/:categoryId" element={<TeachingsCategoryPage />} />
+                <Route path="/teachings/video/:videoId" element={<TeachingsVideoPage />} />
                 {/* Daily Saints */}
                 <Route path="/daily-saint" element={<DailySaint />} />
                 <Route path="/saints-archive" element={<SaintsArchive />} />
