@@ -219,94 +219,106 @@
 }
 
 .categories-grid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
 }
 
 .category-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-6);
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6) var(--space-8);
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-4);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1f21 50%, #1a1a1a 100%);
+  border: 1px solid rgba(114, 47, 55, 0.3);
+  border-radius: 0;
+  padding: var(--space-10);
   text-decoration: none;
   transition: all var(--transition-base);
+  aspect-ratio: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.category-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, rgba(114, 47, 55, 0.25) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .category-card:hover {
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  transform: translateX(4px);
+  border-color: rgba(114, 47, 55, 0.6);
+  box-shadow: 0 8px 40px rgba(114, 47, 55, 0.3);
+  transform: translateY(-4px);
 }
 
 .category-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-lg);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+  z-index: 1;
 }
 
 .category-icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-.rosary-icon {
-  background: linear-gradient(135deg, #722f37 0%, #a04450 100%);
+  width: 36px;
+  height: 36px;
   color: white;
 }
 
-.novenas-icon {
-  background: linear-gradient(135deg, #2d5a7b 0%, #4a8ab0 100%);
-  color: white;
-}
-
-.devotions-icon {
-  background: linear-gradient(135deg, #4a5568 0%, #718096 100%);
-  color: white;
-}
-
-.fulton-sheen-icon {
-  background: linear-gradient(135deg, #8b6914 0%, #c49b26 100%);
+.rosary-icon,
+.novenas-icon,
+.devotions-icon,
+.fulton-sheen-icon,
+.saints-icon,
+.teachings-icon {
+  background: rgba(255, 255, 255, 0.1);
   color: white;
 }
 
 .category-content {
-  flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .category-title {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-1);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: #ffffff;
+  margin-bottom: var(--space-2);
 }
 
 .category-description {
   font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-2);
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: var(--space-3);
+  line-height: 1.5;
 }
 
 .category-count {
-  font-size: var(--text-xs);
-  color: var(--color-accent-primary);
-  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  color: #d4af37;
+  font-weight: var(--font-semibold);
 }
 
 .category-arrow {
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.5);
   transition: all var(--transition-fast);
+  display: none;
 }
 
 .category-card:hover .category-arrow {
-  color: var(--color-accent-primary);
+  color: white;
   transform: translateX(4px);
 }
 
