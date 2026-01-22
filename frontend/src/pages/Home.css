@@ -213,17 +213,32 @@
 }
 
 .feature-card {
-  background: var(--color-bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-8);
-  border: 1px solid var(--color-border);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1f21 50%, #1a1a1a 100%);
+  border-radius: 16px;
+  padding: var(--space-10);
+  border: 1px solid rgba(114, 47, 55, 0.3);
   transition: all var(--transition-base);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, rgba(114, 47, 55, 0.25) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .feature-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--color-accent-primary);
+  box-shadow: 0 8px 40px rgba(114, 47, 55, 0.3);
+  border-color: rgba(114, 47, 55, 0.6);
 }
 
 .feature-card-large {
@@ -231,27 +246,36 @@
 }
 
 .feature-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-secondary);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-accent-primary);
-  margin-bottom: var(--space-4);
+  color: white;
+  margin-bottom: var(--space-5);
+  position: relative;
+  z-index: 1;
 }
 
 .feature-title {
   font-size: var(--text-xl);
-  margin-bottom: var(--space-2);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-3);
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
 }
 
 .feature-description {
   font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: var(--space-5);
   line-height: var(--leading-relaxed);
+  position: relative;
+  z-index: 1;
 }
 
 .feature-link {
@@ -260,7 +284,9 @@
   gap: var(--space-2);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
-  color: var(--color-accent-primary);
+  color: #d4af37;
+  position: relative;
+  z-index: 1;
 }
 
 /* Mass Highlight Section */
