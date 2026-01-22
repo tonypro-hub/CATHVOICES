@@ -231,32 +231,40 @@ const DailySaint = () => {
         </div>
       </section>
 
-      {/* Previous Saints */}
+      {/* Previous Saints from Playlist */}
       {previousSaints.length > 0 && (
         <section className="saints-previous">
           <div className="container">
             <div className="section-header">
-              <h2 className="section-title">Previous Saints</h2>
-              <Link to="/saints-archive" className="view-all-btn" data-testid="saints-archive-link">
-                View All
+              <h2 className="section-title">Lives of the Saints</h2>
+              <a 
+                href={playlistUrl || "https://www.youtube.com/playlist?list=PLSFbA-IaB3xprRODsXjEiXMV6QF9iGXol"} 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="view-all-btn" 
+                data-testid="saints-playlist-link"
+              >
+                View All 268 Saints
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
-              </Link>
+              </a>
             </div>
             
             <div className="saints-grid">
               {previousSaints.map(prevSaint => (
-                <Link 
-                  to={`/saints/${prevSaint.id}`}
-                  key={prevSaint.id}
+                <a 
+                  href={prevSaint.youtubeUrl || `https://www.youtube.com/watch?v=${prevSaint.videoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  key={prevSaint.videoId}
                   className="saint-card"
-                  data-testid={`saint-card-${prevSaint.id}`}
+                  data-testid={`saint-card-${prevSaint.videoId}`}
                 >
                   <div className="saint-thumbnail">
                     <img 
                       src={prevSaint.thumbnail || `https://i.ytimg.com/vi/${prevSaint.videoId}/maxresdefault.jpg`} 
-                      alt={prevSaint.saintName} 
+                      alt={prevSaint.saintName || prevSaint.title} 
                       loading="lazy" 
                     />
                     <div className="saint-overlay">
@@ -266,12 +274,14 @@ const DailySaint = () => {
                         </svg>
                       </div>
                     </div>
-                    <span className="saint-date-badge">{formatShortDate(prevSaint.feastDate)}</span>
+                    {prevSaint.durationFormatted && (
+                      <span className="saint-date-badge">{prevSaint.durationFormatted}</span>
+                    )}
                   </div>
                   <div className="saint-info">
-                    <h3 className="saint-name">{prevSaint.saintName}</h3>
+                    <h3 className="saint-name">{prevSaint.saintName || prevSaint.title}</h3>
                   </div>
-                </Link>
+                </a>
               ))}
             </div>
           </div>
