@@ -1209,6 +1209,10 @@ async def fetch_and_cache_teachings():
             title = video.get("title", "")
             duration = video.get("duration", "")
             
+            # Skip private/deleted videos
+            if not title or title.lower() in ['private video', 'deleted video', '[private video]', '[deleted video]']:
+                continue
+            
             # Skip if duplicate by ID
             if video_id in seen_ids:
                 continue
