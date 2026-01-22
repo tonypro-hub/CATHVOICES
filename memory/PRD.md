@@ -83,13 +83,37 @@ Build a desktop-first, SEO-driven, reverent Catholic website called "Catholic Vo
 - **Complete Prayer Library Architecture**:
   - `/prayers` - Main hub with featured Fulton Sheen banner and category navigation
   - `/prayers/saints` - Lives of the Saints videos
-  - `/prayers/teachings` - Catholic Teachings videos
+  - `/prayers/teachings` - Redirects to /teachings
   - `/prayers/devotions` - Prayers & Devotions videos
   - `/prayers/fulton-sheen` - Featured Bishop Sheen section
   - `/prayers/video/:id` - Individual prayer video page with YouTube embed
 - **YouTube Integration**: Connected to "Catholic Voices & Prayers" channel (UCRRPmmYLLHxRJlsKjJER1Ig), 200+ videos categorized
 - **Featured Banner**: Bishop Fulton J. Sheen banner with full-bleed image and floating text overlay ✅ (January 21, 2026)
 - **Design**: Reverent, PelicanPlus-style with calm typography and devotional spacing
+
+### 5b. Catholic Teachings Library ✅ NEW (January 22, 2026)
+- **Complete Teachings Library Architecture**:
+  - `/teachings` - Main library hub showing 8 category sections with 8-video previews each
+  - `/teachings/:categoryId` - Category page with full video list and lazy-load pagination
+  - `/teachings/video/:videoId` - Individual video page with embed, description, related videos
+- **YouTube Playlist Source**: PLSFbA-IaB3xqeXtAW0qepRMlL9RKg4LJn (262 unique Shorts after deduplication)
+- **8 Teaching Categories**:
+  1. Core Catholic Doctrine (110 videos) - Trinity, Eucharist, Papacy, Sacraments
+  2. Catholic vs Protestant Questions (4 videos) - Sola Scriptura, Justification, Reformation
+  3. Catholic vs Orthodox (3 videos) - Papal authority, Schism, Filioque
+  4. Moral Theology & Christian Living (51 videos) - Sin, Grace, Salvation, Heaven/Hell
+  5. Scripture Explained (9 videos) - Bible verses, Typology, Covenants
+  6. The Saints & Tradition (28 videos) - Intercession, Marian doctrine, Church Fathers
+  7. The Mass & Sacraments (32 videos) - Mass as sacrifice, Liturgy, Priesthood
+  8. Common Catholic Misconceptions (25 videos) - "Catholics worship Mary", works salvation
+- **Features**:
+  - Automatic keyword-based categorization
+  - Deduplication by video ID and title+duration
+  - Private/deleted video filtering
+  - Vertical Shorts-optimized card layout
+  - SEO meta tags per page
+  - Internal linking to Prayers and Saints sections
+- **Design**: Desktop-first, scholarly appearance, card-based, no infinite scroll
 
 ### 6. Store Page ✅ COMPLETE
 - Affiliate product listings
