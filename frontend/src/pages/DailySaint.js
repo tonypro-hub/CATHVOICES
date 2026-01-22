@@ -10,7 +10,8 @@ const API = `${BACKEND_URL}/api`;
 const DailySaint = () => {
   const { id } = useParams();
   const [saint, setSaint] = useState(null);
-  const [recentSaints, setRecentSaints] = useState([]);
+  const [playlistSaints, setPlaylistSaints] = useState([]);
+  const [playlistUrl, setPlaylistUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,7 +21,7 @@ const DailySaint = () => {
     } else {
       fetchTodaysSaint();
     }
-    fetchRecentSaints();
+    fetchPlaylistSaints();
   }, [id]);
 
   const fetchTodaysSaint = async () => {
@@ -47,12 +48,13 @@ const DailySaint = () => {
     }
   };
 
-  const fetchRecentSaints = async () => {
+  const fetchPlaylistSaints = async () => {
     try {
-      const response = await axios.get(`${API}/saints/archive?limit=7`);
-      setRecentSaints(response.data.saints || []);
+      const response = await axios.get(`${API}/saints/playlist?limit=6`);
+      setPlaylistSaints(response.data.saints || []);
+      setPlaylistUrl(response.data.playlistUrl || '');
     } catch (err) {
-      console.error('Error fetching recent saints:', err);
+      console.error('Error fetching playlist saints:', err);
     }
   };
 
@@ -67,17 +69,8 @@ const DailySaint = () => {
     });
   };
 
-  const formatShortDate = (dateStr) => {
-    if (!dateStr) return '';
-    const date = new Date(dateStr + 'T00:00:00');
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  // Get previous saints (exclude current saint)
-  const previousSaints = recentSaints.filter(s => s.id !== saint?.id).slice(0, 6);
+  // Filter out current saint from playlist
+  const previousSaints = playlistSaints.filter(s => s.videoId !== saint?.videoId).slice(0, 6);
 
   if (loading) {
     return (
