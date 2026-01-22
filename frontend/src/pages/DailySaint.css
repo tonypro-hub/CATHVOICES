@@ -1,9 +1,405 @@
-/* DAILY SAINT PAGE STYLES */
+/* ============================================
+   SAINT OF THE DAY PAGE STYLES
+   Matches Teachings page design
+   ============================================ */
 
-.daily-saint-page {
-  min-height: 100vh;
+/* Variables */
+:root {
+  --saints-bg: #0a0a0a;
+  --saints-surface: #141414;
+  --saints-border: #2a2a2a;
+  --saints-accent: #722f37;
+  --saints-accent-light: #8b3d47;
+  --saints-text: #f5f5f5;
+  --saints-text-muted: #9ca3af;
+  --saints-gold: #d4af37;
 }
 
+/* ===== Page Layout ===== */
+.saints-page {
+  min-height: 100vh;
+  background: var(--saints-bg);
+  color: var(--saints-text);
+  padding-bottom: 80px;
+}
+
+/* ===== Hero Section ===== */
+.saints-hero {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1f21 50%, #1a1a1a 100%);
+  padding: 80px 0 60px;
+  text-align: center;
+  position: relative;
+}
+
+.saints-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(114, 47, 55, 0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.saints-title {
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  color: var(--saints-text);
+  position: relative;
+  z-index: 1;
+}
+
+.saints-subtitle {
+  font-size: 20px;
+  color: var(--saints-text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Featured Saint (Today) ===== */
+.saints-featured {
+  padding: 60px 0;
+}
+
+.featured-saint-card {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 48px;
+  background: var(--saints-surface);
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid var(--saints-border);
+}
+
+.featured-video-container {
+  aspect-ratio: 9/16;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.featured-video {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.featured-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--saints-text-muted);
+  text-align: center;
+  padding: 20px;
+}
+
+.featured-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.featured-label {
+  display: inline-block;
+  background: var(--saints-accent);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  width: fit-content;
+}
+
+.featured-name {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--saints-text);
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.featured-date {
+  font-size: 16px;
+  color: var(--saints-gold);
+  margin-bottom: 24px;
+}
+
+.featured-description {
+  font-size: 16px;
+  color: var(--saints-text-muted);
+  line-height: 1.7;
+  margin-bottom: 32px;
+  white-space: pre-wrap;
+}
+
+.featured-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.btn-youtube {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #ff0000;
+  color: white;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-youtube:hover {
+  background: #cc0000;
+}
+
+.btn-subscribe {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid var(--saints-border);
+  color: var(--saints-text);
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-subscribe:hover {
+  background: var(--saints-surface);
+  border-color: var(--saints-text-muted);
+}
+
+/* Social Sharing */
+.featured-share {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--saints-border);
+}
+
+.share-label {
+  font-size: 14px;
+  color: var(--saints-text-muted);
+}
+
+.share-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.share-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--saints-bg);
+  border: 1px solid var(--saints-border);
+  border-radius: 50%;
+  color: var(--saints-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.share-btn:hover {
+  background: var(--saints-accent);
+  border-color: var(--saints-accent);
+  color: white;
+}
+
+/* ===== Previous Saints ===== */
+.saints-previous {
+  padding: 40px 0 60px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--saints-text);
+}
+
+.view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid var(--saints-border);
+  border-radius: 9999px;
+  color: var(--saints-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.view-all-btn:hover {
+  background: var(--saints-accent);
+  border-color: var(--saints-accent);
+}
+
+/* Saints Grid - Vertical Shorts Style */
+.saints-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
+}
+
+.saint-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--saints-text);
+  transition: transform 0.2s ease;
+}
+
+.saint-card:hover {
+  transform: translateY(-4px);
+}
+
+.saint-thumbnail {
+  position: relative;
+  aspect-ratio: 9/16;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.saint-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.saint-card:hover .saint-thumbnail img {
+  transform: scale(1.05);
+}
+
+.saint-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.saint-card:hover .saint-overlay {
+  opacity: 1;
+}
+
+.play-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--saints-accent);
+}
+
+.saint-date-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.saint-info {
+  padding: 12px 4px;
+}
+
+.saint-name {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--saints-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* ===== Internal Links ===== */
+.saints-links {
+  padding: 60px 0;
+  border-top: 1px solid var(--saints-border);
+  margin-top: 20px;
+}
+
+.saints-links h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--saints-text);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.links-grid {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: var(--saints-surface);
+  border: 1px solid var(--saints-border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--saints-text);
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.link-card:hover {
+  background: var(--saints-accent);
+  border-color: var(--saints-accent);
+}
+
+/* ===== Loading & Error States ===== */
 .loading-container,
 .error-container {
   display: flex;
@@ -11,273 +407,157 @@
   align-items: center;
   justify-content: center;
   min-height: 60vh;
+  gap: 16px;
+  padding: 40px 20px;
   text-align: center;
-  padding: var(--space-8);
 }
 
-.loading-container p,
-.error-container p {
-  margin-top: var(--space-4);
-  color: var(--color-text-muted);
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--saints-border);
+  border-top-color: var(--saints-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .error-container h2 {
-  margin-bottom: var(--space-2);
+  font-size: 24px;
+  color: var(--saints-text);
 }
 
-.error-container .btn-primary {
-  margin-top: var(--space-6);
+.error-container p {
+  color: var(--saints-text-muted);
+  margin-bottom: 16px;
 }
 
-/* Hero */
-.saint-hero {
-  position: relative;
-  padding: var(--space-24) 0;
-  text-align: center;
-  background-color: var(--color-bg-dark);
-  color: var(--color-white);
-  overflow: hidden;
-}
-
-.saint-hero-background {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d1f21 50%, #1a1a1a 100%);
-}
-
-.saint-hero-content {
-  position: relative;
-  z-index: 1;
-}
-
-.saint-label {
-  display: inline-block;
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  letter-spacing: var(--tracking-widest);
-  text-transform: uppercase;
-  color: var(--color-accent-gold);
-  margin-bottom: var(--space-4);
-}
-
-.saint-hero-title {
-  font-size: var(--text-5xl);
-  font-weight: var(--font-medium);
-  color: var(--color-white);
-  margin-bottom: var(--space-4);
-}
-
-.saint-date {
-  font-size: var(--text-lg);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.saint-notice {
+.btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-6);
-  padding: var(--space-3) var(--space-6);
-  background-color: rgba(201, 162, 39, 0.2);
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  color: var(--color-accent-gold);
-}
-
-/* Video Section */
-.saint-video-section {
-  background-color: var(--color-bg-primary);
-}
-
-.saint-video-container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.saint-video-wrapper {
-  position: relative;
-  padding-bottom: 177.78%; /* 9:16 aspect ratio for Shorts */
-  max-height: 80vh;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-xl);
-  background: var(--color-bg-dark);
-}
-
-.saint-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.saint-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-16);
-  background-color: var(--color-bg-secondary);
-  border-radius: var(--radius-xl);
-  text-align: center;
-}
-
-.placeholder-icon {
-  color: var(--color-accent-primary);
-  margin-bottom: var(--space-4);
-}
-
-.saint-placeholder p {
-  color: var(--color-text-muted);
-}
-
-/* Description Section */
-.saint-description-section {
-  background-color: var(--color-bg-secondary);
-}
-
-.saint-description-card {
-  background: var(--color-bg-card);
-  padding: var(--space-10);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-}
-
-.saint-description-card h2 {
-  font-size: var(--text-2xl);
-  margin-bottom: var(--space-6);
-}
-
-.saint-description-text {
-  font-size: var(--text-base);
-  line-height: var(--leading-loose);
-  white-space: pre-line;
-}
-
-/* Actions Section */
-.saint-actions-section {
-  background-color: var(--color-bg-primary);
-}
-
-.saint-actions {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-}
-
-/* Share Section */
-.saint-share-section {
-  background-color: var(--color-bg-primary);
-  padding-top: 0;
-}
-
-.share-card {
-  text-align: center;
-  padding: var(--space-8);
-  background-color: var(--color-bg-secondary);
-  border-radius: var(--radius-xl);
-}
-
-.share-card h3 {
-  font-size: var(--text-lg);
-  margin-bottom: var(--space-4);
-}
-
-.share-buttons {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-3);
-}
-
-.share-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
-  transition: all var(--transition-fast);
-}
-
-.share-facebook {
-  background-color: #1877f2;
+  padding: 12px 24px;
+  background: var(--saints-accent);
   color: white;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.share-twitter {
-  background-color: #1da1f2;
-  color: white;
+.btn-primary:hover {
+  background: var(--saints-accent-light);
 }
 
-.share-copy {
-  background-color: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-}
-
-.share-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Archive Link */
-.saint-archive-link {
-  background-color: var(--color-bg-primary);
-}
-
-.archive-cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-6);
-  background-color: var(--color-bg-secondary);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border);
-  transition: all var(--transition-base);
-}
-
-.archive-cta:hover {
-  border-color: var(--color-accent-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.archive-cta-content h3 {
-  font-size: var(--text-lg);
-  margin-bottom: var(--space-1);
-}
-
-.archive-cta-content p {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-
-.archive-cta svg {
-  color: var(--color-accent-primary);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .saint-hero {
-    padding: var(--space-16) 0;
+/* ===== Responsive ===== */
+@media (max-width: 1200px) {
+  .saints-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
   
-  .saint-hero-title {
-    font-size: var(--text-3xl);
+  .featured-saint-card {
+    grid-template-columns: 350px 1fr;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .saints-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
   
-  .saint-video-wrapper {
-    padding-bottom: 100%; /* More square on mobile */
+  .featured-saint-card {
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
   
-  .saint-description-card {
-    padding: var(--space-6);
+  .featured-video-container {
+    max-width: 400px;
+    margin: 0 auto;
   }
   
-  .saint-actions {
-    flex-direction: column;
+  .featured-info {
+    text-align: center;
     align-items: center;
+  }
+  
+  .featured-share {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .saints-title {
+    font-size: 32px;
+  }
+  
+  .saints-subtitle {
+    font-size: 16px;
+  }
+  
+  .saints-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .featured-saint-card {
+    padding: 24px 20px;
+  }
+  
+  .featured-name {
+    font-size: 28px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .view-all-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .featured-actions {
+    flex-direction: column;
+  }
+  
+  .btn-youtube,
+  .btn-subscribe {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .saints-hero {
+    padding: 60px 0 40px;
+  }
+  
+  .saints-title {
+    font-size: 28px;
+  }
+  
+  .featured-video-container {
+    max-width: 100%;
+  }
+  
+  .featured-name {
+    font-size: 24px;
+  }
+  
+  .saints-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  
+  .saint-name {
+    font-size: 13px;
   }
 }
