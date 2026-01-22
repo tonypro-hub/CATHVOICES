@@ -86,8 +86,10 @@
 /* Fulton Sheen Featured with Image */
 .featured-sheen {
   padding: 0;
+  background: none;
   background-size: cover;
   background-position: left center;
+  background-repeat: no-repeat;
   overflow: hidden;
   position: relative;
   min-height: 340px;
