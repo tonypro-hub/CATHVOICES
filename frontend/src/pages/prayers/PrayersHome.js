@@ -152,6 +152,22 @@ const PrayersHome = () => {
             </div>
           ) : (
             <div className="categories-grid">
+              {/* Prayers & Devotions - First */}
+              <Link to="/prayers/devotions" className="category-card" data-testid="category-devotions">
+                <div className="category-icon devotions-icon">
+                  {categoryConfig.devotions.icon}
+                </div>
+                <div className="category-content">
+                  <h3 className="category-title">Prayers & Devotions</h3>
+                  <p className="category-description">
+                    Chaplets, litanies, and traditional Catholic prayers
+                  </p>
+                  <span className="category-count">
+                    {library?.categories?.devotions?.count || 0} videos
+                  </span>
+                </div>
+              </Link>
+
               {/* Lives of the Saints */}
               <Link to="/prayers/saints" className="category-card" data-testid="category-saints">
                 <div className="category-icon saints-icon">
@@ -166,9 +182,6 @@ const PrayersHome = () => {
                     {library?.categories?.saints?.count || 0} videos
                   </span>
                 </div>
-                <svg className="category-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
               </Link>
 
               {/* Catholic Teachings */}
@@ -185,28 +198,6 @@ const PrayersHome = () => {
                     {library?.categories?.teachings?.count || 0} videos
                   </span>
                 </div>
-                <svg className="category-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </Link>
-
-              {/* Prayers & Devotions */}
-              <Link to="/prayers/devotions" className="category-card" data-testid="category-devotions">
-                <div className="category-icon devotions-icon">
-                  {categoryConfig.devotions.icon}
-                </div>
-                <div className="category-content">
-                  <h3 className="category-title">Prayers & Devotions</h3>
-                  <p className="category-description">
-                    Chaplets, litanies, and traditional Catholic prayers
-                  </p>
-                  <span className="category-count">
-                    {library?.categories?.devotions?.count || 0} videos
-                  </span>
-                </div>
-                <svg className="category-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
               </Link>
             </div>
           )}
