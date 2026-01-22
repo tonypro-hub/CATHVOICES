@@ -172,7 +172,7 @@ const PrayersHome = () => {
               </Link>
 
               {/* Catholic Teachings */}
-              <Link to="/prayers/teachings" className="category-card" data-testid="category-teachings">
+              <Link to="/teachings" className="category-card" data-testid="category-teachings">
                 <div className="category-icon teachings-icon">
                   {categoryConfig.teachings.icon}
                 </div>
