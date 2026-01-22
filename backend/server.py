@@ -1281,8 +1281,12 @@ async def get_teachings_library():
             "count": 0
         }
     
-    # Assign videos to categories
+    # Assign videos to categories (skip private videos)
     for video in videos:
+        title = video.get("title", "")
+        # Skip private/deleted videos
+        if not title or title.lower() in ['private video', 'deleted video', '[private video]', '[deleted video]']:
+            continue
         cat_id = video.get("teaching_category", "core-doctrine")
         if cat_id in categories:
             formatted = teaching_video_helper(video)
