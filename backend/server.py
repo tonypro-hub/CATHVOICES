@@ -653,6 +653,51 @@ PRAYER_PLAYLISTS = {
     "devotions": os.environ.get("DEVOTIONS_PLAYLIST_ID", "PLSFbA-IaB3xod9okzmBdtK4lYH5mKQAnx"),
     "fulton_sheen": os.environ.get("FULTON_SHEEN_PLAYLIST_ID", "PLSFbA-IaB3xo_0Ww_CToOktS5Z88eiPfC"),
     "saints": os.environ.get("SAINTS_PLAYLIST_ID", "PLSFbA-IaB3xprRODsXjEiXMV6QF9iGXol"),
+    "teachings": os.environ.get("TEACHINGS_PLAYLIST_ID", "PLSFbA-IaB3xqeXtAW0qepRMlL9RKg4LJn"),
+}
+
+# Catholic Teachings Categories
+TEACHINGS_CATEGORIES = {
+    "core-doctrine": {
+        "name": "Core Catholic Doctrine",
+        "description": "Foundational truths of the Catholic Faith including the Trinity, Eucharist, Papacy, and Sacraments.",
+        "keywords": ["trinity", "eucharist", "pope", "papacy", "sacrament", "church authority", "magisterium", "infallibility", "apostolic", "real presence", "transubstantiation", "holy spirit", "god", "jesus", "christ", "divine", "creed", "dogma", "doctrine"]
+    },
+    "catholic-vs-protestant": {
+        "name": "Catholic vs Protestant Questions",
+        "description": "Answering common Protestant objections and explaining Catholic distinctives.",
+        "keywords": ["protestant", "sola scriptura", "sola fide", "luther", "calvin", "reformation", "justification", "faith alone", "scripture alone", "baptist", "evangelical", "reformed", "presbyterian", "methodist", "pentecostal", "bible only"]
+    },
+    "catholic-vs-orthodox": {
+        "name": "Catholic vs Orthodox",
+        "description": "Understanding the relationship between Catholic and Orthodox Christianity.",
+        "keywords": ["orthodox", "eastern", "schism", "filioque", "papal primacy", "byzantine", "greek", "russian", "constantinople", "rome and", "east and west", "great schism"]
+    },
+    "moral-theology": {
+        "name": "Moral Theology & Christian Living",
+        "description": "Guidance on sin, grace, confession, salvation, and daily Christian life.",
+        "keywords": ["sin", "grace", "mortal", "venial", "confession", "hell", "heaven", "purgatory", "salvation", "saved", "forgiveness", "repent", "moral", "ethics", "virtue", "vice", "commandment", "conscience", "judgment", "eternal"]
+    },
+    "scripture-explained": {
+        "name": "Scripture Explained",
+        "description": "Catholic interpretation of challenging Bible verses and passages.",
+        "keywords": ["bible", "scripture", "verse", "matthew", "john", "paul", "peter", "genesis", "revelation", "gospel", "epistle", "old testament", "new testament", "covenant", "typology", "exegesis", "interpretation"]
+    },
+    "saints-tradition": {
+        "name": "The Saints & Tradition",
+        "description": "Understanding the intercession of saints, Marian doctrine, and Sacred Tradition.",
+        "keywords": ["saint", "mary", "marian", "intercession", "pray to", "relic", "tradition", "church fathers", "patristic", "apostolic tradition", "veneration", "communion of saints", "blessed virgin", "our lady", "immaculate", "assumption"]
+    },
+    "mass-sacraments": {
+        "name": "The Mass & Sacraments",
+        "description": "The Holy Sacrifice of the Mass, liturgy, and the seven sacraments.",
+        "keywords": ["mass", "liturgy", "latin mass", "eucharistic", "sacrifice", "altar", "priest", "priesthood", "ordination", "baptism", "confirmation", "marriage", "anointing", "holy orders", "consecration", "communion", "host"]
+    },
+    "misconceptions": {
+        "name": "Common Catholic Misconceptions",
+        "description": "Clearing up misunderstandings about Catholic beliefs and practices.",
+        "keywords": ["worship mary", "idolatry", "idol", "added books", "apocrypha", "deuterocanonical", "works salvation", "earn", "buying", "indulgence", "misconception", "myth", "misunderstand", "actually", "really", "truth about", "do catholics"]
+    }
 }
 
 def format_duration(duration_str: str) -> str:
