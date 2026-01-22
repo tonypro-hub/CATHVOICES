@@ -26,6 +26,10 @@ import {
   TeachingsPage, 
   PrayerVideoPage 
 } from './pages/prayers';
+// New Teachings Pages
+import TeachingsHome from './pages/teachings/TeachingsHome';
+import TeachingsCategoryPage from './pages/teachings/TeachingsCategoryPage';
+import TeachingsVideoPage from './pages/teachings/TeachingsVideoPage';
 import './styles/variables.css';
 import './styles/global.css';
 
