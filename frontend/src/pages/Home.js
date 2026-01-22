@@ -155,7 +155,7 @@ const Home = () => {
       )}
 
       {/* Feature Cards Grid */}
-      <section className="section section-cream features-section">
+      <section className="section features-section">
         <div className="container">
           <div className="section-header">
             <span className="section-label">Explore</span>
