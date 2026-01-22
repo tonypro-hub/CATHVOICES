@@ -10,6 +10,7 @@ const API = `${BACKEND_URL}/api`;
 const DailySaint = () => {
   const { id } = useParams();
   const [saint, setSaint] = useState(null);
+  const [recentSaints, setRecentSaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -19,6 +20,7 @@ const DailySaint = () => {
     } else {
       fetchTodaysSaint();
     }
+    fetchRecentSaints();
   }, [id]);
 
   const fetchTodaysSaint = async () => {
@@ -45,6 +47,15 @@ const DailySaint = () => {
     }
   };
 
+  const fetchRecentSaints = async () => {
+    try {
+      const response = await axios.get(`${API}/saints/archive?limit=7`);
+      setRecentSaints(response.data.saints || []);
+    } catch (err) {
+      console.error('Error fetching recent saints:', err);
+    }
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr + 'T00:00:00');
@@ -56,9 +67,21 @@ const DailySaint = () => {
     });
   };
 
+  const formatShortDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Get previous saints (exclude current saint)
+  const previousSaints = recentSaints.filter(s => s.id !== saint?.id).slice(0, 6);
+
   if (loading) {
     return (
-      <div className="daily-saint-page">
+      <div className="saints-page">
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Loading today's saint...</p>
@@ -69,7 +92,7 @@ const DailySaint = () => {
 
   if (error) {
     return (
-      <div className="daily-saint-page">
+      <div className="saints-page">
         <div className="error-container">
           <h2>Unable to Load</h2>
           <p>{error}</p>
@@ -82,7 +105,7 @@ const DailySaint = () => {
   }
 
   return (
-    <div className="daily-saint-page" data-testid="daily-saint-page">
+    <div className="saints-page" data-testid="daily-saint-page">
       <SEO 
         title={saint?.saintName ? `${saint.saintName} - Saint of the Day` : 'Saint of the Day'}
         description={saint?.description || `Learn about today's saint and watch the daily video on the life of ${saint?.saintName || 'the saint'}.`}
@@ -90,169 +113,193 @@ const DailySaint = () => {
         image={saint?.thumbnail}
         type="article"
       />
+
       {/* Hero Section */}
-      <section className="saint-hero">
-        <div className="saint-hero-background"></div>
-        <div className="container saint-hero-content">
-          <span className="saint-label">Saint of the Day</span>
-          <h1 className="saint-hero-title" data-testid="saint-name">{saint?.saintName || 'Loading...'}</h1>
-          <p className="saint-date">
-            {saint?.feastDate ? formatDate(saint.feastDate) : ''}
+      <section className="saints-hero">
+        <div className="container">
+          <h1 className="saints-title">Saint of the Day</h1>
+          <p className="saints-subtitle">
+            Daily reflections on the lives of the saints
           </p>
-          {saint?.notice && (
-            <div className="saint-notice">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              <span>{saint.notice}</span>
-            </div>
-          )}
         </div>
       </section>
 
-      {/* Video Section */}
-      <section className="section saint-video-section">
+      {/* Today's Saint - Featured */}
+      <section className="saints-featured">
         <div className="container">
-          {saint?.videoId ? (
-            <div className="saint-video-container">
-              <div className="saint-video-wrapper">
+          <div className="featured-saint-card">
+            <div className="featured-video-container">
+              {saint?.videoId ? (
                 <iframe
                   src={`https://www.youtube.com/embed/${saint.videoId}`}
                   title={saint.saintName}
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  className="saint-video"
+                  className="featured-video"
                   data-testid="saint-video"
-                ></iframe>
+                />
+              ) : (
+                <div className="featured-placeholder">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M12 2v2"/>
+                    <path d="M12 12c-4 0-8 2-8 6v2h16v-2c0-4-4-6-8-6z"/>
+                  </svg>
+                  <p>Today's saint video will be available shortly.</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="featured-info">
+              <span className="featured-label">Today's Saint</span>
+              <h2 className="featured-name" data-testid="saint-name">{saint?.saintName}</h2>
+              <p className="featured-date">{formatDate(saint?.feastDate)}</p>
+              
+              {saint?.description && (
+                <p className="featured-description">{saint.description}</p>
+              )}
+
+              <div className="featured-actions">
+                {saint?.youtubeUrl && (
+                  <a 
+                    href={saint.youtubeUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn-youtube"
+                    data-testid="watch-youtube-btn"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    Watch on YouTube
+                  </a>
+                )}
+                <a 
+                  href="https://www.youtube.com/@CatholicVoicesPrayers?sub_confirmation=1" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="btn-subscribe"
+                >
+                  Subscribe to Channel
+                </a>
+              </div>
+
+              {/* Social Sharing */}
+              <div className="featured-share">
+                <span className="share-label">Share:</span>
+                <div className="share-buttons">
+                  <a 
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="share-btn"
+                    aria-label="Share on Facebook"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                  </a>
+                  <a 
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Today's Saint: ${saint?.saintName || 'Saint of the Day'}`)}&url=${encodeURIComponent(window.location.href)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="share-btn"
+                    aria-label="Share on X/Twitter"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                  </a>
+                  <button 
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: `Saint of the Day: ${saint?.saintName}`,
+                          url: window.location.href
+                        });
+                      } else {
+                        navigator.clipboard.writeText(window.location.href);
+                        alert('Link copied to clipboard!');
+                      }
+                    }}
+                    className="share-btn"
+                    aria-label="Copy link"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
-          ) : (
-            <div className="saint-placeholder">
-              <div className="placeholder-icon">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <circle cx="12" cy="8" r="4"/>
-                  <path d="M12 2v2"/>
-                  <path d="M12 12c-4 0-8 2-8 6v2h16v-2c0-4-4-6-8-6z"/>
-                </svg>
-              </div>
-              <p>Today's saint video will be available shortly.</p>
-            </div>
-          )}
+          </div>
         </div>
       </section>
 
-      {/* Description Section */}
-      {saint?.description && (
-        <section className="section saint-description-section">
-          <div className="container container-narrow">
-            <div className="saint-description-card">
-              <h2>About {saint.saintName}</h2>
-              <p className="saint-description-text">
-                {saint.description}
-              </p>
+      {/* Previous Saints */}
+      {previousSaints.length > 0 && (
+        <section className="saints-previous">
+          <div className="container">
+            <div className="section-header">
+              <h2 className="section-title">Previous Saints</h2>
+              <Link to="/saints-archive" className="view-all-btn" data-testid="saints-archive-link">
+                View All
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </Link>
+            </div>
+            
+            <div className="saints-grid">
+              {previousSaints.map(prevSaint => (
+                <Link 
+                  to={`/saints/${prevSaint.id}`}
+                  key={prevSaint.id}
+                  className="saint-card"
+                  data-testid={`saint-card-${prevSaint.id}`}
+                >
+                  <div className="saint-thumbnail">
+                    <img 
+                      src={prevSaint.thumbnail || `https://i.ytimg.com/vi/${prevSaint.videoId}/maxresdefault.jpg`} 
+                      alt={prevSaint.saintName} 
+                      loading="lazy" 
+                    />
+                    <div className="saint-overlay">
+                      <div className="play-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="10 8 16 12 10 16 10 8"/>
+                        </svg>
+                      </div>
+                    </div>
+                    <span className="saint-date-badge">{formatShortDate(prevSaint.feastDate)}</span>
+                  </div>
+                  <div className="saint-info">
+                    <h3 className="saint-name">{prevSaint.saintName}</h3>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Actions Section */}
-      <section className="section saint-actions-section">
+      {/* Internal Links */}
+      <section className="saints-links">
         <div className="container">
-          <div className="saint-actions">
-            {saint?.youtubeUrl && (
-              <a 
-                href={saint.youtubeUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="btn-primary"
-                data-testid="watch-youtube-btn"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-                Watch on YouTube
-              </a>
-            )}
-            <a 
-              href="https://www.youtube.com/@CatholicVoicesPrayers?sub_confirmation=1" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="btn-secondary"
-            >
-              Subscribe to Channel
-            </a>
+          <h3>Continue Your Journey</h3>
+          <div className="links-grid">
+            <Link to="/prayers" className="link-card">
+              <span className="link-text">Prayers & Devotions</span>
+            </Link>
+            <Link to="/teachings" className="link-card">
+              <span className="link-text">Catholic Teachings</span>
+            </Link>
+            <Link to="/mass-map" className="link-card">
+              <span className="link-text">Find a Mass</span>
+            </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Social Sharing */}
-      <section className="section saint-share-section">
-        <div className="container container-narrow">
-          <div className="share-card">
-            <h3>Share Today's Saint</h3>
-            <div className="share-buttons">
-              <a 
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="share-btn share-facebook"
-                aria-label="Share on Facebook"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </a>
-              <a 
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Today's Saint: ${saint?.saintName || 'Saint of the Day'}`)}&url=${encodeURIComponent(window.location.href)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="share-btn share-twitter"
-                aria-label="Share on X/Twitter"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </a>
-              <button 
-                onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({
-                      title: `Saint of the Day: ${saint?.saintName}`,
-                      url: window.location.href
-                    });
-                  } else {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert('Link copied to clipboard!');
-                  }
-                }}
-                className="share-btn share-copy"
-                aria-label="Copy link"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Archive Link */}
-      <section className="section saint-archive-link">
-        <div className="container container-narrow">
-          <Link to="/saints-archive" className="archive-cta" data-testid="saints-archive-link">
-            <div className="archive-cta-content">
-              <h3>View All Saints</h3>
-              <p>Browse our complete archive of daily saints</p>
-            </div>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </Link>
         </div>
       </section>
     </div>
