@@ -283,8 +283,17 @@ async def lifespan(app: FastAPI):
         id='daily_saint_update',
         replace_existing=True
     )
+    
+    # Start scheduler for daily teachings refresh at 11:30 AM CST
+    scheduler.add_job(
+        refresh_teachings_scheduled,
+        CronTrigger(hour=11, minute=30, timezone='America/Chicago'),
+        id='daily_teachings_update',
+        replace_existing=True
+    )
+    
     scheduler.start()
-    logger.info("Scheduler started - Daily saint update at 3:15 PM CST")
+    logger.info("Scheduler started - Daily saint update at 3:15 PM CST, Teachings refresh at 11:30 AM CST")
     
     # Run initial saint update if none exists for today
     cst = pytz.timezone('America/Chicago')
@@ -293,6 +302,12 @@ async def lifespan(app: FastAPI):
     if not existing_saint and YOUTUBE_API_KEY:
         logger.info("No saint for today, running initial update...")
         await update_daily_saint()
+    
+    # Check if teachings need initial load
+    teachings_count = await db.teachings_videos.count_documents({"source_playlist": "teachings"})
+    if teachings_count == 0 and YOUTUBE_API_KEY:
+        logger.info("No teachings cached, running initial fetch...")
+        await fetch_and_cache_teachings()
     
     yield
     
