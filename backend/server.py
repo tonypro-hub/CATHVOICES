@@ -267,6 +267,91 @@ async def update_daily_saint():
     except Exception as e:
         logger.error(f"Error updating daily saint: {str(e)}")
 
+async def refresh_teachings_scheduled():
+    """
+    Scheduled job to refresh Catholic Teachings from YouTube playlist.
+    Runs daily at 11:30 AM CST.
+    """
+    logger.info("Running scheduled teachings refresh...")
+    
+    try:
+        # Clear existing teachings
+        await db.teachings_videos.delete_many({"source_playlist": "teachings"})
+        
+        # Fetch fresh data
+        playlist_id = PRAYER_PLAYLISTS.get("teachings", "PLSFbA-IaB3xqeXtAW0qepRMlL9RKg4LJn")
+        if not playlist_id or not YOUTUBE_API_KEY:
+            logger.warning("No teachings playlist ID or YouTube API key configured")
+            return
+        
+        # Fetch all videos (up to 300 to cover 263+)
+        playlist_videos = fetch_playlist_videos(playlist_id, max_results=300)
+        
+        # Track seen videos for deduplication
+        seen_ids = set()
+        seen_title_duration = set()
+        count = 0
+        
+        for video in playlist_videos:
+            video_id = video.get("videoId")
+            title = video.get("title", "")
+            duration = video.get("duration", "")
+            
+            # Skip private/deleted videos
+            if not title or title.lower() in ['private video', 'deleted video', '[private video]', '[deleted video]']:
+                continue
+            
+            # Skip if duplicate by ID
+            if video_id in seen_ids:
+                continue
+            
+            # Skip if duplicate by title + duration
+            title_duration_key = f"{title.lower().strip()}_{duration}"
+            if title_duration_key in seen_title_duration:
+                continue
+            
+            seen_ids.add(video_id)
+            seen_title_duration.add(title_duration_key)
+            
+            # Categorize the video
+            combined = (title + " " + video.get("description", "")).lower()
+            teaching_category = "core-doctrine"
+            
+            # Score each category
+            scores = {}
+            for cat_id, cat_info in TEACHINGS_CATEGORIES.items():
+                score = 0
+                for keyword in cat_info["keywords"]:
+                    if keyword.lower() in combined:
+                        if keyword.lower() in title.lower():
+                            score += 3
+                        else:
+                            score += 1
+                scores[cat_id] = score
+            
+            if max(scores.values()) > 0:
+                teaching_category = max(scores, key=scores.get)
+            
+            video_doc = {
+                "videoId": video_id,
+                "title": title,
+                "description": video.get("description", ""),
+                "thumbnail": video.get("thumbnail", ""),
+                "duration": duration,
+                "publishedAt": video.get("publishedAt"),
+                "source_playlist": "teachings",
+                "teaching_category": teaching_category,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            await db.teachings_videos.insert_one(video_doc)
+            count += 1
+        
+        logger.info(f"Scheduled teachings refresh complete: {count} videos cached")
+        
+    except Exception as e:
+        logger.error(f"Error in scheduled teachings refresh: {str(e)}")
+
 # ===================================
 # APP LIFECYCLE
 # ===================================
