@@ -24,7 +24,7 @@ const Header = () => {
 
   const navItems = [
     { path: '/', label: 'Home' },
-    { path: '/prayers', label: 'Prayers' },
+    { path: '/prayers/devotions', label: 'Prayers' },
     { path: '/teachings', label: 'Teachings' },
     { path: '/daily-saint', label: 'Saint of the Day' },
     { path: '/mass-map', label: 'Mass Map' },
